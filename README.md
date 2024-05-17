@@ -3,4 +3,6 @@
 
  This script requires Windows Subsystem Via Linux to run 
 
+ Model files and outputs in extdata folder
+
 ![image](https://github.com/CQuin042/RHESSys74-R-Markdown/assets/78384584/d94e3ec3-525a-46b9-874b-c004e0ec939e)
