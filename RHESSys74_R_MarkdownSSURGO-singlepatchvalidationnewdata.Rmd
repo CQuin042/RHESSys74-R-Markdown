@@ -53,13 +53,14 @@ library(RHESSysIOinR)
 library(sf)
 library(soilDB)
 library(sp)
+library(stats)
 library(stringi)
 library(tactile)
 library(terra)
 library(testthat)
 library(tidyverse)
 library(viridisLite)
-
+library(dplyr)
 
 knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -118,13 +119,260 @@ streamshapefile<- ("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Streamflow/StreamsCaldw
 weirshapefile<- ("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Weirs/Subbasinoutlets.shp")
 roadshapefile <- ( "C:/Users/Carlos/Desktop/ORISE/GIS/CW/Roads/UpdatedRoads4Reprojected32617.shp")
 
+CWRG12 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
+CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
+
+CS21<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs28_daily.csv")
+
+
+newsmlocations<- ("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Data/NRCS Soil Moisture Sites/Soil Moisture Sites/CoweetaNRCSsmKML.kml")
+
+#lowelevationprecip<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-high-elevation-precipitation-2021.xlsx")
+#highelevationprecip<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-low-elevation-precipitation-2021.xlsx")
+#averagetemperature<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-average-air-temperature-2021.xlsx")
+
+
+
 ```
 
+Create Local Base File
+```{r}
+{basefiletext<- "101  base_station_id
+275535 x_coordinate
+3879165 y_coordinate
+1064 z_coordinate
+3.5  effective_lai
+5.0 screen_height
+clim/cwt_annual	annual_climate_prefix
+0			number_non_critical_annual_sequences
+clim/cwt_monthly 	monthly_climate_prefix
+0			number_non_critical_monthly_sequences
+clim/cwtws32local daily_climate_prefix
+0			number_non_critical_daily_sequences
+clim/cwt_hourly 	hourly_climate_prefix
+0			number_non_critical_hourly_sequences
+clim/cwt	trigger_of_dated_input
+0	num_non_critical_sequences
+"}
+
+write(basefiletext,file = "clim/cwtws32local.base")
+
+```
+
+Download or find Local Climate for Watershed of Interest
+Precip and Temperature
+
+https://www.fs.usda.gov/rds/archive/Catalog/RDS-2017-0031
+
+
+RGO6-WS32 & RG12-WS32 - Using RG12
+RG20-WS7
+Precipitation is in inches
+
+CS21-WS7
+CS28-WS32
+Temperature is in Celsius
+
+RHESSys can use
+Rain (Meters)
+Tmin (C)
+Tmax (C)
+Tavg (C)
+RHmin (0-1)
+RHmax (0-1)
+RHavg (0-1)
+Wind (Meters/Sec)
+Wind Dir (Degrees)
+
+only using Rain, Tmin and Tmax for now
+
+
+"One of the most intense arctic outbreaks of the 20th century occurred January 18-22, 1985.  Extremely cold temperatures affected every state east of the Rockies with three new state record lows established: -34° at Mt. Mitchell, North Carolina, -19° at Caesar's Head, South Carolina; and -30° at Mountain Lake, Virginia. " Taken from weather.gov
+
+lowest temp -34, all TMIN values less than -34 will be removed as erroneous values
+
+```{r}
+cwtrg12precip<- read.table(file=CWRG12, header = TRUE, sep = ",")
+cwtrg20precip<- read.table(file=CWRG20, header = TRUE, sep = ",")
+
+cwtrg12precip$date <- as.Date(paste(cwtrg12precip$YEAR,cwtrg12precip$MONTH,cwtrg12precip$DAY, sep = "-"), "%Y-%m-%d")
+cwtrg20precip$date <- as.Date(paste(cwtrg20precip$YEAR,cwtrg20precip$MONTH,cwtrg20precip$DAY, sep = "-"), "%Y-%m-%d")
+
+plot(cwtrg12precip$date,cwtrg12precip$RRG12, type = "h", main = "Coweeta Rain Gauge 12 Precipitation", col = "BLUE")
+plot(cwtrg20precip$date,cwtrg20precip$RRG20, type = "h", main = "Coweeta Rain Gauge 20 Precipitation", col = 4)
+
+cwttemp<- read.table(file=CS01, header = TRUE, sep = ",")
+cwtlongtemp<- read.table(file=CS01LT, header = TRUE, sep = ",")
+cwtcs21<-  read.table(file=CS21, header = TRUE, sep = ",")
+cwtcs28<- read.table(file=CS28, header = TRUE, sep = ",")
+
+cwttemp$date <- as.Date(paste(cwttemp$YEAR,cwttemp$MONTH,cwttemp$DAY, sep = "-"), "%Y-%m-%d")
+cwtlongtemp$date <- as.Date(paste(cwtlongtemp$YEAR,cwtlongtemp$MONTH,cwtlongtemp$DAY, sep = "-"), "%Y-%m-%d")
+cwtcs21$date<- as.Date(paste(cwtcs21$YEAR,cwtcs21$MONTH,cwtcs21$DAY, sep = "-"), "%Y-%m-%d")
+cwtcs28$date<- as.Date(paste(cwtcs28$YEAR,cwtcs28$MONTH,cwtcs28$DAY, sep = "-"), "%Y-%m-%d")
+
+cwttemp<- as_tibble(cwttemp)
+cwtlongtemp<- as_tibble(cwtlongtemp)
+
+cwtcs21 <- as_tibble(cwtcs21)
+cwtcs28 <- as_tibble(cwtcs28)
+
+##filtering low temp in climate station files
+cwtcs21<- cwtcs21 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
+cwtcs28<- cwtcs28 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
+
+daily_avgCS01 <- cwttemp %>%
+  group_by(date) %>%
+  dplyr::summarise(TAVG_daily=mean(TAVG, na.rm = TRUE),RHAVG_daily=mean(RHAVG,na.rm = TRUE))
+
+daily_avgCS01LT <- cwtlongtemp %>%
+  group_by(date)
+  
+plot(daily_avgCS01$date,daily_avgCS01$TAVG_daily, type = "l", col = 1, main = "Daily Temperature Average")
+plot(daily_avgCS01$date,daily_avgCS01$RHAVG_daily, type = "l", col = 2, main = "Daily RH Average")
+
+#Combine Rain Gauge and Climate Station datasets
+cwtrg12precip<- as_tibble(cwtrg12precip)
+cwtrg20precip<- as_tibble(cwtrg20precip)
+
+###make sure to create full date time series before left join
+full_dates<- tibble(date = seq.Date(from = min(cwtrg12precip$date), to = max(cwtrg12precip$date), by = "day"))
+
+full_dates
+
+combinedcwtclimate<- full_dates %>% left_join(cwtrg12precip, by = c("date"))
+
+cwtrg20_selected <- cwtrg20precip %>% select(date, RRG20)
+
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtrg20_selected, by = c("date"))
+
+cwtcs21_selected <- cwtcs21 %>% select(date, TMINcs21=TMIN,TMAXcs21=TMAX)
+cwtcs28_selected <- cwtcs28 %>% select(date, TMINcs28=TMIN, TMAXcs28=TMAX)
+
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs21_selected, by = c("date"))
+
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs28_selected, by = c("date"))
+
+combinedcwtclimate
+
+first_valid_index<- combinedcwtclimate %>%  dplyr::mutate(row_num = row_number()) %>% filter(!is.na(RRG12)& !is.na(RRG20)& !is.na(TMINcs21)& !is.na(TMINcs28) ) %>% slice(1) %>% pull(row_num)
+
+last_valid_index<- combinedcwtclimate %>%  dplyr::mutate(row_num = row_number()) %>% filter(!is.na(RRG12)& !is.na(RRG20)& !is.na(TMINcs21)& !is.na(TMINcs28) ) %>% slice(n()) %>% pull(row_num)
+
+first_valid_index
+
+trimmed_cwtclimate <- combinedcwtclimate %>% slice(first_valid_index:last_valid_index)
+
+trimmed_cwtclimate
+
+trimmedstartdaterhessys<- paste(year(ymd(trimmed_cwtclimate$date[1])), month(ymd(trimmed_cwtclimate$date[1])), day(ymd(trimmed_cwtclimate$date[1])),"1")
+  
+trimmedstartdaterhessys
+
+# Replace NA values according to the specified rules
+trimmed_cwtclimate <- trimmed_cwtclimate %>%
+  mutate(
+    RRG12 = ifelse(is.na(RRG12), coalesce(RRG20, 0), RRG12),
+    RRG20 = ifelse(is.na(RRG20), coalesce(RRG12, 0), RRG20),
+    TMINcs21 = ifelse(is.na(TMINcs21), TMINcs28, TMINcs21),
+    TMAXcs21 = ifelse(is.na(TMAXcs21), TMAXcs28, TMAXcs21),
+    TMINcs28 = ifelse(is.na(TMINcs28), TMINcs21, TMINcs28),
+    TMAXcs28 = ifelse(is.na(TMAXcs28), TMAXcs21, TMAXcs28)
+  )
+
+# View the resulting dataframe
+print(trimmed_cwtclimate)
+
+rows_with_na <- trimmed_cwtclimate %>%
+  filter_all(any_vars(is.na(.)))
+
+print(rows_with_na)
+
+### filtering process for precip data must be rechecked, rain gauges do not log on non rain days, NA should be 0 on those days but value from alternate RG is used instead, if both measure 0 or NA then 0 is assumed.
+
+##make sure units are correct
+##precip converted from inches to meters
+
+cwtws32localrain<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RRG12 * 0.0254))
+cwtws32localtmin<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMINcs28))
+cwtws32localtmax<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMAXcs28))
+
+cwtws32localrain<- data.frame(cwtws32localrain)
+cwtws32localtmin<- data.frame(cwtws32localtmin)
+cwtws32localtmax<- data.frame(cwtws32localtmax)
+
+write.table(cwtws32localrain, file = "clim/cwtws32local.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localtmin, file = "clim/cwtws32local.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localtmax, file = "clim/cwtws32local.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+```
+Extend Local Datasets
+```{r}
+
+precip <- read.csv('clim/cwtws32local.rain', header = FALSE)
+tmin <- read.csv('clim/cwtws32local.tmin', header = FALSE)
+tmax <- read.csv('clim/cwtws32local.tmax', header = FALSE)
+
+head(precip)
+nrow(precip)-1
+
+substr(precip[1,1],1,nchar(precip[1,1])-2)
+
+dt <- as.Date(substr(precip[1,1],1,nchar(precip[1,1])-2), "%Y %m %d")
+
+dt.new<- dt - as.difftime((nrow(precip)-1)*8, units="days")
+
+#remove first value and repeats dataset 9 times
+
+longcwtraindata<- do.call("rbind",replicate(9,as.list((precip[-1,]))))
+longcwttmindata<- do.call("rbind",replicate(9,as.list((tmin[-1,]))))
+longcwttmaxdata<- do.call("rbind",replicate(9,as.list((tmax[-1,]))))
+
+longcwstartdate<- paste(year(ymd(dt.new)),month(ymd(dt.new)),day(ymd(dt.new)),"1")
+
+longcwtrain<- rbind(longcwstartdate,longcwtraindata)
+longcwttmin<- rbind(longcwstartdate,longcwttmindata)
+longcwttmax<- rbind(longcwstartdate,longcwttmaxdata)
+
+longcwtrain<- data.frame(longcwtrain)
+longcwttmin<- data.frame(longcwttmin)
+longcwtmax<- data.frame(longcwttmax)
+
+write.table(longcwtrain, file = "clim/cwtws32extended.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmin, file = "clim/cwtws32extended.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmax, file = "clim/cwtws32extended.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
+read_clim("clim/cwtws32local.rain", dates_out=TRUE)
+
+```
 Create DAYMET Base File
-
 ```{r Create Daymet Base File}
+##Quick way to create base file necessary for climate processing 
 
-##Quick way to create base file necessary for climate processing not functional yet using provided base file
+{daymetbasefiletext<- "101  base_station_id
+275535 x_coordinate
+3879165 y_coordinate
+1064 z_coordinate
+3.5  effective_lai
+5.0 screen_height
+clim/cwt_annual	annual_climate_prefix
+0			number_non_critical_annual_sequences
+clim/cwt_monthly 	monthly_climate_prefix
+0			number_non_critical_monthly_sequences
+clim/cwtws32daymet daily_climate_prefix
+0			number_non_critical_daily_sequences
+clim/cwt_hourly 	hourly_climate_prefix
+0			number_non_critical_hourly_sequences
+clim/cwt	trigger_of_dated_input
+0	num_non_critical_sequences
+"}
+
+write(daymetbasefiletext,file = "clim/cwtws32daymet.base")
 
 ```
 
@@ -162,26 +410,20 @@ daymetenddate
 
 ## calculate dates for daymet data from year and yday data
 
-
 daymet_data$data$date <- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), "%Y-%j")
-
 
 ##create time series and append values
 
 
 date_vector <- seq.Date(daymetstartdate, daymetenddate, by = "day")
 
-
 length(date_vector)
 
 length(daymet_data$data$prcp..mm.day.)
 
-
 date_precip<- as.data.frame(c(date_vector))
 
-
 names(date_precip) <- "Dates"
-
 
 date_precip
 
@@ -222,7 +464,6 @@ Create base File manually for now
 
 ```{r Extend Daymet Datasets}
 ## this may be the source of lag in outputs/measured data
-
 getwd()
 
 precip <- read.csv('clim/cwtws32daymet.rain', header = FALSE)
@@ -266,9 +507,9 @@ longcwtmax<- data.frame(longcwttmax)
 #longcwtrh<- data.frame(longcwtrh)
 #longcwtwind<- data.frame(longcwtwind)
 
-write.table(longcwtrain, file = "clim/cwtws32extended.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
-write.table(longcwttmin, file = "clim/cwtws32extended.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
-write.table(longcwttmax, file = "clim/cwtws32extended.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwtrain, file = "clim/cwtws32daymetextended.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmin, file = "clim/cwtws32daymetextended.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmax, file = "clim/cwtws32daymetextended.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #write.table(longcwttavg, file = "clim/cwtws32extended.tavg", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #write.table(longcwtrh, file = "clim/cwtws32extended.relative_humidity", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #write.table(longcwtwind, file = "clim/cwtws32extended.wind", quote = FALSE, row.names = FALSE, col.names = FALSE)
@@ -323,6 +564,11 @@ res(dummydata) <- 10
 resampleddem <- resample(reproje, dummydata, method = 'bilinear')
 
 plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+
+{plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+  plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)}
+
 ```
 
 Start Spatial Processing in GRASS8
@@ -421,8 +667,6 @@ northing = 3881345.46
 
 execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
 
-# r.water.outlet input=drain10 output=basin_ws321 coordinates=276122.49,3881345.46 --overwrite
-
 execGRASS("r.water.outlet", input ="drain10", output="basin_ws32",coordinates = c(easting, northing), flags = "overwrite")
 
 ## Mask Data
@@ -435,7 +679,6 @@ execGRASS("r.info",map = "grass_dem10")
 ## Generate Patch Maps
 
 execGRASS("r.mapcalc", expression = "patch = row() * 537 + col()", flags = "overwrite")
-
 
 ## Create Road Maps
 
@@ -1160,6 +1403,83 @@ change_def_file("defs/veg_evergreen.def", maxrootdepth, file_name_ext = NULL)
 
 ```
 
+LAI data from MODIS
+
+modified from https://cran.r-project.org/web/packages/MODISTools/vignettes/modistools-vignette.html
+
+```{r}
+library(MODISTools)
+
+bands <- mt_bands(product = "MOD15A2H")
+
+head(bands)
+
+dates <- mt_dates(product = "MOD15A2H", lat = 35 , lon = -83 )
+
+dates
+
+coweeta_lai <- mt_subset (product = "MOD15A2H", lat = 35.06, lon = -83.43,
+                          band = "Lai_500m", start = "2017-01-01", end = "2018-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+coweeta_lc <- mt_subset (product = "MCD12Q1", lat = 35.06, lon = -83.43,
+                          band = "LC_Type1", start = "2017-01-01", end = "2018-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+head(coweeta_lai)
+
+
+coweetamodis <- coweeta_lc %>%
+  rename("lc" = "value") %>%
+  select("lc","pixel") %>%
+  right_join(coweeta_lai, by = "pixel")
+
+coweetamodis <- coweetamodis %>%
+  filter(value <= 100,
+         lc %in% c("1","5")) %>% 
+  mutate(lc = ifelse(lc == 1, "ENF","DBF")) %>%
+  group_by(lc, calendar_date) %>% 
+  summarize(doy = as.numeric(format(as.Date(calendar_date)[1],"%j")),
+            lai_mean = median(value * as.double(scale)))
+
+ggplot(coweetamodis, aes(x = doy, y = lai_mean)) +
+  geom_point() +
+  geom_smooth(span = 0.3, method = "loess") +
+  labs(x = "day of year (DOY)",
+       y = "leaf area index (LAI)") +
+  theme_minimal() +
+  facet_wrap(~ lc)
+
+
+
+coweeta_lai <- mt_subset (product = "MOD15A2H", lat = 35.06, lon = -83.43,
+                          band = "Lai_500m", start = "2017-05-20", end = "2017-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+
+
+LAI_raster <- mt_to_raster(df=coweeta_lai, reproject = TRUE)
+
+
+
+x <- read_sf(watershedshapefile)
+x.buff <- st_as_sf(st_buffer(st_as_sfc(st_bbox(x)), dist = 1000))
+x.gcs <- st_transform(x, 4326)
+x.buff.gcs <- st_transform(x.buff, 4326)
+
+{plot(LAI_raster)
+   plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)
+  }
+
+
+m 
+
+```
+
 Create Templates for RHESSYs
 
 ```{r Template}
@@ -1807,6 +2127,8 @@ Preprocessing is controlled by template file.
 Template file 'CWWS32_STATIC.template' is used to run model normally
 template file 'CWWS32_STATICspinup.template' is used to spin up model. Only difference is artificially extended climate dataset. 
 
+# must setup automatic spinup and preprocessing for all treatments, right now spinup requires manual template input and 2 runs for creation
+
 ```{r RHESSys PreProcess and Flowtable Conversion, verbose = FALSE}
 #setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -1839,8 +2161,6 @@ RHESSysPreprocess(
 ## Make sure to have parallel turned off  when preprocessing, convert flowtables after creation for compatibility
 convert_flowtable("CWWS32.flow","CWWS321.flow",make_stream=4)
 
-
-
 ```
 
 Setup RHESSys Inputs/Outputs for Spinup
@@ -1853,7 +2173,7 @@ Climate files have been modified to original DAYMET timeseries.
 
 ## Read climate file to see length available climate data
 read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
-read_clim("clim/cwtws32daymet.rain", dates_out=TRUE)
+read_clim("clim/cwtws32local.rain", dates_out=TRUE)
 
 # Begin RHESSys Spinup
 ##Short Spinup, original spinup run 1776-2018
@@ -1873,17 +2193,6 @@ input_rhessys = IOin_rhessys_input(
 input_tec_data = IOin_tec_std(start = "1776 11 1 1",
                               end = "2018 11 1 1",
                               output_state = TRUE)
-
-# input_hdr = IOin_hdr(
-#   basin = "defs/basin.def",
-#   hillslope = "defs/hillslope.def",
-#   zone = "defs/zone.def",
-#   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
-#   landuse = "defs/lu_undev.def",
-#   stratum = c("defs/veg_deciduous.def","defs/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-#   basestations = "clim/cwtws32extended.base"
-# )
-
 
 input_hdr = IOin_hdr(
   basin = "defs/basin.def",
@@ -2039,7 +2348,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 stdpars<- IOin_std_pars(
@@ -2277,8 +2586,6 @@ obsws32$CalendarDate <- as.Date(with(obsws32,paste(CalendarYear,Month,Day,sep="-
 
 obsws32 <- drop_na(obsws32)
 
-
-
 plot(obsws32$CalendarDate, obsws32$flow, type = "l", ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Discharge WS32 Older Dataset")
 
 obsws32_1<- read.csv('C:/Users/Carlos/Desktop/ORISE/Streamflow Data/CW/Streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2017.csv', header = T)
@@ -2314,8 +2621,6 @@ plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = " Log 
 fullset$observedstreamflow<- fullset$discharge_mm
 
 write.csv(fullset,"C:/Users/Carlos/Desktop/ORISE/Streamflow Data/CW/Streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv")
-
-
 
 obsws32<- fullset
 
@@ -2515,6 +2820,45 @@ plot(soildsm, main = "RSS Soil Input", zlim = c(0,26))
 
 plot(veg, main = "NLCD Veg Input")
 
+
+
+```
+
+New Soil Map Figure
+
+```{r}
+
+## plot 3 rasters with common legend, legend should only be integers shown in rasters
+
+
+
+
+```
+
+Quick map creation for WS7 soil moisture data display
+
+```{r}
+
+ws7demcrop <- crop(resampleddem,x[27,])
+ws7demcrop <- mask(ws7demcrop,x[27,])
+plot(ws7demcrop)
+
+
+
+Observedws7SMLocationsnt <- read_sf("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Data/CW/knb-lter-cwt.1305.19/1305.kml")
+Observedws7SMLocations <- st_transform(Observedws7SMLocationsnt, crs(dem10))
+
+Newsoilmoisturelocationsnt<- read_sf(newsmlocations)
+Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
+
+colorramp<- viridis(1028)
+
+{plot(ws7demcrop, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
+points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+
 ```
 
 Show Observed Soil Moisture Locations
@@ -2525,12 +2869,23 @@ ObservedSMLocationsnt <- read_sf("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Da
 
 ObservedSMLocations <- st_transform(ObservedSMLocationsnt, crs(dem10))
 
+
+Newsoilmoisturelocationsnt<- read_sf(newsmlocations)
+
+Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
+
 colorramp<- viridis(1028)
 
 {plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations")
 points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+
 }
 
+ {plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
 
 ObservedSMLocations$Name[3]
 ObservedSMLocations[[3]][[3]]
@@ -2541,18 +2896,30 @@ ObservedSMLocations[[3]][[4]]
 ObservedSMLocations$Name[5]
 ObservedSMLocations[[3]][[5]]
 
-
 matrix(c(ObservedSMLocations$Name[3],ObservedSMLocations$Name[4],ObservedSMLocations$Name[5],ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 3)
-
 
 library(mapview)
 
 Coweeta <- st_read(watershedshapefile)
 
-
 mapview(Coweeta, label = Coweeta$WS, alpha.regions = 0.1, alpha = 1) +
   mapview(ObservedSMLocations[3:5,]) 
 
+
+
+par(mfrow=c(1,2),mar=c(2, 3, 2, 5))
+ {plot(dem10, col = colorramp, main = "WS32", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+
+{plot(ws7demcrop, col = colorramp, main = "WS7", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
+points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+par(mfrow=c(1,1))
 ```
 
 Display Observed and Simulated Soil Moisture
@@ -2625,9 +2992,6 @@ legend("topleft",inset = .2, legend=c("Observed Streamflow","Predicted Streamflo
 
 ### end show patch map
 
-
-
-
 patchnumbers<- raster::extract(patches,matrix(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 2))
 
 
@@ -2679,7 +3043,10 @@ validationsubset <- singleruntest$bd[singleruntest$bd$date >= Valdates[1] & sing
 
 NSE(validationsubset$streamflow,validationsubset$observedstreamflow)
 
-NSE(validationsubset$streamflow,validationsubset$observedstreamflow, FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE)
+NSE(validationsubset$streamflow,validationsubset$observedstreamflow, FUN=log, epsilon = "Pushpalatha2012", na.rm=TRUE)
+
+nse_value <- NSE(log(validationsubset$streamflow + 1), log(validationsubset$observedstreamflow + 1), na.rm = TRUE)
+
 
  KGE(validationsubset$streamflow,validationsubset$observedstreamflow)
 
@@ -2789,8 +3156,6 @@ getwd()
 ## write.table(params, file = "out/cwparamtable091923.txt")
 ###
 
-
-
 ### writes new params table with todays date to a text file
 #write.table(params, file = paste("out/cwparamtable",format(Sys.Date(),"%m%d%y"),".txt",sep = ""))
 
@@ -2840,11 +3205,13 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
  
 ```
  
 Run RHESSys n times sequentially
+
+# NO LONGER USED
 
 ```{r RHESSys Sequential Calibration, eval=FALSE, include=FALSE}
 start_time = Sys.time()
@@ -2880,6 +3247,8 @@ end_time - start_time
 Run RHESSys in Parallel using the foreach package, leaving 4 cores available for other tasks
 
 Takes about 1 hour for 100 runs at 10x10m Daily WS32.
+
+# NO LONGER USED
 
 ```{r Run RHESSYS in Parallel using foreach, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
@@ -2954,13 +3323,13 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
  
 ```
 
 Run RHESSys with Static Maps
 
-```{r Run RHESSYS in Parallel using foreach Static}
+```{r Run RHESSYS in Parallel using foreach Static, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -3033,13 +3402,13 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
  
 ```
 
 Run RHESSys with SSURGO Maps
 
-```{r Run RHESSYS in Parallel using foreach SSURGO}
+```{r Run RHESSYS in Parallel using foreach SSURGO, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -3112,13 +3481,13 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
  
 ```
 
 Run RHESSys with RSS Maps
 
-```{r Run RHESSYS in Parallel using foreach DSM}
+```{r Run RHESSYS in Parallel using foreach DSM, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -3207,7 +3576,6 @@ Calculate calibration performance metrics
 ```{r calculate fit values and append them to a list, fig.height=9, fig.width=14, paged.print=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-
 NSElist<- c()
 lnNSElist<- c()
 KGElist<- c()
@@ -3233,7 +3601,6 @@ for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(
 
 for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rz_storage","/simmergesm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smKGElist[[i]]<- eval(parse(text = paste0("smKGEobs",i))) }
-
 
 ## modified for calsubset
 
@@ -3292,8 +3659,6 @@ for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse
 for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
-
-
 NSElist[1:5]
 KGElist[1:5]
 lnNSElist[1:5]
@@ -3306,7 +3671,6 @@ Reduce(max, smNSElist)
 Reduce(max, smlnNSElist)
 Reduce(max, smKGElist)
 
-
 which(NSElist == Reduce(max, NSElist), arr.ind=TRUE)
 which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE)
 which(KGElist == Reduce(max, KGElist), arr.ind=TRUE)
@@ -3315,9 +3679,7 @@ which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE)
 which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE)
 which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE)
 
-
 paramtable<- read.table(file = "out/cwparamtable091923.txt")
-
 
 paramtable[which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),]
 paramtable[which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),]
@@ -3352,7 +3714,6 @@ paramtable$calsmNSE<- calsmNSElist
 paramtable$calsmlnNSE<- calsmlnNSElist
 paramtable$calsmKGE<- calsmKGElist
 
-
 #add in validation values
 paramtable$valNSE<- valNSElist
 paramtable$vallnNSE<- vallnNSElist
@@ -3362,21 +3723,16 @@ paramtable$valsmNSE<- valsmNSElist
 paramtable$valsmlnNSE<- valsmlnNSElist
 paramtable$valsmKGE<- valsmKGElist
 
-
-
-
 paramtable<- as.data.frame(lapply(paramtable,unlist))
 
 write.table(paramtable, file = "out/dsmcalibrationoutput1023.txt")
-
-
 
 
 top100<- paramtable[order(-paramtable$lnNSE),][1:100,]
 
 top100$run
 
-#use values from top 100 run to table of daily streamflow predictions, for each day predict 95% prediction interval and mean then plot
+### use values from top 100 run to table of daily streamflow predictions, for each day predict 95% prediction interval and mean then plot
 #subset streamflow value for each day - day 1 day 2 etc
 #put all values into a table
 
@@ -3555,9 +3911,9 @@ lines(simmerge1$Date,simmerge1$observedstreamflow, col = 'orange', lwd = 2, lty 
 #lines(paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), col = 'orange', lwd = 2, lty = 2)
 #legend("topleft",inset = 0.05, legend=c("Oberved Discharge","Best NSE","BEST lnNSE","Best KGE"), col=c("orange","red","blue","green"), lty=c(2,1,1,1))}
 
-{plot(cwws32_run13$bd$date,cwws32_run13$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
+{plot(cwws32_run24$bd$date,cwws32_run24$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
 #lines(cwws32_run47$bd$date,cwws32_run47$bd$streamflow, col = 'blue')
-lines(obsws32$Date,obsws32$discharge_mm, col = 'orange', lwd = 2, lty = 2)}
+lines(obsws32$Date,obsws32$discharge_mm, col = 'black', lwd = 2, lty = 2)}
 
 ```
 
@@ -3585,7 +3941,6 @@ patches listed top to bottom
 
 ```{r Configure RHESSys Inputs for Validation}
 
-
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
@@ -3601,7 +3956,6 @@ input_rhessys = IOin_rhessys_input(
  commandline_options = c("-b -p"))
 
 #commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
-
 #1 107 141942 136557
 #1 107 149478 136557
 
@@ -3611,15 +3965,6 @@ input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
                               output_state = FALSE)
 
-# input_hdr = IOin_hdr(
-#   basin = "defs/basin.def",
-#   hillslope = "defs/hillslope.def",
-#   zone = "defs/zone.def",
-#   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
-#   landuse = "defs/lu_undev.def",
-#   stratum = c("defs/veg_deciduous.def","defs/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-#   basestations = "clim/cwtws32daymet.base")
-
 input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
@@ -3627,11 +3972,9 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
-
+  basestations = "clim/cwtws32local.base")
 
 ## Calibrated Values 
-
 
 which(NSElist == Reduce(max, NSElist), arr.ind=TRUE)
 which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE)
@@ -3649,40 +3992,21 @@ paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
 paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
 paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
 
-
-
 stdpars<- IOin_std_pars(
-            m = 1.75,
-            k = 18.69,
-            soil_dep= 0.48,
-            m_v = 2.55,
-            k_v = 7.54,
-            gw1 = 0.19,
-            gw2 = 0.29,
-            pa = 0.17,
-            po = 1.02,
-            vgseng1 = 1.61,
-            vgseng2 = 1.94,
-            vgseng3 = 0.72)
-
-stdpars<- IOin_std_pars(
-            m = 3.657685,
-            k = 44.98384,
-            soil_dep= 0.127045,
-            m_v = 10.3652,
-            k_v = 1.34301,
-            gw1 = 0.2719348,
-            gw2 = 0.5348846,
-            pa = 0.8211265,
-            po = 1.867509,
-            vgseng1 = 1.826459,
-            vgseng2 = 1.101366 ,
-            vgseng3 = 1.448323)
-
+            m = 1.581785,
+            k = 41.12945,
+            soil_dep= 0.1776117,
+            m_v = 8.11574,
+            k_v = 0.8713272,
+            gw1 = 0.2477113,
+            gw2 = 0.4291277,
+            pa = 0.3913392,
+            po = 1.85424,
+            vgseng1 = 1.459184,
+            vgseng2 = 1.799894,
+            vgseng3 = 1.381696)
 
 #change_def_file()
-
-
 #test<- IOin_def_pars_simple(as.list("soil_shallowloam.def","porosity_decay", "1000", n = 150 ))
 
 ```
@@ -3850,9 +4174,10 @@ plot(streams, main = "streams")
 plot(topidx10, main = "topidx10")
 #plot(xmap, main = "xmap")
 #plot(ymap, main = "ymap")
+
 ```
 
-Show locations of measured soil moisture
+Show locations of measured soil moisture and soil maps
 
 ```{r Display Locations of Observed Soil Moisture, fig.height=10, fig.width=10}
 
@@ -3873,6 +4198,9 @@ points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],Obser
 
 {plot(soildsm, col = colorramp, main = "Coweeta Observed Soil Moisture Locations on RSS Soil Map")
 points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+
+
+
 
 
 ```
@@ -4120,9 +4448,6 @@ ggarrange(smKGEplot,KGEplot, common.legend = TRUE, legend = "top")
 
 
 
-
-
-
 smKGEplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
 
 KGEplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
@@ -4147,6 +4472,23 @@ smKGEviolinplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treat
 KGEviolinplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_violin()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
 
 ggarrange(smKGEviolinplot,KGEviolinplot, common.legend = TRUE, legend = "top")
+
+library(multcompView)
+library(datasets)
+
+oneway.test(valsmKGE~treatment, data= combineddist, var.equal = TRUE)
+
+anova<- aov(valsmKGE~treatment, data = combineddist)
+
+summary(anova)
+
+tukey <- TukeyHSD(anova)
+print(tukey)
+
+cld <- multcompLetters4(anova,tukey)
+
+print(cld)
+
 
 
 ```
@@ -4217,7 +4559,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -4294,9 +4636,7 @@ lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
 
 
 ```
-
 RSS - read 20 runs, create table and append to table for site 1
-
 ```{r}
 # Read in RHESSys Validation runs
 for(i in 1:validationruns) { assign(paste0("cwws32valrss1_run",i), readin_rhessys_output(paste0("out/cwws32valrss1_run",i)))}
@@ -4384,10 +4724,7 @@ lines(valmergesm43$Date,valmergesm43$Site1, col = 'BLUE', lty = 3)}
 lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 
 ```
-
-
 RSS - prepare to run model n times for patch 2 - only for validation time series
-
 ```{r}
 
 input_rhessys = IOin_rhessys_input(
@@ -4417,7 +4754,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -4574,7 +4911,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -4756,7 +5093,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -4872,7 +5209,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -4983,7 +5320,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -5118,7 +5455,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -5246,7 +5583,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -5357,7 +5694,7 @@ input_hdr = IOin_hdr(
   soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
-  basestations = "clim/cwtws32daymet.base")
+  basestations = "clim/cwtws32local.base")
 
 
 ```
@@ -5501,7 +5838,7 @@ combinedvalidationlong
 validationnona<- subset(combinedvalidationlong,!is.na(combinedvalidationlong$KGE))
 
 
-threesitevalidationplot <- ggplot(validationnona, aes(group, y = KGE, fill = site))+ geom_boxplot()+ ylab("Soil Moisture KGE - Validation") +xlab("Soil Map Input")+ ggtitle("Patch Specific Soil Moisture KGE For ALL Calibration Runs, NA Excluded")+geom_hline(yintercept=-0.41,linetype=2, col = 'RED')+ scale_y_continuous(breaks=seq(-6,1,1))
+threesitevalidationplot <- ggplot(validationnona, aes(group, y = KGE, fill = site))+ geom_boxplot()+ ylab("Soil Moisture KGE - Validation") +xlab("Soil Map Input")+ ggtitle("Patch Specific Soil Moisture KGE For ALL Calibration Runs, NA Excluded")+geom_hline(yintercept=-0.41,linetype=2, col = 'RED')+ scale_y_continuous(breaks=seq(-6,1,1))+ theme_minimal()
 
 threesitevalidationplot
 
