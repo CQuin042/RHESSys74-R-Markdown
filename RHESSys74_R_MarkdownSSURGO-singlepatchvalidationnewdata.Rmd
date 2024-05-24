@@ -1,7 +1,7 @@
 ---
 title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data"
 author: "Carlos Quintero"
-date: "2/21/2024"
+date: "5/24/2024"
 output:
   html_document: default
   pdf_document: default
@@ -128,14 +128,7 @@ CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-201
 CS21<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs21_daily.csv")
 CS28<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs28_daily.csv")
 
-
 newsmlocations<- ("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Data/NRCS Soil Moisture Sites/Soil Moisture Sites/CoweetaNRCSsmKML.kml")
-
-#lowelevationprecip<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-high-elevation-precipitation-2021.xlsx")
-#highelevationprecip<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-low-elevation-precipitation-2021.xlsx")
-#averagetemperature<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/coweeta-average-air-temperature-2021.xlsx")
-
-
 
 ```
 
@@ -178,18 +171,9 @@ CS28-WS32
 Temperature is in Celsius
 
 RHESSys can use
-Rain (Meters)
-Tmin (C)
-Tmax (C)
-Tavg (C)
-RHmin (0-1)
-RHmax (0-1)
-RHavg (0-1)
-Wind (Meters/Sec)
-Wind Dir (Degrees)
+Rain (Meters),Tmin (C),Tmax (C),Tavg (C),RHmin (0-1),RHmax (0-1),RHavg (0-1),Wind (Meters/Sec),Wind Dir (Degrees)
 
 only using Rain, Tmin and Tmax for now
-
 
 "One of the most intense arctic outbreaks of the 20th century occurred January 18-22, 1985.  Extremely cold temperatures affected every state east of the Rockies with three new state record lows established: -34° at Mt. Mitchell, North Carolina, -19° at Caesar's Head, South Carolina; and -30° at Mountain Lake, Virginia. " Taken from weather.gov
 
@@ -205,18 +189,20 @@ cwtrg20precip$date <- as.Date(paste(cwtrg20precip$YEAR,cwtrg20precip$MONTH,cwtrg
 plot(cwtrg12precip$date,cwtrg12precip$RRG12, type = "h", main = "Coweeta Rain Gauge 12 Precipitation", col = "BLUE")
 plot(cwtrg20precip$date,cwtrg20precip$RRG20, type = "h", main = "Coweeta Rain Gauge 20 Precipitation", col = 4)
 
-cwttemp<- read.table(file=CS01, header = TRUE, sep = ",")
-cwtlongtemp<- read.table(file=CS01LT, header = TRUE, sep = ",")
+# cwttemp<- read.table(file=CS01, header = TRUE, sep = ",")
+# cwtlongtemp<- read.table(file=CS01LT, header = TRUE, sep = ",")
+
 cwtcs21<-  read.table(file=CS21, header = TRUE, sep = ",")
 cwtcs28<- read.table(file=CS28, header = TRUE, sep = ",")
 
-cwttemp$date <- as.Date(paste(cwttemp$YEAR,cwttemp$MONTH,cwttemp$DAY, sep = "-"), "%Y-%m-%d")
-cwtlongtemp$date <- as.Date(paste(cwtlongtemp$YEAR,cwtlongtemp$MONTH,cwtlongtemp$DAY, sep = "-"), "%Y-%m-%d")
+# cwttemp$date <- as.Date(paste(cwttemp$YEAR,cwttemp$MONTH,cwttemp$DAY, sep = "-"), "%Y-%m-%d")
+# cwtlongtemp$date <- as.Date(paste(cwtlongtemp$YEAR,cwtlongtemp$MONTH,cwtlongtemp$DAY, sep = "-"), "%Y-%m-%d")
+
 cwtcs21$date<- as.Date(paste(cwtcs21$YEAR,cwtcs21$MONTH,cwtcs21$DAY, sep = "-"), "%Y-%m-%d")
 cwtcs28$date<- as.Date(paste(cwtcs28$YEAR,cwtcs28$MONTH,cwtcs28$DAY, sep = "-"), "%Y-%m-%d")
 
-cwttemp<- as_tibble(cwttemp)
-cwtlongtemp<- as_tibble(cwtlongtemp)
+# cwttemp<- as_tibble(cwttemp)
+# cwtlongtemp<- as_tibble(cwtlongtemp)
 
 cwtcs21 <- as_tibble(cwtcs21)
 cwtcs28 <- as_tibble(cwtcs28)
@@ -225,15 +211,15 @@ cwtcs28 <- as_tibble(cwtcs28)
 cwtcs21<- cwtcs21 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
 cwtcs28<- cwtcs28 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
 
-daily_avgCS01 <- cwttemp %>%
-  group_by(date) %>%
-  dplyr::summarise(TAVG_daily=mean(TAVG, na.rm = TRUE),RHAVG_daily=mean(RHAVG,na.rm = TRUE))
-
-daily_avgCS01LT <- cwtlongtemp %>%
-  group_by(date)
+# daily_avgCS01 <- cwttemp %>%
+#   group_by(date) %>%
+#   dplyr::summarise(TAVG_daily=mean(TAVG, na.rm = TRUE),RHAVG_daily=mean(RHAVG,na.rm = TRUE))
+# 
+# daily_avgCS01LT <- cwtlongtemp %>%
+#   group_by(date)
   
-plot(daily_avgCS01$date,daily_avgCS01$TAVG_daily, type = "l", col = 1, main = "Daily Temperature Average")
-plot(daily_avgCS01$date,daily_avgCS01$RHAVG_daily, type = "l", col = 2, main = "Daily RH Average")
+# plot(daily_avgCS01$date,daily_avgCS01$TAVG_daily, type = "l", col = 1, main = "Daily Temperature Average")
+# plot(daily_avgCS01$date,daily_avgCS01$RHAVG_daily, type = "l", col = 2, main = "Daily RH Average")
 
 #Combine Rain Gauge and Climate Station datasets
 cwtrg12precip<- as_tibble(cwtrg12precip)
@@ -250,11 +236,20 @@ cwtrg20_selected <- cwtrg20precip %>% select(date, RRG20)
 
 combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtrg20_selected, by = c("date"))
 
-cwtcs21_selected <- cwtcs21 %>% select(date, TMINcs21=TMIN,TMAXcs21=TMAX)
-cwtcs28_selected <- cwtcs28 %>% select(date, TMINcs28=TMIN, TMAXcs28=TMAX)
+#convert precip from inces to meters
+combinedcwtclimate$RRG12 <- combinedcwtclimate$RRG12* 0.0254
+combinedcwtclimate$RRG20 <- combinedcwtclimate$RRG20* 0.0254
+
+
+
+##precip converted from inches to meters
+## RH converted to 0-1 range
+
+
+cwtcs21_selected <- cwtcs21 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs21=TMIN, TMAXcs21=TMAX, TAVGcs21=TAVG, RHMINcs21=RHMIN, RHMAXcs21=RHMAX, RHcs21=RHAVG, WINDcs21=WIND, WDIRcs21=W_DIR)
+cwtcs28_selected <- cwtcs28 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs28=TMIN, TMAXcs28=TMAX, TAVGcs28=TAVG, RHMINcs28=RHMIN, RHMAXcs28=RHMAX, RHcs28=RHAVG, WINDcs28=WIND, WDIRcs28=W_DIR)
 
 combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs21_selected, by = c("date"))
-
 combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs28_selected, by = c("date"))
 
 combinedcwtclimate
@@ -273,16 +268,38 @@ trimmedstartdaterhessys<- paste(year(ymd(trimmed_cwtclimate$date[1])), month(ymd
   
 trimmedstartdaterhessys
 
+trimmed_cwtclimate <- trimmed_cwtclimate %>% select(-YEAR,-MONTH,-DAY)
+
 # Replace NA values according to the specified rules
+##NA APPROX is used, zoo package, interpolation
+
+
 trimmed_cwtclimate <- trimmed_cwtclimate %>%
   mutate(
-    RRG12 = ifelse(is.na(RRG12), coalesce(RRG20, 0), RRG12),
-    RRG20 = ifelse(is.na(RRG20), coalesce(RRG12, 0), RRG20),
-    TMINcs21 = ifelse(is.na(TMINcs21), TMINcs28, TMINcs21),
-    TMAXcs21 = ifelse(is.na(TMAXcs21), TMAXcs28, TMAXcs21),
-    TMINcs28 = ifelse(is.na(TMINcs28), TMINcs21, TMINcs28),
-    TMAXcs28 = ifelse(is.na(TMAXcs28), TMAXcs21, TMAXcs28)
-  )
+    RRG12 = ifelse(is.na(RRG12), 0, RRG12),
+    RRG20 = ifelse(is.na(RRG20), 0, RRG20),
+    TMINcs21 = ifelse(is.na(TMINcs21),TAVGcs21,TMINcs21),
+    TMINcs28 = ifelse(is.na(TMINcs28),TAVGcs28,TMINcs28),
+    TMINcs21 = na.approx(TMINcs21),
+    TMAXcs21 = na.approx(TMAXcs21),
+    TMINcs28 = na.approx(TMINcs28),
+    TMAXcs28 = na.approx(TMAXcs28),
+    TAVGcs21 = na.approx(TAVGcs21),
+    TAVGcs28 = na.approx(TAVGcs28),
+    TAVGcs21 = ifelse(TAVGcs21>TMINcs21 & TAVGcs21<TMAXcs21,TAVGcs21,(TMAXcs21+TMINcs21/2)),
+    TAVGcs28 = ifelse(TAVGcs28>TMINcs28 & TAVGcs28<TMAXcs28,TAVGcs28,(TMAXcs28+TMINcs28/2)),
+    RHMINcs21= na.approx(RHMINcs21),
+    RHMINcs28= na.approx(RHMINcs28),
+    RHMAXcs21= na.approx(RHMAXcs21),
+    RHMAXcs28= na.approx(RHMAXcs28),
+    RHcs21 = na.approx(RHcs21),
+    RHcs28 = na.approx(RHcs28),
+    WINDcs21 = na.approx(WINDcs21),
+    WINDcs28 = na.approx(WINDcs28),
+    WDIRcs21 = na.approx(WDIRcs21),
+    WDIRcs28 = na.approx(WDIRcs28)
+)
+
 
 # View the resulting dataframe
 print(trimmed_cwtclimate)
@@ -292,22 +309,31 @@ rows_with_na <- trimmed_cwtclimate %>%
 
 print(rows_with_na)
 
-### filtering process for precip data must be rechecked, rain gauges do not log on non rain days, NA should be 0 on those days but value from alternate RG is used instead, if both measure 0 or NA then 0 is assumed.
-
 ##make sure units are correct
-##precip converted from inches to meters
 
-cwtws32localrain<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RRG12 * 0.0254))
-cwtws32localtmin<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMINcs28))
-cwtws32localtmax<- rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMAXcs28))
+cwtws32localrain<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RRG12)))
+cwtws32localtmin<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMINcs28)))
+cwtws32localtmax<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMAXcs28)))
+cwtws32localtavg <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TAVGcs28)))
+cwtws32localrhmin <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHMINcs28)))
+cwtws32localrhmax <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHMAXcs28)))
+cwtws32localrhavg <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHcs28)))
+cwtws32localwind <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$WINDcs28)))
+cwtws32localwdir <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$WDIRcs28)))
 
-cwtws32localrain<- data.frame(cwtws32localrain)
-cwtws32localtmin<- data.frame(cwtws32localtmin)
-cwtws32localtmax<- data.frame(cwtws32localtmax)
 
 write.table(cwtws32localrain, file = "clim/cwtws32local.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
 write.table(cwtws32localtmin, file = "clim/cwtws32local.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
 write.table(cwtws32localtmax, file = "clim/cwtws32local.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+write.table(cwtws32localtavg, file = "clim/cwtws32local.tavg", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhmin, file = "clim/cwtws32local.relative_humidity_min", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhmax, file = "clim/cwtws32local.relative_humidity_max", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhavg, file = "clim/cwtws32local.relativehumidity", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localwind, file = "clim/cwtws32local.wind", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localwdir, file = "clim/cwtws32local.wind_direction", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+
 
 ```
 Extend Local Datasets
@@ -3326,8 +3352,8 @@ input_hdr = IOin_hdr(
   basestations = "clim/cwtws32local.base")
  
 ```
-
-Run RHESSys with Static Maps
+# Modify for MCMC
+Run RHESSys Calibration with Static Maps
 
 ```{r Run RHESSYS in Parallel using foreach Static, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
@@ -3405,7 +3431,7 @@ input_hdr = IOin_hdr(
   basestations = "clim/cwtws32local.base")
  
 ```
-
+# Modify for MCMC
 Run RHESSys with SSURGO Maps
 
 ```{r Run RHESSYS in Parallel using foreach SSURGO, eval=FALSE, include=FALSE}
@@ -3484,7 +3510,7 @@ input_hdr = IOin_hdr(
   basestations = "clim/cwtws32local.base")
  
 ```
-
+# Modify for MCMC
 Run RHESSys with RSS Maps
 
 ```{r Run RHESSYS in Parallel using foreach DSM, include=FALSE}
