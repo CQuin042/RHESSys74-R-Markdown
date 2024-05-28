@@ -27,6 +27,7 @@ This script is currently set up to run RHESSys 7.4
 library(aqp)
 library(daymetr)
 library(clhs)
+library(dplyr)
 library(EcoHydRology)
 library(elevatr)
 library(ezknitr)
@@ -60,7 +61,7 @@ library(terra)
 library(testthat)
 library(tidyverse)
 library(viridisLite)
-library(dplyr)
+
 
 knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -114,21 +115,24 @@ Load in Shapefiles for Watershed Setup
 getwd()
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-watershedshapefile <-("C:/Users/Carlos/Desktop/RHESSys_R_Processing/Boundary Shapefiles/Coweeta_Hydrologic_Laboratory.shp")
-streamshapefile<- ("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Streamflow/StreamsCaldwellClipped.shp")
-weirshapefile<- ("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Weirs/Subbasinoutlets.shp")
-roadshapefile <- ( "C:/Users/Carlos/Desktop/ORISE/GIS/CW/Roads/UpdatedRoads4Reprojected32617.shp")
+filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
 
-CWRG12 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
-CWRG20 <-("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
+streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
+weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
+roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Reprojected32617.shp")
+
+CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
 
 CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
 CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
 
-CS21<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs21_daily.csv")
-CS28<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0042/Data/cs28_daily.csv")
+CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
 
-newsmlocations<- ("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Data/NRCS Soil Moisture Sites/Soil Moisture Sites/CoweetaNRCSsmKML.kml")
+newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
 
 ```
 
