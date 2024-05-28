@@ -1,0 +1,324 @@
+<?xml-stylesheet href='NBII_classic.xsl' type='text/xsl'?>
+<metadata>
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>Miniat, Chelcy Ford</origin>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Swank, Wayne T.</origin>
+        <origin>Swift, Lloyd W.	Jr.</origin>
+        <pubdate>2017</pubdate>
+        <title>Daily precipitation data from recording rain gages (RRG) at Coweeta Hydrologic Lab, North Carolina</title>
+        <geoform>tabular digital data</geoform>
+        <pubinfo>
+          <pubplace>Fort Collins, CO</pubplace>
+          <publish>Forest Service Research Data Archive</publish>
+        </pubinfo>
+        <othercit>Updated 05 July 2022</othercit>
+        <onlink>https://doi.org/10.2737/RDS-2017-0031</onlink>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>These data include daily precipitation measurements from nine different recording rain gages (RRG) at Coweeta Hydrologic Laboratory in Macon County, North Carolina, USA. These stations are operated by the Southern Research Station, USDA Forest Service. Data include total daily precipitation for the following recording rain gages: RRG05 (1992-2021), RRG06 (1936-2021), RRG12 (1942-2021), RRG13 (1942-2021), RRG20 (1962-2021), RRG31 (1958-2021), RRG41 (1958-2021), RRG55 (1990-2021), and RRG96 (1943-2021).</abstract>
+      <purpose>The Coweeta Hydrologic Laboratory was established in 1934 and is world-renowned for its research in forest hydrology. Coweeta was established to determine the fundamental effects of forest management on soil and water resources and to serve as a testing ground for theories in forest hydrology. To facilitate this, a network of climate and precipitation stations was established across the site. The research program has since expanded its focus to encompass watershed ecosystem science. The original climate and precipitation network continues to facilitate these studies and serves as the foundation of the long-term data record.</purpose>
+      <supplinf>For more information about Coweeta: https://www.srs.fs.usda.gov/coweeta/research/lter/.
+	  
+Original metadata date was 07/03/2017. On 05/31/2018 we added 2014-2017 data, and on 02/13/2019 we added 2018 data. On 08/03/2020 we added 2019 data. On 07/05/2022 data for 2020 and 2021 were added.</supplinf>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <rngdates>
+          <begdate>19360604</begdate>
+          <enddate>20211231</enddate>
+        </rngdates>
+      </timeinfo>
+      <current>Ground condition</current>
+    </timeperd>
+    <status>
+      <progress>Planned</progress>
+      <update>As needed</update>
+    </status>
+    <spdom>
+      <descgeog>Coweeta Hydrologic Lab in the Coweeta Basin consists of 1626 hectares in Macon County, North Carolina, USA.
+	  
+Below is the latitude, longitude, and elevation in meters (m) for each rain gage:
+RG05: 35.060492,-83.464994 (elevation 1144 meters[m] above sea level [asl])
+RG06: 35.060411,-83.4301 (elevation 687 m asl)
+RG12: 35.047275,-83.458642 (elevation 1001 m asl)
+RG13: 35.062436,-83.456161 (elevation 961 m asl)
+RG20: 35.064825,-83.441439 (elevation 740 m asl)
+RG31: 35.032747,-83.468122 (elevation 1366 m asl)
+RG41: 35.055308,-83.4287 (elevation 776 m asl)
+RG55: 35.039886,-83.455367 (elevation 1035 m asl)
+RG96: 35.045369,-83.454064 (elevation 894 m asl)</descgeog>
+      <bounding>
+        <westbc>-83.47845</westbc>
+        <eastbc>-83.42166</eastbc>
+        <northbc>35.07382</northbc>
+        <southbc>35.02734</southbc>
+        <boundalt>
+          <altmin>685</altmin>
+          <altmax>1389</altmax>
+          <altunits>meters</altunits>
+        </boundalt>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>ISO 19115 Topic Category</themekt>
+        <themekey>climatologyMeteorologyAtmosphere</themekey>
+        <themekey>environment</themekey>
+      </theme>
+      <theme>
+        <themekt>National Research &amp; Development Taxonomy</themekt>
+        <themekey>Climate change</themekey>
+        <themekey>Climate change effects</themekey>
+        <themekey>Ecology, Ecosystems, &amp; Environment</themekey>
+        <themekey>Hydrology, watersheds, sedimentation</themekey>
+        <themekey>Forest &amp; Plant Health</themekey>
+        <themekey>Climate effects</themekey>
+      </theme>
+      <theme>
+        <themekt>None</themekt>
+        <themekey>climate</themekey>
+        <themekey>precipitation</themekey>
+      </theme>
+      <place>
+        <placekt>None</placekt>
+        <placekey>Coweeta Hydrologic Laboratory</placekey>
+        <placekey>Coweeta Lab</placekey>
+        <placekey>Coweeta Basin</placekey>
+        <placekey>North Carolina</placekey>
+        <placekey>Macon County</placekey>
+      </place>
+    </keywords>
+    <accconst>None</accconst>
+    <useconst>These data were collected using funding from the U.S. Government and can be used without additional permissions or fees. If you use these data in a publication, presentation, or other research product please use the citation below when citing the data and we encourage data users to contact the Coweeta Project Leader (via the Metadata Contact below) for a review of manuscripts that use any of these Coweeta data: 
+
+Miniat, Chelcy Ford; Laseter, Stephanie H.; Swank, Wayne T.; Swift, Lloyd W. Jr. 2017. Daily precipitation data from recording rain gages (RRG) at Coweeta Hydrologic Lab, North Carolina. Fort Collins, CO: Forest Service Research Data Archive. Updated 05 July 2022. https://doi.org/10.2737/RDS-2017-0031</useconst>
+    <browse>
+      <browsen>\Supplements\CoweetaBasinMap.pdf</browsen>
+      <browsed>Adobe Acrobat PDF/a file containing a contour map of the Coweeta Hydrologic Laboratory showing the location of the climate stations, rain gages, and weirs.</browsed>
+      <browset>PDF</browset>
+    </browse>
+    <datacred>Funding for these data was provided by the USDA Forest Service, Southern Research Station (SRS). 
+		
+We acknowledge the support of many individuals, past and present, including Charles Swafford, Neville Buchanan, Charlie L. Shope, Bryant Cunningham, Bruce McCoy, Chuck Marshall, Mark Crawford, and Julia Moore.</datacred>
+    <crossref>
+      <citeinfo>
+        <origin>Douglass, J. E.</origin>
+        <origin>Hoover, M. D.</origin>
+        <pubdate>1988</pubdate>
+        <title>Chapter 2. History of Coweeta</title>
+        <geoform>book chapter</geoform>
+        <serinfo>
+          <sername>Ecological Studies</sername>
+          <issue>66</issue>
+        </serinfo>
+        <pubinfo>
+          <pubplace>New York</pubplace>
+          <publish>Springer-Verlag</publish>
+        </pubinfo>
+        <othercit>pages 17-31; In: Forest Hydrology and Ecology at Coweeta (W. T. Swank &amp; D. A. Crossley Jr., eds)</othercit>
+        <onlink>http://coweeta.uga.edu/publications/425_2.pdf</onlink>
+      </citeinfo>
+    </crossref>
+    <crossref>
+      <citeinfo>
+        <origin>Ford, Chelcy R.</origin>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Swank, Wayne T.</origin>
+        <origin>Vose, James M.</origin>
+        <pubdate>2011</pubdate>
+        <title>Can forest management be used to sustain water-based ecosystem services in the face of climate change?</title>
+        <geoform>journal article</geoform>
+        <serinfo>
+          <sername>Ecological Applications</sername>
+          <issue>21: 2049-2067</issue>
+        </serinfo>
+        <onlink>https://doi.org/10.1890/10-2246.1</onlink>
+      </citeinfo>
+    </crossref>
+    <crossref>
+      <citeinfo>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Ford, Chelcy R.</origin>
+        <origin>Vose, James M.</origin>
+        <origin>Swift, Lloyd W. Jr.</origin>
+        <pubdate>2012</pubdate>
+        <title>Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA</title>
+        <geoform>journal article</geoform>
+        <serinfo>
+          <sername>Hydrology Research</sername>
+          <issue>43(6): 890-901</issue>
+        </serinfo>
+        <onlink>https://doi.org/10.2166/nh.2012.067</onlink>
+      </citeinfo>
+    </crossref>
+    <crossref>
+      <citeinfo>
+        <origin>Swift, Lloyd W. Jr.</origin>
+        <origin>Cunningham, G. B.</origin>
+        <origin>Douglass, J. E.</origin>
+        <pubdate>1988</pubdate>
+        <title>Chapter 3. Climatology and hydrology</title>
+        <geoform>book chapter</geoform>
+        <serinfo>
+          <sername>Ecological Studies</sername>
+          <issue>66</issue>
+        </serinfo>
+        <pubinfo>
+          <pubplace>New York</pubplace>
+          <publish>Springer-Verlag</publish>
+        </pubinfo>
+        <othercit>In: Forest Hydrology and Ecology at Coweeta (W. T. Swank &amp; D. A. Crossley Jr., eds)</othercit>
+        <onlink>http://coweeta.uga.edu/publications/425_3.pdf</onlink>
+      </citeinfo>
+    </crossref>
+  </idinfo>
+  <dataqual>
+    <attracc>
+      <attraccr>Accuracy: 0.5% of full scale
+Recording Sensitivity: 0.1% of full scale
+Potentiometer Resistance: 25K ohms</attraccr>
+    </attracc>
+    <logic>Data processing and quality control tests were used to remove null data, match totals to adjacent standard gages and summarize data for daily totals. (For more details contact the Metadata Contact below.)</logic>
+    <complete>Missing data are recorded as blank values. (Any zeros in the data are actually measurements of 0.)</complete>
+    <lineage>
+      <method>
+        <methtype>Field</methtype>
+        <methdesc>Precipitation is recorded on a 5 minute time step at 9 different locations. Prior to 2019 measurements were made with Belfort Universal Recording Rain Gages (Belfort Instrument Co., Baltimore, MD, USA). The Belfort Universal Recording Rain Gages were retired in 2019 and replaced with ETI Instruments Systems NOAH IV (ETI Instrument Systems, Fort Collins, Colorado). (The use of trade or firm names in this publication is for reader information and does not imply endorsement by the U.S. Department of Agriculture of any product or service.)</methdesc>
+        <methcite>
+          <citeinfo>
+            <origin>Laseter, Stephanie H.</origin>
+            <origin>Ford, Chelcy R.</origin>
+            <origin>Vose, James M.</origin>
+            <origin>Swift, Lloyd W. Jr.</origin>
+            <pubdate>2012</pubdate>
+            <title>Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA</title>
+            <geoform>journal article</geoform>
+            <serinfo>
+              <sername>Hydrology Research</sername>
+              <issue>43(6): 890-901</issue>
+            </serinfo>
+            <onlink>https://doi.org/10.2166/nh.2012.067</onlink>
+          </citeinfo>
+        </methcite>
+      </method>
+      <procstep>
+        <procdesc>After quality control processing, data are summarized to obtain daily precipitation totals. Currently only daily precipitation data are available for download.</procdesc>
+        <procdate>2015</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <eainfo>
+    <overview>
+      <eaover>Below you will find the data available in this data publication and a short description of the contents of each file.
+
+\Data\RG05_daily_1992_2021.csv
+\Data\RG06_daily_1936_2021.csv
+\Data\RG12_daily_1942_2021.csv
+\Data\RG13_daily_1942_2021.csv
+\Data\RG20_daily_1962_2021.csv
+\Data\RG31_daily_1958_2021.csv
+\Data\RG41_daily_1958_2021.csv
+\Data\RG55_daily_1990_2021.csv
+\Data\RG96_daily_1943_2021.csv
+
+These data are comma-delimited ASCII text files containing daily precipitation data, collected using rain gages at Coweeta Hydrologic Laboratory for the specified recording gage (RG##). Each file contains:
+
+YEAR = Calendar year of recorded measurement.
+
+MONTH = Month of recorded measurement (1-12).
+
+DAY = Day of month for recorded measurement (1-31).
+
+RRG{##} = total daily precipitation volume in inches as measured by recording gage ## (where ## = 05, 06, 12, 13, 20, 31, 41, 55, or 96).</eaover>
+      <eadetcit>Laseter, Stephanie H.; Ford, Chelcy R.; Vose, James M.; Swift, Lloyd W. 2012. Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA. Hydrology Research 43(6): 890-901. https://doi.org/10.2166/nh.2012.067</eadetcit>
+    </overview>
+  </eainfo>
+  <distinfo>
+    <distrib>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>USDA Forest Service, Research and Development</cntorg>
+        </cntorgp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>240 West Prospect Road</address>
+          <city>Fort Collins</city>
+          <state>CO</state>
+          <postal>80526</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>see Contact Instructions</cntvoice>
+        <cntpos>Research Data Archivist</cntpos>
+        <cntinst>This contact information was current as of July 2022. For current information see Contact Us page on: https://doi.org/10.2737/RDS.</cntinst>
+      </cntinfo>
+    </distrib>
+    <resdesc>RDS-2017-0031</resdesc>
+    <distliab>Metadata documents have been reviewed for accuracy and completeness. Unless otherwise stated, all data and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected. However, neither the author, the Archive, nor any part of the federal government can assure the reliability or suitability of these data for a particular purpose. The act of distribution shall not constitute any such warranty, and no responsibility is assumed for a user's application of these data or related materials.
+
+The metadata, data, or related materials may be updated without notification. If a user believes errors are present in the metadata, data or related materials, please use the information in (1) Identification Information: Point of Contact, (2) Metadata Reference: Metadata Contact, or (3) Distribution Information: Distributor to notify the author or the Archive of the issues.</distliab>
+    <stdorder>
+      <digform>
+        <digtinfo>
+          <formname>CSV</formname>
+          <formvern>see Format Specification</formvern>
+          <formspec>Comma-separated values file (CSV)</formspec>
+          <filedec>Files zipped with 7-Zip 19.0</filedec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>https://doi.org/10.2737/RDS-2017-0031</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>PDF</formname>
+          <formvern>see Format Specification</formvern>
+          <formspec>Adobe Acrobat PDF/a file</formspec>
+          <filedec>Files zipped with 7-Zip 19.0</filedec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>https://doi.org/10.2737/RDS-2017-0031</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <fees>None</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20220705</metd>
+    <metc>
+      <cntinfo>
+        <cntperp>
+          <cntper>Andrew C. Oishi (Chris)</cntper>
+          <cntorg>USDA Forest Service, Southern Research Station</cntorg>
+        </cntperp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>3160 Coweeta Lab Road</address>
+          <city>Otto</city>
+          <state>NC</state>
+          <postal>28763</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>828-524-2128 *127</cntvoice>
+        <cntemail>andrew.c.oishi@usda.gov</cntemail>
+      </cntinfo>
+    </metc>
+    <metstdn>FGDC Biological Data Profile of the Content Standard for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-001.1-1999</metstdv>
+  </metainfo>
+</metadata>

@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>CoweetaNRCSsmKML.kml</name>
+	<Style id="0">
+		<IconStyle id="1">
+			<scale>0.503937</scale>
+			<heading>0</heading>
+			<Icon id="2">
+				<href>icon.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Folder id="3">
+		<name>CoweetaNRCSsmKML</name>
+		<Style id="0">
+			<IconStyle id="1">
+				<color>ffffffff</color>
+				<colorMode>normal</colorMode>
+				<scale>0.503937</scale>
+				<heading>0</heading>
+				<Icon id="2">
+					<href>icon.png</href>
+				</Icon>
+			</IconStyle>
+		</Style>
+		<Placemark id="5">
+			<name>12</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>12</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4449989</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0689738</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15013</value>
+				</Data>
+			</ExtendedData>
+			<Point id="4">
+				<coordinates>-83.4449989,35.0689738,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="12">
+			<name>1</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>1</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4593817</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0481881</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15011</value>
+				</Data>
+			</ExtendedData>
+			<Point id="11">
+				<coordinates>-83.45938169999999,35.0481881,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="19">
+			<name>3</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>3</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4596102</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0485215</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-14864</value>
+				</Data>
+			</ExtendedData>
+			<Point id="18">
+				<coordinates>-83.4596102,35.0485215,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="26">
+			<name>4</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>4</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4593022</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0490345</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15014</value>
+				</Data>
+			</ExtendedData>
+			<Point id="25">
+				<coordinates>-83.4593022,35.0490345,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="33">
+			<name>7</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>7</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4453453</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0675322</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15010</value>
+				</Data>
+			</ExtendedData>
+			<Point id="32">
+				<coordinates>-83.4453453,35.0675322,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="40">
+			<name>11</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>11</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4442025</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0690796</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-14990</value>
+				</Data>
+			</ExtendedData>
+			<Point id="39">
+				<coordinates>-83.4442025,35.0690796,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="47">
+			<name>2</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>2</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4594033</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0486681</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15009</value>
+				</Data>
+			</ExtendedData>
+			<Point id="46">
+				<coordinates>-83.45940330000001,35.0486681,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="54">
+			<name>5</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>5</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4599168</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0487788</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15016</value>
+				</Data>
+			</ExtendedData>
+			<Point id="53">
+				<coordinates>-83.4599168,35.0487788,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="61">
+			<name>6</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>6</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4585955</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0478264</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15015</value>
+				</Data>
+			</ExtendedData>
+			<Point id="60">
+				<coordinates>-83.4585955,35.0478264,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="68">
+			<name>10</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>10</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4457963</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0730946</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-14991</value>
+				</Data>
+			</ExtendedData>
+			<Point id="67">
+				<coordinates>-83.4457963,35.0730946,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="75">
+			<name>9</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>9</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4452226</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0726913</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-15012</value>
+				</Data>
+			</ExtendedData>
+			<Point id="74">
+				<coordinates>-83.44522259999999,35.0726913,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="82">
+			<name>8</name>
+			<description><![CDATA[<table>
+<tr style="background-color:#DDDDFF"><td>name</td><td>$[name]</td></tr>
+<tr><td>X</td><td>$[X]</td></tr>
+<tr style="background-color:#DDDDFF"><td>Y</td><td>$[Y]</td></tr>
+<tr><td>Datalogger</td><td>$[Datalogger]</td></tr>
+</table>]]></description>
+			<styleUrl>#0</styleUrl>
+			<ExtendedData>
+				<Data name="name">
+					<displayName>name</displayName>
+					<value>8</value>
+				</Data>
+				<Data name="X">
+					<displayName>X</displayName>
+					<value>-83.4451075</value>
+				</Data>
+				<Data name="Y">
+					<displayName>Y</displayName>
+					<value>35.0678777</value>
+				</Data>
+				<Data name="Datalogger">
+					<displayName>Datalogger</displayName>
+					<value>z6-14989</value>
+				</Data>
+			</ExtendedData>
+			<Point id="81">
+				<coordinates>-83.44510750000001,35.0678777,0</coordinates>
+			</Point>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>

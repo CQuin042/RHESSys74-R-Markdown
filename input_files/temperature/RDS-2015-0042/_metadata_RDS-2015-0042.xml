@@ -1,0 +1,362 @@
+<?xml-stylesheet href='C:\Program Files (x86)\USDA Forest Service\Metavist.Preview1\XML\NBII_classic.xsl' type='text/xsl'?>
+<metadata>
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>Miniat, Chelcy Ford</origin>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Swank, Wayne T.</origin>
+        <origin>Swift, Lloyd W. Jr.</origin>
+        <pubdate>2015</pubdate>
+        <title>Daily air temperature, relative humidity, vapor pressure, PPFD, wind speed and direction for climate stations at the Coweeta Hydrologic Lab, North Carolina</title>
+        <geoform>tabular digital data</geoform>
+        <pubinfo>
+          <pubplace>Fort Collins, CO</pubplace>
+          <publish>Forest Service Research Data Archive</publish>
+        </pubinfo>
+        <othercit>Updated 27 January 2020</othercit>
+        <onlink>https://doi.org/10.2737/RDS-2015-0042</onlink>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>The data included consist of daily climatic information recorded at five climate stations at Coweeta Hydrologic Laboratory in Macon County, North Carolina, USA: CS01, CS17, CS21, CS28, and CS77. These stations are operated by the Southern Research Station, USDA Forest Service. Data include daily air temperature, relative humidity, barometric pressure (CS01 only), wind speed and direction, photosynthetically active photon flux density (PPFD), and solar radiation measurements (CS01 only) from 1983 through 2019 (starting year varies per climate station).</abstract>
+      <purpose>The Coweeta Hydrologic Laboratory was established in 1934 and is world-renowned for its research in forest hydrology. Coweeta was established to determine the fundamental effects of forest management on soil and water resources and to serve as a testing ground for theories in forest hydrology.  To facilitate this, a network of climate and precipitation stations was established across the site. The research program has since expanded its focus to encompass watershed ecosystem science. The original climate and precipitation network continues to facilitate these studies and serves as the foundation of the long-term data record.</purpose>
+      <supplinf>Original metadata date 10/27/2015. Updated cross references on 12/07/15. On 01/19/2006 data updated to include measurements through 2015. Minor metadata updates on 12/15/2016. On 02/28/2017 data updated to include measurements through 2016. On 02/08/2018 data updated to include measurements through 2017, and on 02/13/2019 data through 2018 were added. Additional minor metadata updates were made on 09/06/2019. On 01/27/2020 data were updated to include 2019 measurements.
+	  
+For more information about Coweeta: https://www.srs.fs.usda.gov/coweeta/research/lter/.</supplinf>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <rngdates>
+          <begdate>1983</begdate>
+          <enddate>2019</enddate>
+        </rngdates>
+      </timeinfo>
+      <current>Ground condition</current>
+    </timeperd>
+    <status>
+      <progress>In work</progress>
+      <update>Annually</update>
+    </status>
+    <spdom>
+      <descgeog>Coweeta Hydrologic Lab in the Coweeta Basin consists of 1626 hectares in Macon County, North Carolina, USA. 
+
+Below is the longitude and latitude for each climate station:
+CS01: -83.47845, 35.07382 (valley bottom, elevation: 686 meters [m] above mean sea level [asl])
+CS17: -83.43740, 35.04537 (aspect: north facing, elevation: 884 m asl)
+CS21: -83.43587, 35.06656 (aspect: south facing, elevation: 817 m asl)
+CS28: -83.46501, 35.04656 (aspect: east facing, elevation: 1189 m asl)
+CS77: -83.46044, 35.03035 (aspect: northeast facing, elevation: 1389 m asl)
+	  </descgeog>
+      <bounding>
+        <westbc>-83.47845</westbc>
+        <eastbc>-83.42166</eastbc>
+        <northbc>35.07382</northbc>
+        <southbc>35.02734</southbc>
+        <boundalt>
+          <altmin>685.000</altmin>
+          <altmax>1389.000</altmax>
+          <altunits>meters</altunits>
+        </boundalt>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>None</themekt>
+        <themekey>climate</themekey>
+        <themekey>temperature</themekey>
+        <themekey>relative humidity</themekey>
+        <themekey>pressure</themekey>
+        <themekey>wind</themekey>
+        <themekey>solar radiation</themekey>
+      </theme>
+      <theme>
+        <themekt>ISO 19115 Topic Category</themekt>
+        <themekey>climatologyMeteorologyAtmosphere</themekey>
+        <themekey>environment</themekey>
+      </theme>
+      <theme>
+        <themekt>National Research &amp; Development Taxonomy</themekt>
+        <themekey>Climate change</themekey>
+        <themekey>Climate change effects</themekey>
+        <themekey>Climatology</themekey>
+        <themekey>Ecology, Ecosystems, &amp; Environment</themekey>
+        <themekey>Hydrology, watersheds, sedimentation</themekey>
+        <themekey>Forest &amp; Plant Health</themekey>
+        <themekey>Climate effects</themekey>
+      </theme>
+      <place>
+        <placekt>None</placekt>
+        <placekey>Coweeta Hydrologic Laboratory</placekey>
+        <placekey>Coweeta Lab</placekey>
+        <placekey>North Carolina</placekey>
+        <placekey>Macon County</placekey>
+        <placekey>southern Appalachians</placekey>
+        <placekey>Coweeta Basin</placekey>
+      </place>
+    </keywords>
+    <accconst>None</accconst>
+    <useconst>These data were collected using funding from the U.S. Government and can be used without additional permissions or fees. If you use these data in a publication, presentation, or other research product please use the following citation:
+	
+Miniat, Chelcy Ford; Laseter, Stephanie H.; Swank, Wayne T.; Swift, Lloyd W. Jr. 2015. Daily air temperature, relative humidity, vapor pressure, PPFD, wind speed and direction for climate stations at the Coweeta Hydrologic Lab, North Carolina. Fort Collins, CO: Forest Service Research Data Archive. Updated 27 January 2020. https://doi.org/10.2737/RDS-2015-0042
+
+* We also encourage data users to contact the Coweeta Project Leader (via the Metadata Contact below) for a review of manuscripts that use any of these Coweeta data.</useconst>
+    <browse>
+      <browsen>\Supplements\CoweetaBasinMap.pdf</browsen>
+      <browsed>Adobe Acrobat PDF file containing a contour map of the Coweeta Hydrologic Laboratory showing the location of the climate stations, rain gages, and weirs.</browsed>
+      <browset>PDF</browset>
+    </browse>
+    <datacred>Funding for these data was provided by the USDA Forest Service, Southern Research Station (SRS). 
+		
+We acknowledge the support of many individuals, past and present, including Charlie L. Shope, Charles Swafford, Neville Buchanan, Lawrence Shope, Bruce McCoy, Julia Moore, Chuck Marshall, and Mark Crawford.
+	
+Note: CS01 is also a cooperative station with the National Weather Service.</datacred>
+    <crossref>
+      <citeinfo>
+        <origin>Swift, L.W. Jr.</origin>
+        <origin>Cunningham, G.B.</origin>
+        <origin>Douglass, J.E.</origin>
+        <pubdate>1988</pubdate>
+        <title>Climate and hydrology</title>
+        <geoform>chapter</geoform>
+        <serinfo>
+          <sername>Ecological Studies</sername>
+          <issue>Vol. 66</issue>
+        </serinfo>
+        <pubinfo>
+          <pubplace>New York</pubplace>
+          <publish>Springer-Verlag</publish>
+        </pubinfo>
+        <onlink>https://coweeta.uga.edu/publications/425_3.pdf</onlink>
+      </citeinfo>
+    </crossref>
+    <crossref>
+      <citeinfo>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Ford, Chelcy R.</origin>
+        <origin>Vose, James M.</origin>
+        <origin>Swift, Lloyd W. Jr</origin>
+        <pubdate>2012</pubdate>
+        <title>Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA</title>
+        <geoform>journal article</geoform>
+        <serinfo>
+          <sername>Hydrology Research</sername>
+          <issue>43(6):890-901</issue>
+        </serinfo>
+        <onlink>https://www.fs.usda.gov/treesearch/pubs/42197</onlink>
+        <onlink>https://doi.org/10.2166/nh.2012.067</onlink>
+      </citeinfo>
+    </crossref>
+    <crossref>
+      <citeinfo>
+        <origin>Miniat, Chelcy Ford</origin>
+        <origin>Laseter, Stephanie H.</origin>
+        <origin>Swank, Wayne T.</origin>
+        <origin>Swift, Lloyd W. Jr.</origin>
+        <pubdate>2015</pubdate>
+        <title>Daily air temperature data, recorded by NWS thermometer, from climate station 01 at Coweeta Hydrologic Lab, North Carolina</title>
+        <geoform>tabular digital data</geoform>
+        <pubinfo>
+          <pubplace>Fort Collins, CO</pubplace>
+          <publish>Forest Service Research Data Archive</publish>
+        </pubinfo>
+        <othercit>Updated 27 January 2020</othercit>
+        <onlink>https://doi.org/10.2737/RDS-2015-0049</onlink>
+      </citeinfo>
+    </crossref>
+  </idinfo>
+  <dataqual>
+    <attracc>
+      <attraccr>LI-190 
+Stability: &lt; ±2% over a 1 year period
+Sensitivity: 5uA per 1000 micromole per second per square meter
+
+HMP45c
+Accuracy at 20°C (against factory reference): ±1% relative humidity (RH)
+Accuracy at 20°C (field-calibrated against references): 
+±2% (0% to 90% RH); 
+±3% (90% to 100% RH)
+
+Vaisala CS106
+Accuracy: ±0.3 mb at +20°Celsius (C); 
++0.6 millibars (mb) at 0° to 40°C; 
+±1.0 mb at -20° to +45°C; 
+±1.5 mb at -40° to +60°C
+
+MetOne 014
+1.5% or 0.11 meters per second (0.25 miles per hour)
+
+MetOne 024
+±5 degrees
+
+Eppley
+Sensitivity: approximately 8 microvolts / (Watts * meters²) [μV / Wm-2]
+
+
+*NOTE: There are a few relative humitidy (RH) values that were recorded as &gt; 100. We concluded it was best to leave the data as recorded, but those data points should really be 100.</attraccr>
+    </attracc>
+    <complete>Missing data are recorded as blank values. Any zeros in the data are actually measurements of 0. 
+	
+MISSING DATA (if reasons for missing data are known, they are listed below)
+
+CS01: 
+August 15, 2019 from 0800 through August 20, 2019 0800Z: Lost power, no data
+
+CS17:
+July 26, 2016 through August 8, 2016: PPFD and TotalSolar out of service
+
+CS21: 
+June 23, 2015 14:00 through July 6, 2015 15:00: no data due to battery and storm problems
+March 1, 2016 through May 18, 2016: wind speed and direction not working
+December 29, 2018 through December 31, 2018: datalogger malfunction
+January 1, 2019 through January 18, 2019: temp/RH sensor failure
+September 10, 2019 through September 26, 2019: wind sensor down
+
+CS28: 
+December 24, 2015 through February 7, 2016: station is down, storm damage to data logger and sensors
+May 27, 2018 through June 22, 2018: temperature/RH sensor damaged
+June 17, 2018 through June 18, 2018: all sensors down
+
+CS77:
+October 8, 2017 through October 18, 2017: missing PPFD data due to bear damage
+February 5, 2018 through February 15, 2018: station down due to animal damage
+</complete>
+    <lineage>
+      <method>
+        <methtype>Field</methtype>
+        <methdesc>Digital daily air temperature data have been recorded at the main climate station (CS01) continuously since 1983. In addition to CS01, there are four climate stations across the basin (CS17, CS21, CS28, and CS77). Each of these stations continually measures and records (CR10X, Campbell Scientific, Inc., Logan, UT, USA) the following variables every 5 minutes: temperature and relative humidity in an open field (HMP45c, Campbell Scientific, Logan, UT, USA), photosynthetically active photon flux density (LI-190-SB, Campbell Scientific), as well as wind speed and wind direction at canopy height (014A and 024A, MetOne Instruments, Grants Pass, OR, USA). Barometric air pressure (Vaisala CS106, Campbell Scientific) as well as solar radiation (model 8–48, Eppley Lab, Inc., Newport, RI, USA). Data retrieval from the climate network is via wireless remote access. All data recorded to the CR10X datalogger are transmitted via radio frequency (Freewave Technologies, Inc., FGR-115RC, Boulder, CO) from each of the climate stations to a computer server in the data processing office.</methdesc>
+        <methcite>
+          <citeinfo>
+            <origin>Laseter, Stephanie H.</origin>
+            <origin>Ford, Chelcy R.</origin>
+            <origin>Vose, James M.</origin>
+            <origin>Swift, Lloyd W. Jr</origin>
+            <pubdate>2012</pubdate>
+            <title>Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA</title>
+            <geoform>journal article</geoform>
+            <serinfo>
+              <sername>Hydrology Research</sername>
+              <issue>43(6): 890-901</issue>
+            </serinfo>
+            <onlink>https://www.fs.usda.gov/treesearch/pubs/42197</onlink>
+            <onlink>https://doi.org/10.2166/nh.2012.067</onlink>
+          </citeinfo>
+        </methcite>
+      </method>
+      <procstep>
+        <procdesc>Hourly averaging is done by the datalogger, and downloaded weekly. Daily averages are calculated on a monthly basis (from the 24 hourly averages) when the datasets are assembled and stored on the local server. Similarly, the minimum and maximum represent the absolute minimum or maximum 5 minute measurement for each day. 
+		
+Wind speed and direction are obtained a little differently. In vector averaging, either the orthogonal components of the wind are measured directly with a wind instrument or the speed and direction are measured with an anemometer and a wind vane and then they are used to derive the orthogonal components. To obtain the vector-averaged speed and direction, the components are summed and vector averaged at the end of the averaging time.</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <eainfo>
+    <overview>
+      <eaover>Below you will find the data available in this data publication and a short description of its contents.
+
+\Data\csXX_daily.csv (where XX = climate station number 01, 17, 21, 28, or 77)
+
+These data contains daily climate data collected at the specified climate station (csXX) at Coweeta Hydrologic Laboratory. Data were recorded every 5 minutes and what is included in this file is the average (or minimum/maximum as noted) of those 5 minute measurements for each day.  
+
+YEAR = Calendar year of recorded measurement.
+
+MONTH = Month of recorded measurement.
+
+DAY = Day of recorded measurement.
+
+TMIN = Daily minimum air temperature in degrees Celsius.
+TMAX = Daily maximum air temperature in degrees Celsius.
+TAVG = Daily average air temperature in degrees Celsius.
+	
+RHMIN = Daily minimum relative humidity as a % (0-100)*.
+RHMAX = Daily maximum relative humidity as a % (0-100)*.	
+RHAVG = Daily average relative humidity as a % (0-100)*.	
+
+VPMIN = Minimum daily saturation air vapor pressure (datalogger calculates this based on air temperature and relative humidity according to Lowe [1977]) in millibars.
+VPMAX = Maximum daily saturation air vapor pressure (datalogger calculates this based on air temperature and relative humidity according to Lowe [1977]) in millibars.
+VPAVG = Average daily saturation air vapor pressure (datalogger calculates this based on air temperature and relative humidity according to Lowe [1977]) in millibars.
+
+WIND = Daily average wind speed in meters per second (m/s).
+W_DIR = Mean wind direction (azimuth, 0-360 degrees).
+
+PPFD = Photosynthetically Active Photon Flux Density in micromoles of photons per meter squared per second.
+
+TOTALSOLAR = Total Solar Radiation in langleys (CS17, CS21, CS28, and CS77 didn't start measuring this until 2016).
+
+AVG_B_PRESS = Hourly air Barometric Pressure in kilopascals (kPa) (only available for CS01).
+
+*NOTE: There are a few relative humitidy (RH) values that were recorded as &gt; 100. We concluded it was best to leave the data as recorded, but those data points should really be 100.</eaover>
+      <eadetcit>Laseter, Stephanie H.; Ford, Chelcy R.; Vose, James M.; Swift, Lloyd W. 2012. Long-term temperature and precipitation trends at the Coweeta Hydrologic Laboratory, Otto, North Carolina, USA. Hydrology Research 43(6):890-901. https://doi.org/10.2166/nh.2012.067
+	  
+Lowe, P.R. 1977. An approximating polynomial for the computation of saturation vapor pressure. J. Appl. Meteor. 16:100-103.</eadetcit>
+    </overview>
+  </eainfo>
+  <distinfo>
+    <distrib>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>USDA Forest Service, Research and Development</cntorg>
+        </cntorgp>
+        <cntpos>Research Data Archivist</cntpos>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>240 West Prospect Road</address>
+          <city>Fort Collins</city>
+          <state>CO</state>
+          <postal>80526</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>see Contact Instructions</cntvoice>
+        <cntinst>This contact information was current as of January 2020. For current information see Contact Us page on: https://doi.org/10.2737/RDS.</cntinst>
+      </cntinfo>
+    </distrib>
+    <resdesc>RDS-2015-0042</resdesc>
+    <distliab>Metadata documents have been reviewed for accuracy and completeness. Unless otherwise stated, all data and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected. However, neither the author, the Archive, nor any part of the federal government can assure the reliability or suitability of these data for a particular purpose. The act of distribution shall not constitute any such warranty, and no responsibility is assumed for a user's application of these data or related materials.
+
+The metadata, data, or related materials may be updated without notification. If a user believes errors are present in the metadata, data or related materials, please use the information in (1) Identification Information: Point of Contact, (2) Metadata Reference: Metadata Contact, or (3) Distribution Information: Distributor to notify the author or the Archive of the issues.</distliab>
+    <stdorder>
+      <digform>
+        <digtinfo>
+          <formname>ASCII</formname>
+          <formvern>see Format Specification</formvern>
+          <formspec>Comma-delimited ASCII text file (CSV)</formspec>
+          <filedec>Files zipped with 7-Zip 19.00</filedec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>https://doi.org/10.2737/RDS-2015-0042</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <fees>None</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20200127</metd>
+    <metc>
+      <cntinfo>
+        <cntperp>
+          <cntper>Chelcy Miniat</cntper>
+          <cntorg>USDA Forest Service, Southern Research Station</cntorg>
+        </cntperp>
+        <cntaddr>
+          <addrtype>mailing</addrtype>
+          <address>3160 Coweeta Lab Road</address>
+          <city>Otto</city>
+          <state>NC</state>
+          <postal>28763</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>828-524-2128 *118</cntvoice>
+        <cntemail>chelcy.f.miniat@usda.gov</cntemail>
+      </cntinfo>
+    </metc>
+    <metstdn>FGDC Biological Data Profile of the Content Standard for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-001.1-1999</metstdv>
+  </metainfo>
+</metadata>
