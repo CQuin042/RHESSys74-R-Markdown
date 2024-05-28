@@ -2594,8 +2594,6 @@ obsws32<- read.csv('C:/Users/Carlos/Desktop/ORISE/Streamflow Data/CW/Streamflow/
 # dataset is recorded as water year, here we convert from water year and note that the water year for this landscape begins in November
 ## calendar year seems to be correct
 
-#colnames(obsws32)<- c("WYR","Month","Day","flow")
-
 obsws32$WYR <- as.numeric(obsws32$V1)
 obsws32$Month <- as.numeric(obsws32$V2)
 obsws32$Day <- as.numeric(obsws32$V3)
