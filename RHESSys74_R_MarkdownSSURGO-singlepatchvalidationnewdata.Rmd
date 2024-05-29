@@ -244,11 +244,8 @@ combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtrg20_selected, by = c(
 combinedcwtclimate$RRG12 <- combinedcwtclimate$RRG12* 0.0254
 combinedcwtclimate$RRG20 <- combinedcwtclimate$RRG20* 0.0254
 
-
-
 ##precip converted from inches to meters
 ## RH converted to 0-1 range
-
 
 cwtcs21_selected <- cwtcs21 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs21=TMIN, TMAXcs21=TMAX, TAVGcs21=TAVG, RHMINcs21=RHMIN, RHMAXcs21=RHMAX, RHcs21=RHAVG, WINDcs21=WIND, WDIRcs21=W_DIR)
 cwtcs28_selected <- cwtcs28 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs28=TMIN, TMAXcs28=TMAX, TAVGcs28=TAVG, RHMINcs28=RHMIN, RHMAXcs28=RHMAX, RHcs28=RHAVG, WINDcs28=WIND, WDIRcs28=W_DIR)
@@ -277,7 +274,6 @@ trimmed_cwtclimate <- trimmed_cwtclimate %>% select(-YEAR,-MONTH,-DAY)
 # Replace NA values according to the specified rules
 ##NA APPROX is used, zoo package, interpolation
 
-
 trimmed_cwtclimate <- trimmed_cwtclimate %>%
   mutate(
     RRG12 = ifelse(is.na(RRG12), 0, RRG12),
@@ -303,7 +299,6 @@ trimmed_cwtclimate <- trimmed_cwtclimate %>%
     WDIRcs21 = na.approx(WDIRcs21),
     WDIRcs28 = na.approx(WDIRcs28)
 )
-
 
 # View the resulting dataframe
 print(trimmed_cwtclimate)
@@ -336,8 +331,6 @@ write.table(cwtws32localrhmax, file = "clim/cwtws32local.relative_humidity_max",
 write.table(cwtws32localrhavg, file = "clim/cwtws32local.relativehumidity", quote = FALSE, row.names = FALSE, col.names = FALSE)
 write.table(cwtws32localwind, file = "clim/cwtws32local.wind", quote = FALSE, row.names = FALSE, col.names = FALSE)
 write.table(cwtws32localwdir, file = "clim/cwtws32local.wind_direction", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-
 
 ```
 Extend Local Datasets
@@ -430,7 +423,6 @@ daymetstartdate<- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep
 
 daymetstartdaterhessys<- paste(year(ymd(daymetstartdate)),month(ymd(daymetstartdate)),day(ymd(daymetstartdate)),"1")
 
-
 daymetstartdate
 
 daymetenddate<- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), "%Y-%j")[length(daymet_data$data$year)]
@@ -471,7 +463,6 @@ fulldaymetprecip
 ## for simplicity replace NA values with 0, may cause issues with temp but should be ok for precip
 
 fulldaymetprecip<- na_replace(fulldaymetprecip,0)
-
 
 #convert precipitation to Meters
 cwtdaymetrain<- rbind(daymetstartdaterhessys,as.data.frame(fulldaymetprecip$prcp..mm.day./1000))
@@ -580,7 +571,6 @@ plot(cropped_dem, main = "DEM cropped to Buffer")
 plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)
 
 
-
 newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
 
 reproje<- projectRaster(from = cropped_dem, crs = newproj, method = 'bilinear')
@@ -638,19 +628,19 @@ execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
 ## Import shapefiles (Streams, Weirs, Watersheds, Roads)
 ## only roads and Watersheds necessary to Run
 
-streams<- vect("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Streamflow/StreamsCaldwellClipped.shp")
+streams<- vect(streamshapefile)
 streams<- project(streams,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(streams, "streams")
 
-weirs<- vect("C:/Users/Carlos/Desktop/ORISE/GIS/CW/Weirs/Subbasinoutlets.shp")
+weirs<- vect(weirshapefile)
 weirs<- project(weirs,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(weirs, "weirs")
 
-watersheds<- vect("C:/Users/Carlos/Desktop/RHESSys_R_Processing/Boundary Shapefiles/Coweeta_Hydrologic_Laboratory.shp")
+watersheds<- vect(watershedshapefile)
 wgs84watersheds<- project(watersheds,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(wgs84watersheds, "watersheds")
 
-roads <- vect( "C:/Users/Carlos/Desktop/ORISE/GIS/CW/Roads/UpdatedRoads4Reprojected32617.shp")
+roads <- vect(roadshapefile)
 roads<- project(roads,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(roads,"roads")
 
@@ -920,9 +910,6 @@ levelplot(
   col.regions = viridis
 )
 
-
-
-
 # convert to a representative soil texture class
 txt.lut <- read.csv('http://soilmap2-1.lawr.ucdavis.edu/800m_grids/RAT/texture_2550.csv')
 # make a copy
@@ -984,9 +971,7 @@ croppedtexture60 <- crop(reproj6010,extent(ws32))
 ## for now masking is completed based on delineated watershed extent from raster instead of watershed extent from watershed polygons
 ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
 
-
 extent(croppedtexture60)<- extent(ws32)
-
 
 
 {plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Selected Watershed")
@@ -1002,10 +987,6 @@ plot(st_geometry(x[which(x$WS=='32'),]))
 
 {plot(reproj60, zlim = c(1,5))
 plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
-
-
-
-
 
 
 {plot(as.factor(croppedtexture60), zlim = c(1,5))
