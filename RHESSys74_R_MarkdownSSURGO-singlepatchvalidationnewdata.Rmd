@@ -27,7 +27,6 @@ This script is currently set up to run RHESSys 7.4
 library(aqp)
 library(daymetr)
 library(clhs)
-library(dplyr)
 library(EcoHydRology)
 library(elevatr)
 library(ezknitr)
@@ -61,7 +60,7 @@ library(terra)
 library(testthat)
 library(tidyverse)
 library(viridisLite)
-
+library(dplyr)
 
 knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -2305,7 +2304,6 @@ abline(soilntrend , col = 'green')}
 
 #prepped<- readin_rhessys_output("G:/Coweeta W32/output/basicspinupws32")
 
-
 ```
 
 Configure RHESSys Inputs/Outputs for a single run.
@@ -2326,7 +2324,6 @@ Use World Statefile created during spin-up. To run model one time at patch scale
 
 #  "CWWS32.world.Y2018M10D31H1.state" - 1 Spinup run
 # "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state" - 2 spinup runs
-
 
 read_clim("clim/cwtws32daymet.rain", dates_out = TRUE)
 
