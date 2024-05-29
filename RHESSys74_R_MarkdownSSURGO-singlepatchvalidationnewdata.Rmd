@@ -7,7 +7,7 @@ output:
   pdf_document: default
 ---
 
-Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. Previously WS27.
+Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. 
 
 The following R Markdown script prepares and runs the Regional Hydro-Ecologic Simulation System (RHESSYS) within the R environment. 
 Modified from RHESSysIOinR example scripts created by Will Burke and Ryan Bart. Includes CLHS code snippets and SDA code from Dylan Beaudette.
@@ -116,7 +116,6 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
 
-
 watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
 streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
 weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
@@ -135,9 +134,9 @@ newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNR
 
 ```
 
-Create Local Base File
+Create Local Base File if one is not available
 ```{r}
-{basefiletext<- "101  base_station_id
+localbasefiletext<- "101  base_station_id
 275535 x_coordinate
 3879165 y_coordinate
 1064 z_coordinate
@@ -153,17 +152,16 @@ clim/cwt_hourly 	hourly_climate_prefix
 0			number_non_critical_hourly_sequences
 clim/cwt	trigger_of_dated_input
 0	num_non_critical_sequences
-"}
+"
 
-write(basefiletext,file = "clim/cwtws32local.base")
+write(localbasefiletext,file = "clim/cwtws32local.base")
 
 ```
 
-Download or find Local Climate for Watershed of Interest
-Precip and Temperature
+Download or find Local Climate for Watershed of Interest. 
+Precipitation and Temperature
 
 https://www.fs.usda.gov/rds/archive/Catalog/RDS-2017-0031
-
 
 RGO6-WS32 & RG12-WS32 - Using RG12
 RG20-WS7
@@ -171,7 +169,7 @@ Precipitation is in inches
 
 CS21-WS7
 CS28-WS32
-Temperature is in Celsius
+Temperature is in celsius
 
 RHESSys can use
 Rain (Meters),Tmin (C),Tmax (C),Tavg (C),RHmin (0-1),RHmax (0-1),RHavg (0-1),Wind (Meters/Sec),Wind Dir (Degrees)
@@ -332,6 +330,7 @@ write.table(cwtws32localwind, file = "clim/cwtws32local.wind", quote = FALSE, ro
 write.table(cwtws32localwdir, file = "clim/cwtws32local.wind_direction", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 ```
+
 Extend Local Datasets
 ```{r}
 
@@ -372,6 +371,7 @@ read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
 read_clim("clim/cwtws32local.rain", dates_out=TRUE)
 
 ```
+
 Create DAYMET Base File
 ```{r Create Daymet Base File}
 ##Quick way to create base file necessary for climate processing 
@@ -822,7 +822,6 @@ writeRaster(maskede_horizon_1000,"grassexport/cwt_ws32/e_horizon_1000",format = 
 writeRaster(maskedw_horizon_1000,"grassexport/cwt_ws32/w_horizon_1000",format = "GTiff", overwrite = TRUE)
 writeRaster(maskedsubbasins,"grassexport/cwt_ws32/subbasins",format = "GTiff", overwrite = TRUE)
 
-
 plot(maskedws32, main ="ws32")
 plot(maskedpatches, main = "patches")
 plot(maskedacc10, main = "acc10")
@@ -851,7 +850,6 @@ Download SSURGO data and make sure CRS/Extent/Crop are Correct for input into RH
 getwd()
 
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-
 # load BBOX
 x <- read_sf(watershedshapefile)
 # get gSSURGO grid here
