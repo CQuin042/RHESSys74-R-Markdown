@@ -21,6 +21,7 @@ Various template differences exist between the two versions of RHESSys and templ
 This script is currently set up to run RHESSys 7.4
 
 ```{r setup, include=TRUE, verbose = FALSE}
+knitr::opts_chunk$set(warning = FALSE)
 #install.packages("devtools")
 #devtools::install_github("ropensci/FedData")
 
@@ -1027,7 +1028,6 @@ ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
 
 #("grassexport/cwt_ws32/ws32.tif")
 
-
 # RSS: cell values are map unit keys
 r <- raster('Raster soil survey/Coweeta_Final_raster.tif')
 
@@ -1125,7 +1125,6 @@ getDominantValue <- function(x, v) {
 
 co.taxpartsize <- getDominantCondition(rss.co, v = 'taxpartsize')
 
-
 co.spc <- rss.hz
 depths(co.spc) <- cokey ~ hzdept_r + hzdepb_r
 hzdesgnname(co.spc) <- 'hzname'
@@ -1136,7 +1135,6 @@ co.spc$aws <- co.spc$awc_r * 1
 a <- slab(co.spc, cokey ~ aws, slab.structure = c(0, 50), slab.fun = sum)
 
 head(a)
-
 
 rss.co.aws050 <- merge(rss.co, a, by = 'cokey', sort = FALSE)[, c('mukey', 'cokey', 'compkind', 'comppct_r', 'value')]
 
@@ -1172,7 +1170,6 @@ r.taxpartsize <- deratify(r, att = 'taxpartsize')
 
 
 plot(r.taxpartsize)
-
 
 
 ###quick and dirty incorporate new DSM map with two depth classes
@@ -1290,6 +1287,43 @@ reclassstaticmat
 reclassmaskedstatic <- reclassify(maskeddsm, reclassstaticmat)
 
 plot(reclassmaskedstatic, main = "Static Loam Texture", zlim = c(1,24), col = viridis(24))
+
+```
+
+```{r}
+library(cowplot)
+
+rssraster<- reclassmaskeddsm
+
+ssurgoraster<- reclassreproj
+
+staticraster<- reclassmaskedstatic
+
+
+rssrasterdf<- as.data.frame(rssraster, xy = TRUE)
+ssurgorasterdf<- as.data.frame(ssurgoraster, xy = TRUE)
+staticrasterdf<- as.data.frame(staticraster, xy = TRUE)
+
+rssrasterdf$rss.soiltype.class<- factor(rssrasterdf$rss.soiltype.class)
+ssurgorasterdf$ssurgo.soiltype.class<- factor(ssurgorasterdf$ssurgo.soiltype.class)
+staticrasterdf$rss.soiltype.class<- factor(staticrasterdf$rss.soiltype.class)
+
+plot3<- ggplot()+
+  geom_raster(data = rssrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+plot2<- ggplot()+
+  geom_raster(data = ssurgorasterdf, aes(x = x, y = y, fill = ssurgo.soiltype.class))+
+  theme_minimal()
+    
+plot1<- ggplot()+
+  geom_raster(data = staticrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+
+combined_soilplot<- plot_grid(plot1, plot2, plot3, ncol =3)
+
+plot(combined_soilplot)
 
 ```
 
