@@ -21,7 +21,7 @@ Various template differences exist between the two versions of RHESSys and templ
 This script is currently set up to run RHESSys 7.4
 
 ```{r setup, include=TRUE, verbose = FALSE}
-knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 #install.packages("devtools")
 #devtools::install_github("ropensci/FedData")
 
@@ -48,6 +48,7 @@ library(readxl)
 library(reshape2)
 library(rgdal)
 library(rgrass)
+library(rmarkdown)
 library(Rmisc)
 library(RHESSysPreprocessing)
 library(RHESSysIOinR)
@@ -106,11 +107,7 @@ test_that("compile_rhessys works + rhessys compiles via R system", {
 
 rh_path = file.path("rh_dev/rhessys/", rh_ver)
 
-```
-
-Load in Shapefiles for Watershed Setup
-
-```{r Locate Necessary Files}
+## Load in necessary files
 
 getwd()
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
@@ -1006,15 +1003,11 @@ Prepare textural classes from sand and clay totals
 ```{r Prepare Soil Def files}
 mapunittable<- levels(mu)[[1]]
 
-
-mapunittable
+paged_table(mapunittable)
 
 mapunittable$textclass<- ssc_to_texcl(sand = mapunittable$sandtotal_r, clay = mapunittable$claytotal_r)
 
-
-mapunittable
-
-
+paged_table(mapunittable)
 
 ```
 
@@ -1225,7 +1218,6 @@ Default Texture used by DSM and quick and dirty conversions
 2 - fine-loamy    > silty clay loam
 3 - coarse-loamy  > sandy loam
 
-
 Current Textural Levels for Coweeta
 6 Levels
 1 - deep.sl
@@ -1373,8 +1365,6 @@ LANDCOVERREPROJ <-  projectRaster(from = LANDCOVER, crs = proj4string(ws32polygo
 IMPERVIOUSREPROJ <-  projectRaster(from = IMPERVIOUS, crs = proj4string(ws32polygon), method = 'ngb')
 
 
-
-
 ## prepare 10m resolution raster and resample prepared soil data to 10m
 resample10<- raster(resolution=c(10,10), crs = proj4string(ws32polygon), ext=extent(ws32polygon))
 
@@ -1382,7 +1372,6 @@ LANDCOVERREPROJRES <- resample(LANDCOVERREPROJ,resample10, method = 'ngb')
 
 {plot(LANDCOVERREPROJRES, main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Watersheds")
 plot(st_geometry(x), add = TRUE, col = NA)}
-
 
 
 landcovercrop <- crop(LANDCOVERREPROJRES,ws32polygon)
@@ -1393,7 +1382,6 @@ maskedlandcover <- mask(landcovercrop,ws32polygon)
 #maskedcanopy <- mask(canopycrop,ws32polygon)
 maskedimpervious <- mask(imperviouscrop,ws32polygon)
 
-
 plot(maskedlandcover, main = "Masked Landcover")
 #plot(maskedcanopy)
 plot(maskedimpervious, main = "Masked Impervious")
@@ -1403,7 +1391,6 @@ plot(ws32polygon, add = TRUE, col = NA)}
 
 {plot(maskedimpervious, main = "Masked Impervious with WS Polygon")
 plot(ws32polygon, add = TRUE, col = NA, border = "white")}
-
 
 
 extent(LANDCOVER)
@@ -1458,7 +1445,7 @@ head(bands)
 
 dates <- mt_dates(product = "MOD15A2H", lat = 35 , lon = -83 )
 
-dates
+paged_table(dates)
 
 coweeta_lai <- mt_subset (product = "MOD15A2H", lat = 35.06, lon = -83.43,
                           band = "Lai_500m", start = "2017-01-01", end = "2018-06-01",
@@ -2258,7 +2245,7 @@ stdpars<- IOin_std_pars(
 
 ```
 
-Run Spinup
+Run Spinup #1
 
 Spinup runs model on one processor for x number of years. Takes a very long time. 
 
@@ -2277,7 +2264,7 @@ end_time - start_time
 
 ```
 
-Run Spinup again 
+Run Spinup again, Run Spinup #2
 
 ```{r Spinup again with created worldfile, eval=FALSE, include=FALSE}
 
@@ -2354,11 +2341,7 @@ Use World Statefile created during spin-up. To run model one time at patch scale
 
 ```{r Configure RHESSys Inputs using Created Worldfile}
 
-#  "CWWS32.world.Y2018M10D31H1.state" - 1 Spinup run
-# "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state" - 2 spinup runs
-
 read_clim("clim/cwtws32daymet.rain", dates_out = TRUE)
-
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
@@ -2371,7 +2354,6 @@ input_rhessys = IOin_rhessys_input(
   output_folder = "out",
   output_prefix = "cwws32dsm",
   commandline_options = c("-b -p"))
-
 
 ## TEC file dictates model output, begin output a year in to allow model SM to stabilize
 # do not output_state or worldfile may be overwritten as output is created
@@ -2388,7 +2370,6 @@ input_hdr = IOin_hdr(
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
-
 
 stdpars<- IOin_std_pars(
             m = 1.75,
@@ -2422,6 +2403,82 @@ end_time - start_time
 end_time
 
 ```
+
+Run RHESSys once with output filter
+
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2014 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32dsm",
+  commandline_options = c())
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+stdpars<- IOin_std_pars(
+            m = 1.75,
+            k = 18.69,
+            soil_dep= 0.48,
+            m_v = 2.55,
+            k_v = 7.54,
+            gw1 = 0.19,
+            gw2 = 0.29,
+            pa = 0.17,
+            po = 1.02,
+            vgseng1 = 1.61,
+            vgseng2 = 1.94,
+            vgseng3 = 0.72)
+
+
+#patch.streamflow + hill.gw.Qout
+
+
+patchfilter <- build_output_filter(timestep = "daily", output_format= "csv", output_path = "./out", output_filename = "testfbasinstreamflow", spatial_level = "basin",spatial_ID = "1", variables = "base_flow" )
+
+patchfilter
+
+
+patchfilter2<- read_output_filter("C:/Users/Carlos/Downloads/RHESSysIOinR-main/RHESSysIOinR-main/p301h2_filter.yml")
+
+patchfilter2
+
+
+
+
+start_time = Sys.time()
+start_time
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   std_pars = stdpars,
+                   output_filter = patchfilter,
+                   runID = 'single')
+end_time = Sys.time()
+end_time - start_time
+end_time
+
+
+```
+
 
 Read RHESSys Single Run Output
 
@@ -3501,11 +3558,6 @@ input_rhessys = IOin_rhessys_input(
   commandline_options = c("-b"))
 
 #commandline_options = c("-b -p 1 128 154914 154914 ")) <- Patch Specific Output
-  
-## must incorporate single patch output or local patch output for the purposes of calibration
-## make sure to run calibration with no modifiers or 1 for everything except gw1 and gw2
-## must refine calibration to do multiple steps, first gw1 gw2, then other variables
-## multi point calibration and validation
 
 input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
@@ -3522,6 +3574,9 @@ input_hdr = IOin_hdr(
  
 ```
 # Modify for MCMC
+## must refine calibration to do multiple steps, first gw1 gw2, then other variables
+## multi point calibration and validation
+
 Run RHESSys with RSS Maps
 
 ```{r Run RHESSYS in Parallel using foreach DSM, include=FALSE}
@@ -3844,8 +3899,6 @@ abline(h=0,lty=2)}
 abline(h=0,lty=2)}
 {plot(paramtable$vgseng3,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - vgseng3", main = "vgseng3 - NOT USED")
 abline(h=0,lty=2)}
-
-
 
 
 old.par <- par(mfrow=c(3, 7), mar = c(5,4,4,2))
@@ -4460,9 +4513,9 @@ dsmdist<- read.csv("out/dsmcalibrationoutput1023.txt", sep=" ")
 ssurgodist<- read.csv("out/ssurgocalibrationoutput1023.txt", sep = " ")
 staticdist<- read.csv("out/staticcalibrationoutput1023.txt", sep = " ")
 
-ssurgodist
-dsmdist
-staticdist
+paged_table(ssurgodist)
+paged_table(dsmdist)
+paged_table(staticdist)
 
 ssurgodist$treatment<- 'SSURGO'
 dsmdist$treatment<- 'RSS'
@@ -4603,7 +4656,7 @@ input_hdr = IOin_hdr(
 
 RSS - Run RHESSYs
 
-```{r Run RHESSYS in Parallel using foreach RSS 1}
+```{r Run RHESSYS in Parallel using foreach RSS 1, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -4641,7 +4694,6 @@ start_time = Sys.time()
 ```
 
 RSS - prepare site specific soil moisture datasets, make sure that each patch looks at this
-
 Site 2 at 60cm A was removed from the averaging because of no data
 
 ```{r}
@@ -4673,7 +4725,9 @@ lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
 
 
 ```
+
 RSS - read 20 runs, create table and append to table for site 1
+
 ```{r}
 # Read in RHESSys Validation runs
 for(i in 1:validationruns) { assign(paste0("cwws32valrss1_run",i), readin_rhessys_output(paste0("out/cwws32valrss1_run",i)))}
@@ -4718,7 +4772,9 @@ paste0("valmergesm",i,"$rz_storage","/valmergesm",i,"$root.depth")
 
 
 ```
+
 RSS - Explore Site 1
+
 ```{r}
 
 'Exploring Site 1 RSS'
@@ -4761,7 +4817,9 @@ lines(valmergesm43$Date,valmergesm43$Site1, col = 'BLUE', lty = 3)}
 lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 
 ```
+
 RSS - prepare to run model n times for patch 2 - only for validation time series
+
 ```{r}
 
 input_rhessys = IOin_rhessys_input(
@@ -4798,7 +4856,7 @@ input_hdr = IOin_hdr(
 
 RSS - run model in parallel 
 
-```{r Run RHESSYS in Parallel using foreach RSS 2}
+```{r Run RHESSYS in Parallel using foreach RSS 2, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -4873,7 +4931,9 @@ validationsmKGElistsite2
 
 
 ```
+
 RSS - Explore Site 2
+
 ```{r}
 
 'Exploring Site 2 RSS'
@@ -4955,7 +5015,7 @@ input_hdr = IOin_hdr(
 
 RSS - run model in parallel
 
-```{r Run RHESSYS in Parallel using foreach RSS 3}
+```{r Run RHESSYS in Parallel using foreach RSS 3, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -5024,7 +5084,9 @@ valmergesm2
 
  
 ```
+
 RSS - Explore Site 3
+
 ```{r}
 
 'Exploring Site 3 RSS'
@@ -5137,7 +5199,7 @@ input_hdr = IOin_hdr(
 
 run static
 
-```{r Run RHESSYS in Parallel using foreach STATIC 1}
+```{r Run RHESSYS in Parallel using foreach STATIC 1, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -5253,7 +5315,7 @@ input_hdr = IOin_hdr(
 
 run model in parallel 
 
-```{r Run RHESSYS in Parallel using foreach STATIC 2}
+```{r Run RHESSYS in Parallel using foreach STATIC 2, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -5364,7 +5426,7 @@ input_hdr = IOin_hdr(
 
 run model in parallel
 
-```{r Run RHESSYS in Parallel using foreach STATIC 3}
+```{r Run RHESSYS in Parallel using foreach STATIC 3, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -5499,7 +5561,7 @@ input_hdr = IOin_hdr(
 
 run SSURGO
 
-```{r Run RHESSYS in Parallel using foreach SSURGO 1}
+```{r Run RHESSYS in Parallel using foreach SSURGO 1, eval=FALSE, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
