@@ -101,6 +101,8 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 rh_ver = dir(path = "rh_dev/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 
+rh_ver
+
 test_that("compile_rhessys works + rhessys compiles via R system", {
   expect_gt(length(rh_ver), 0)
 })
@@ -2452,12 +2454,12 @@ stdpars<- IOin_std_pars(
 #patch.streamflow + hill.gw.Qout
 
 
-patchfilter <- build_output_filter(timestep = "daily", output_format= "csv", output_path = "./out", output_filename = "testfbasinstreamflow", spatial_level = "basin",spatial_ID = "1", variables = "base_flow" )
+patchfilter <- build_output_filter(timestep = "daily", output_format= "csv", output_path = "../out", output_filename = "testfbasinstreamflow", spatial_level = "basin",spatial_ID = "1", variables = "patch.total_water_in" )
 
 patchfilter
 
 
-patchfilter2<- read_output_filter("C:/Users/Carlos/Downloads/RHESSysIOinR-main/RHESSysIOinR-main/p301h2_filter.yml")
+patchfilter2<- read_output_filter("tecfiles/testing_filter2.yml")
 
 patchfilter2
 
