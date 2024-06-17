@@ -1,0 +1,2899 @@
+---
+title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step4"
+author: "Carlos Quintero"
+date: "5/24/2024"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r include=FALSE}
+knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```
+
+Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. 
+
+The following R Markdown script prepares and runs the Regional Hydro-Ecologic Simulation System (RHESSYS) within the R environment. 
+Modified from RHESSysIOinR example scripts created by Will Burke and Ryan Bart. Includes CLHS code snippets and SDA code from Dylan Beaudette.
+
+Windows Subsystem via Linux must be installed before RHESSys will run in a Windows environment.
+GRASS8 must be installed to run the spatial preprocessing portion of the script.
+
+Code has been modified to run RHESSys 7.4 and 5.18. 
+7.4 vegetation processing differs slightly from 5.18.
+Various template differences exist between the two versions of RHESSys and template files must be carefully reviewed if moving between versions.
+This script is currently set up to run RHESSys 7.4
+
+```{r setup, include=TRUE, verbose = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+#install.packages("devtools")
+#devtools::install_github("ropensci/FedData")
+
+library(aqp)
+library(daymetr)
+library(clhs)
+library(EcoHydRology)
+library(elevatr)
+library(ezknitr)
+library(FedData)
+library(foreach)
+library(foreign)
+library(ggplot2)
+library(ggpubr)
+library(hydroGOF)
+library(imputeTS)
+library(knitr)
+library(latticeExtra)
+library(lubridate)
+library(Metrics)
+library(raster)
+library(rasterVis)
+library(readxl)
+library(reshape2)
+library(rgdal)
+library(rgrass)
+library(rmarkdown)
+library(Rmisc)
+library(RHESSysPreprocessing)
+library(RHESSysIOinR)
+library(sf)
+library(soilDB)
+library(sp)
+library(stats)
+library(stringi)
+library(tactile)
+library(terra)
+library(testthat)
+library(tidyverse)
+library(viridisLite)
+library(dplyr)
+
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+ 
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
+
+getwd()
+
+rh_path = file.path("modelfiles/rhessys", rh_ver)
+
+## Load in necessary files
+filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
+
+watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
+streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
+weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
+roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Reprojected32617.shp")
+
+CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
+CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
+CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
+
+newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
+
+```
+New Patch Filter
+
+Basin - Basin 
+Hillslope - Subbasin
+Zone - Patch
+Patch - Patch 
+
+1 112 136557
+1 110 141942
+1 110 149478
+
+
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+patchfilterpatch1 = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "ws32patch1",
+                                   spatial_level = "patch",
+                                   spatial_ID = "1:112:136557:136557",
+                                   variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
+
+patchfilterpatch2 = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "ws32patch2",
+                                   spatial_level = "patch",
+                                   spatial_ID = "1:110:141942:141942",
+                                   variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
+
+patchfilterpatch3 = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "ws32patch3",
+                                   spatial_level = "patch",
+                                   spatial_ID = "1:110:149478:149478",
+                                   variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
+
+
+start_time = Sys.time()
+start_time
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
+                   runID = 'single')
+end_time = Sys.time()
+end_time - start_time
+end_time
+
+
+```
+
+
+Setup RHESSys Calibration, CLHS used to reduce amount of samples processed
+
+The model calibrates over the following parameters.
+
+M - Decay of hydraulic conductivity with depth
+K - Hydraulic conductivity at the surface
+Sd - soil depth
+Mv - Vertical decay of hydraulic conductivity with depth
+Kv - Vertical hydraulic conductivity at the surface
+GW1 - Saturated to Groundwater Coefficient
+GW2 - Groundwater Loss Coefficient
+
+
+Parameter & Typical Range from RHESSys Wiki
+
+M - .01 - 20
+K - 1 - 600
+GW1 -  .001 - .3
+GW2 -  .01 - .9
+
+" In order to generate an adequate sample across the full range for each parameter, values from .001 - .01, values from .01 - 1, and values over 1 should be generated separately. The m and K parameters are multipliers on the initial values set for m and K (values assigned to the m and K maps)." - Taken from RHESSys Wiki
+
+Additional Calibration Parameters are available natively although they are not as well documented
+
+pa - multiplier to scale the pore size index
+po - multiplier to scale the psi air entry 
+
+vseng1 - multiplies specific leaf areas
+vseng2 - multiplies the ratio of shaded to sunlit leaf area
+vseng3 - Multiplier used only with the Dickenson algorithm of carbon allocation (set with the epc.allocation_flag variable in the vegetation definition file). It changes the allocation of net photosynthate sensitivity based on the current LAI. If not using the Dickenson strategy of carbon allocation (i.e. using Waring or default Constant strategies), set third value to 1.0. (i.e. -vgsen 1.0 2.0 1.0)
+
+```{r RHESSys Calibration Parameter Setup}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+# number of samples for full data space
+fs <- 10000
+# number of samples to calibrate over, 100 samples take approx 40 mins in base R and 1 hour in rmarkdown
+n <- 6
+# create data frame
+d <- data.frame(
+  m = runif(fs, min=0.5, max=5),
+  k = runif(fs, min=0.5, max=60),
+  soil_dep = runif(fs, min=0.1, max=0.5),
+  m_v = runif(fs, min=0.5, max=15),
+  k_v = runif(fs, min=0.5, max=15),
+  gw1 = runif(fs, min=0.1, max=0.3),
+  gw2 = runif(fs, min=0.1, max=0.6),
+  pa = runif(fs, min=0.1, max=1.0),
+  po = runif(fs, min=1.0, max=2.0),
+  vgseng1 = runif(fs, min=0.1, max=2.0),
+  vgseng2 = runif(fs, min=0.1, max=2.0),
+  vgseng3 = runif(fs, min=0.1, max=2.0))
+# marginal distributions, for analysis
+m <- melt(d)
+bwplot(variable ~ value, data = m, par.settings = tactile.theme(), main = "distribution of calibration parameters before clhs subsetting")
+# cLHS subset
+s <- clhs(d, size = n, simple = TRUE, use.cpp = TRUE)
+# combine full dataset + subset
+g <- make.groups(full = d, cLHS = d[s, ])
+# create new list
+params<- d[s, ]
+
+params[1:5,]
+
+## Quick and dirty way to include "uncalibrated" result to test against, groundwater model still included for now, unsure of what to do with parameters for gw
+## params[1,] = c(1,1,1,1,1,0,0)
+## did not produce significantly different result
+
+#write param table to specific text file if file does not exist
+## if name is not changed then old table is used
+# paramtablename = "out/cwparamtable.txt" 
+
+getwd()
+
+##UNCOMMENT TO WRITE NEW PARAMS
+#  write.table(params, file = "out/cwparamtable.txt")
+###
+
+### writes new params table with todays date to a text file
+#write.table(params, file = paste("out/cwparamtable",format(Sys.Date(),"%m%d%y"),".txt",sep = ""))
+
+## reads in specific params file, used for keeping input params constant for analysis
+## do not rewrite file if it exits
+
+#{if (file.exists("out/cwparamtable.txt"))
+#   print("text")}
+
+params <- read.table(file = "out/cwparamtable.txt")
+
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32",
+  flowtable = "CWWS32.flow",
+  start = "2013 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+  commandline_options = c("-b"))
+
+#commandline_options = c("-b -p 1 128 154914 154914 ")) <- Patch Specific Output
+  
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+ 
+```
+ 
+Run RHESSys n times sequentially
+
+# NO LONGER USED
+
+```{r RHESSys Sequential Calibration, eval=FALSE, include=FALSE}
+start_time = Sys.time()
+
+for(i in 1:n) {
+ 
+stdpars<- IOin_std_pars(
+  m = params[i,]$m,
+  k = params[i,]$k,
+  soil_dep= params[i,]$soil_dep,
+  m_v = params[i,]$m_v,
+  k_v = params[i,]$k_v,
+  gw1 = params[i,]$gw1,
+  gw2 = params[i,]$gw2,
+  pa = params[i,]$pa,
+  po = params[i,]$po,
+  vgseng1 = params[i,]$vgseng1,
+  vgseng2 = params[i,]$vgseng2,
+  vgseng3 = params[i,]$vgseng3)
+
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   std_pars = stdpars,
+                   runID = i)} 
+
+end_time = Sys.time()
+
+end_time - start_time
+
+```
+
+Run RHESSys in Parallel using the foreach package, leaving 4 cores available for other tasks
+
+Takes about 1 hour for 100 runs at 10x10m Daily WS32.
+
+# NO LONGER USED
+
+```{r Run RHESSYS in Parallel using foreach, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_cmd_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       cmd_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+Prepare Static Inputs
+
+```{r Static }
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2013 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32static",
+  commandline_options = c("-b"))
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+ 
+```
+
+Run RHESSys Calibration with Static Maps
+
+```{r Run RHESSYS in Parallel using foreach Static, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+Prepare SSURGO Inputs
+
+```{r SSURGO}
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2013 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32ssurgo",
+  commandline_options = c("-b"))
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+ 
+```
+
+Run RHESSys with SSURGO Maps
+
+```{r Run RHESSYS in Parallel using foreach SSURGO, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+Prepare DSM/RSS Inputs
+
+```{r DSM}
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2013 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32dsm",
+  commandline_options = c("-b"))
+
+#commandline_options = c("-b -p 1 128 154914 154914 ")) <- Patch Specific Output
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+ 
+```
+# Modify for MCMC
+## must refine calibration to do multiple steps, first gw1 gw2, then other variables
+## multi point calibration and validation
+
+Run RHESSys with RSS Maps
+
+```{r Run RHESSYS in Parallel using foreach DSM, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+
+Read in RHESSys Calibration Outputs and Plot
+
+Calibration is performed using GLUE methodology and Nash-Sutcliffe Model Efficiency (NSE), Log-Normal Nash-Sutcliffe Model Efficiency (lnNSE), and Kling-Gupta Efficiency (KGE).
+
+```{r Read in RHESSys Calibration Outputs and Plot, fig.height=9, fig.width=14, paged.print=TRUE}
+ 
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+testoutput<- readin_rhessys_output("out/cwws32_run200")
+
+
+# Read in RHESSys Calibration runs
+for(i in 1:n) { assign(paste0("cwws32_run",i), readin_rhessys_output(paste0("out/cwws32_run",i)))}
+
+#Prepare observed Streamflow data
+obsws32$Date<- as.Date(obsws32$Date)
+
+## plot observed data for period of record and calibration/validation periods as defined by SM data
+{plot(obsws32$Date,obsws32$discharge_mm, type = 'l', xlim=c(as.Date(input_rhessys$start_date, "%Y%m%d"),as.Date(input_rhessys$end_date, "%Y%m%d")),ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Streamflow Discharge for period of time model is run")
+abline(v=as.Date(Caldates[1]), col = 'red', lwd = 2, lty = 2)
+abline(v=as.Date(Caldates[2]), col = 'red', lwd = 2, lty = 2)
+abline(v=as.Date(Valdates[1]), col = 'blue', lwd = 2, lty = 5)
+abline(v=as.Date(Valdates[2]), col = 'blue', lwd = 2, lty = 5)
+legend("topright",inset = 0.05, legend=c("Calibration","Validation"), col=c("red","blue"), lty=1)}
+
+
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+for(i in 1:n) { assign(paste0("simmerge",i), merge(obsws32,eval(parse(text = paste0("cwws32_run",i,"$bd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("calsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ])
+  assign(paste0("valsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Valdates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Valdates[2], ])}
+
+for(i in 1:n) { assign(paste0("simmergesm",i), merge(obsws32sm,eval(parse(text = paste0("cwws32_run",i,"$bd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("calsubsetsm",i),eval(parse(text = paste0("simmergesm",i)))[eval(parse(text = paste0("simmergesm",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmergesm",i,"$Date"))) <= Caldates[2], ])
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("simmergesm",i)))[eval(parse(text = paste0("simmergesm",i,"$Date"))) >= Valdates[1] & eval(parse(text = paste0("simmergesm",i,"$Date"))) <= Valdates[2], ])}
+
+# simmerge1<- merge(obsws32,eval(parse(text = paste0("cwws32_run",i,"$bd"))), by.x = "Date", by.y="date", all = FALSE)
+#simmergesm1<- merge(observedsubsetsm,eval(parse(text = paste0("cwws32_run",i,"$bd"))), by.x = "Date", by.y="date", all = FALSE)
+
+
+#subset observed data to calibration dates
+# calsubset <- eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ]
+
+#calsubsetsm <- observedsubsetsm[observedsubsetsm$Date >= Caldates[1] & observedsubsetsm$Date <= Caldates[2], ]
+```
+
+Calculate calibration performance metrics
+
+```{r calculate fit values and append them to a list, fig.height=9, fig.width=14, paged.print=TRUE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+NSElist<- c()
+lnNSElist<- c()
+KGElist<- c()
+
+smNSElist<- c()
+smlnNSElist<- c()
+smKGElist<- c()
+
+for(i in 1:n) { assign(paste0("NSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow")))) ))
+  NSElist[[i]]<- eval(parse(text = paste0("NSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("lnNSEobs",i), NSE( sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  lnNSElist[[i]]<- eval(parse(text = paste0("lnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("KGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow"))))))
+  KGElist[[i]]<- eval(parse(text = paste0("KGEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rz_storage","/simmergesm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+  smNSElist[[i]]<- eval(parse(text = paste0("smNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rz_storage","/simmergesm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  smlnNSElist[[i]]<- eval(parse(text = paste0("smlnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rz_storage","/simmergesm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+  smKGElist[[i]]<- eval(parse(text = paste0("smKGEobs",i))) }
+
+## modified for calsubset
+
+calNSElist<- c()
+callnNSElist<- c()
+calKGElist<- c()
+
+calsmNSElist<- c()
+calsmlnNSElist<- c()
+calsmKGElist<- c()
+
+for(i in 1:n) { assign(paste0("cNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow")))) ))
+  calNSElist[[i]]<- eval(parse(text = paste0("cNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("clnNSEobs",i), NSE( sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  callnNSElist[[i]]<- eval(parse(text = paste0("clnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("cKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow"))))))
+  calKGElist[[i]]<- eval(parse(text = paste0("cKGEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rz_storage","/calsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+  calsmNSElist[[i]]<- eval(parse(text = paste0("csmNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rz_storage","/calsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  calsmlnNSElist[[i]]<- eval(parse(text = paste0("csmlnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rz_storage","/calsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+  calsmKGElist[[i]]<- eval(parse(text = paste0("csmKGEobs",i))) }
+
+## modified for val subset
+
+valNSElist<- c()
+vallnNSElist<- c()
+valKGElist<- c()
+
+valsmNSElist<- c()
+valsmlnNSElist<- c()
+valsmKGElist<- c()
+
+
+for(i in 1:n) { assign(paste0("vNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow")))) ))
+  valNSElist[[i]]<- eval(parse(text = paste0("vNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("vlnNSEobs",i), NSE( sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  vallnNSElist[[i]]<- eval(parse(text = paste0("vlnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("vKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow"))))))
+  valKGElist[[i]]<- eval(parse(text = paste0("vKGEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+  valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+NSElist[1:5]
+KGElist[1:5]
+lnNSElist[1:5]
+
+Reduce(max, NSElist)
+Reduce(max, lnNSElist)
+Reduce(max, KGElist)
+
+Reduce(max, smNSElist)
+Reduce(max, smlnNSElist)
+Reduce(max, smKGElist)
+
+which(NSElist == Reduce(max, NSElist), arr.ind=TRUE)
+which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE)
+which(KGElist == Reduce(max, KGElist), arr.ind=TRUE)
+
+which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE)
+which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE)
+which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE)
+
+paramtable<- read.table(file = "out/cwparamtable091923.txt")
+
+paramtable[which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),]
+paramtable[which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),]
+paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
+
+paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
+paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
+paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
+
+# paramtable[7,]
+
+###plot all data for GLUE
+
+paramtable$run<- seq.int(nrow(paramtable))
+paramtable$rowname<- row.names(paramtable)
+
+paramtable$NSE<- NSElist
+paramtable$lnNSE<- lnNSElist
+paramtable$KGE<- KGElist
+
+paramtable$smNSE<- smNSElist
+paramtable$smlnNSE<- smlnNSElist
+paramtable$smKGE<- smKGElist
+
+#add in calibration values
+
+paramtable$calNSE<- calNSElist
+paramtable$callnNSE<- callnNSElist
+paramtable$calKGE<- calKGElist
+
+paramtable$calsmNSE<- calsmNSElist
+paramtable$calsmlnNSE<- calsmlnNSElist
+paramtable$calsmKGE<- calsmKGElist
+
+#add in validation values
+paramtable$valNSE<- valNSElist
+paramtable$vallnNSE<- vallnNSElist
+paramtable$valKGE<- valKGElist
+
+paramtable$valsmNSE<- valsmNSElist
+paramtable$valsmlnNSE<- valsmlnNSElist
+paramtable$valsmKGE<- valsmKGElist
+
+paramtable<- as.data.frame(lapply(paramtable,unlist))
+
+write.table(paramtable, file = "out/dsmcalibrationoutput1023.txt")
+
+
+top100<- paramtable[order(-paramtable$lnNSE),][1:100,]
+
+top100$run
+
+### use values from top 100 run to table of daily streamflow predictions, for each day predict 95% prediction interval and mean then plot
+#subset streamflow value for each day - day 1 day 2 etc
+#put all values into a table
+
+top100[["run"]]
+
+toppredictions<- data.frame(cwws32_run1$bd$date)
+
+for (i in top100$run){
+ # print(i)
+  toppredictions[,ncol(toppredictions)+1] <- eval(parse(text=paste0("cwws32_run",i,"$bd$streamflow")))
+  colnames(toppredictions)[ncol(toppredictions)] <- paste0("stream",i)
+}
+
+head(toppredictions[1:5,])
+
+toppredictions<- toppredictions[,-1]
+
+toppredictions$upper<- 0
+toppredictions$mean<- 0
+toppredictions$lower<- 0
+
+for (i in 1:nrow(toppredictions)){
+ #  print(i)
+  upper= CI(as.numeric(toppredictions[i,]),ci=0.95)[1]
+  mean= CI(as.numeric(toppredictions[i,]),ci=0.95)[2]
+  lower= CI(as.numeric(toppredictions[i,]),ci=0.95)[3]
+  
+  toppredictions[i,]$upper<- upper
+  toppredictions[i,]$mean<- mean
+  toppredictions[i,]$lower<- lower
+}
+
+toppredictions<-cbind(date = cwws32_run1$bd$date,toppredictions)
+
+head(toppredictions[1:5,])
+
+# toppredictions[1:500,]
+
+ggplot(toppredictions,aes(date,mean,group=1))+
+  geom_line(col = 'red')+
+  geom_ribbon(aes(ymin=lower, ymax=upper), fill = "blue", alpha=0.3)+
+  geom_line(data=calsubset1,aes(x=Date,y=discharge_mm))+
+  ylab("Discharge mm")+
+  xlab("Date")+
+  labs(title = "Top 100 Model Runs vs Measured Streamflow")
+
+
+par(mfrow=c(1, 1))
+
+{plot(paramtable$m,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - M", main = "M - Decay of hydraulic conductivity with depth")
+abline(h=0,lty=2)}
+{plot(paramtable$k,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - K", main = "K - Hydraulic conductivity at the surface")
+abline(h=0,lty=2)}
+{plot(paramtable$soil_dep,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - Sd", main = "Sd - soil depth")
+abline(h=0,lty=2)}
+{plot(paramtable$m_v,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - Mv", main = "Mv - Vertical decay of hydraulic conductivity with depth")
+abline(h=0,lty=2)}
+{plot(paramtable$k_v,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - Kv", main = "Kv - Vertical hydraulic conductivity at the surface")
+abline(h=0,lty=2)}
+{plot(paramtable$gw1,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - GW1", main = "GW1 - Saturated to Groundwater Coefficient")
+abline(h=0,lty=2)}
+{plot(paramtable$gw2,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - GW2", main = "GW2 - Groundwater Loss Coefficient")
+abline(h=0,lty=2)}
+
+{plot(paramtable$pa,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - pa", main = "pa - Pore Size Index Multiplier")
+abline(h=0,lty=2)}
+{plot(paramtable$po,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - po", main = "po - PSI Air Entry Multiplier")
+abline(h=0,lty=2)}
+{plot(paramtable$vgseng1,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - vgseng1", main = "vgseng1 - Specific Leaf Area Multiplier")
+abline(h=0,lty=2)}
+{plot(paramtable$vgseng2,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - vgseng2", main = "vgseng2 - Ratio of Shaded to Sunlit Modifier")
+abline(h=0,lty=2)}
+{plot(paramtable$vgseng3,paramtable$NSE, pch = 20,ylab="Nash-Sutcliffe model efficiency coefficient", xlab = "Multiplier - vgseng3", main = "vgseng3 - NOT USED")
+abline(h=0,lty=2)}
+
+
+old.par <- par(mfrow=c(3, 7), mar = c(5,4,4,2))
+
+plot(paramtable$m,paramtable$NSE,xlab = "m parameter", pch = 20)
+lines(lowess(paramtable$m,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$k,paramtable$NSE,xlab = "lateral ksat parameter", pch = 20)
+lines(lowess(paramtable$k,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$soil_dep,paramtable$NSE,xlab = "sdepth parameter", pch = 20)
+lines(lowess(paramtable$soil_dep,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$m_v,paramtable$NSE,xlab = "mv parameter", pch = 20)
+lines(lowess(paramtable$m_v,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$k_v,paramtable$NSE,xlab = "ksatv parameter", pch = 20)
+lines(lowess(paramtable$k_v,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$gw1,paramtable$NSE,xlab = "gw1 parameter", pch = 20)
+lines(lowess(paramtable$gw1,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+plot(paramtable$gw2,paramtable$NSE,xlab = "gw2 parameter", pch = 20)
+lines(lowess(paramtable$gw2,paramtable$NSE, f = 0.1),col="red",ylim = c(-1,0.7))
+
+
+plot(paramtable$m,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "m parameter", pch = 20)
+lines(lowess(paramtable$m,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$k,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "lateral ksat parameter", pch = 20)
+lines(lowess(paramtable$k,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$soil_dep,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "sdepth parameter", pch = 20)
+lines(lowess(paramtable$soil_dep,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$m_v,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "mv parameter", pch = 20)
+lines(lowess(paramtable$m_v,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$k_v,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "ksatv parameter", pch = 20)
+lines(lowess(paramtable$k_v,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$gw1,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "gw1 parameter", pch = 20)
+lines(lowess(paramtable$gw1,paramtable$lnNSE, f = 0.1),col="red")
+plot(paramtable$gw2,paramtable$lnNSE,ylim = c(-1,0.7),xlab = "gw2 parameter", pch = 20)
+lines(lowess(paramtable$gw2,paramtable$lnNSE, f = 0.1),col="red")
+
+
+plot(paramtable$m,paramtable$KGE,ylim = c(-0.25,1),xlab = "m parameter", pch = 20)
+lines(lowess(paramtable$m,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$k,paramtable$KGE,ylim = c(-0.25,1),xlab = "lateral ksat parameter", pch = 20)
+lines(lowess(paramtable$k,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$soil_dep,paramtable$KGE,ylim = c(-0.25,1),xlab = "sdepth parameter", pch = 20)
+lines(lowess(paramtable$soil_dep,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$m_v,paramtable$KGE,ylim = c(-0.25,0.7),xlab = "mv parameter", pch = 20)
+lines(lowess(paramtable$m_v,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$k_v,paramtable$KGE,ylim = c(-0.25,0.7),xlab = "ksatv parameter", pch = 20)
+lines(lowess(paramtable$k_v,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$gw1,paramtable$KGE,ylim = c(-0.25,0.7),xlab = "gw1 parameter", pch = 20)
+lines(lowess(paramtable$gw1,paramtable$KGE, f = 0.1),col="red")
+plot(paramtable$gw2,paramtable$KGE,ylim = c(-0.25,0.7),xlab = "gw2 parameter", pch = 20)
+lines(lowess(paramtable$gw2,paramtable$KGE, f = 0.1),col="red")
+
+par(old.par)
+
+old.par <- par(mfrow=c(1, 12), mar = c(5,4,4,2))
+
+plot(paramtable$m,paramtable$smKGE,ylim = c(-0.25,1),xlab = "m parameter", pch = 20)
+lines(lowess(paramtable$m,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$k,paramtable$smKGE,ylim = c(-0.25,1),xlab = "lateral ksat parameter", pch = 20)
+lines(lowess(paramtable$k,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$soil_dep,paramtable$smKGE,ylim = c(-0.25,1),xlab = "sdepth parameter", pch = 20)
+lines(lowess(paramtable$soil_dep,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$m_v,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "mv parameter", pch = 20)
+lines(lowess(paramtable$m_v,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$k_v,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "ksatv parameter", pch = 20)
+lines(lowess(paramtable$k_v,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$gw1,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "gw1 parameter", pch = 20)
+lines(lowess(paramtable$gw1,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$gw2,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "gw2 parameter", pch = 20)
+lines(lowess(paramtable$gw2,paramtable$smKGE, f = 0.1),col="red")
+
+plot(paramtable$pa,paramtable$smKGE,ylim = c(-0.25,1),xlab = "pore size index", pch = 20)
+lines(lowess(paramtable$pa,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$po,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "psi air entry", pch = 20)
+lines(lowess(paramtable$po,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$vgseng1,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "vgseng1", pch = 20)
+lines(lowess(paramtable$vgseng1,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$vgseng2,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "vgseng2", pch = 20)
+lines(lowess(paramtable$vgseng2,paramtable$smKGE, f = 0.1),col="red")
+plot(paramtable$vgseng3,paramtable$smKGE,ylim = c(-0.25,0.7),xlab = "vgseng3", pch = 20)
+lines(lowess(paramtable$vgseng3,paramtable$smKGE, f = 0.1),col="red")
+
+par(old.par)
+
+### end plot all data for GLUE
+
+paste0("cwws32_run",which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),"$bd$streamflow")
+paste0("cwws32_run",which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),"$bd$streamflow")
+paste0("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow")
+
+
+{plot(cwws32_run33$bd$date,cwws32_run33$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow")
+lines(cwws32_run65$bd$date,cwws32_run65$bd$streamflow, col = 'blue')
+#lines(cwws32_run46$bd$date,cwws32_run46$bd$streamflow, col = 'green')
+lines(simmerge1$Date,simmerge1$observedstreamflow, col = 'orange', lwd = 2, lty = 2)}
+
+
+#{plot(paste("cwws32_run",which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow")
+#lines(paste("cwws32_run",which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), col = 'blue')
+#lines(cwws32_run80$bd$date,cwws32_run80$bd$streamflow, col = 'green')
+#lines(paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), col = 'orange', lwd = 2, lty = 2)
+#legend("topleft",inset = 0.05, legend=c("Oberved Discharge","Best NSE","BEST lnNSE","Best KGE"), col=c("orange","red","blue","green"), lty=c(2,1,1,1))}
+
+{plot(cwws32_run24$bd$date,cwws32_run24$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
+#lines(cwws32_run47$bd$date,cwws32_run47$bd$streamflow, col = 'blue')
+lines(obsws32$Date,obsws32$discharge_mm, col = 'black', lwd = 2, lty = 2)}
+
+```
+
+*** VALIDATION ***
+
+Run Model once for validation, copied from previous code must clean up
+
+
+Configure RHESSys Inputs/Outputs for a single run.
+
+Use World Statefile created during spin-up. To run model one time at patch scale.
+
+ COMMAND LINE OPTIONS
+
+-b		Basin output option.  Print out response variables for specified basins. 
+-c		Canopy stratum output option.  Print out response variables for specified strata. 
+-g		Grow option.  Try to read in dynamic bgc input data and output dynamic bgc parameters. 
+-h    Hillslope output option.  Print out response variables for specified hillslopes. 
+-p		Patch output option.  Print out response variables for specified patches. 
+-r		Routing option. Gives name of flow_table to define explicit routing connectivity.  Also trigger use of explicit routing over TOPMODEL approach. 
+-c		Stratum output option.  Print out response variables for specified strata. 
+
+
+patches listed top to bottom
+
+```{r Configure RHESSys Inputs for Validation}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32",
+  flowtable = "CWWS321.flow",
+  start = "2013 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+#  commandline_options = c("-b -g -p"))
+ 
+ commandline_options = c("-b -p"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+#1 107 141942 136557
+#1 107 149478 136557
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+## Calibrated Values 
+
+which(NSElist == Reduce(max, NSElist), arr.ind=TRUE)
+which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE)
+which(KGElist == Reduce(max, KGElist), arr.ind=TRUE)
+
+which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE)
+which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE)
+which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE)
+
+paramtable[which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),]
+paramtable[which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),]
+paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
+
+paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
+paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
+paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
+
+stdpars<- IOin_std_pars(
+            m = 1.581785,
+            k = 41.12945,
+            soil_dep= 0.1776117,
+            m_v = 8.11574,
+            k_v = 0.8713272,
+            gw1 = 0.2477113,
+            gw2 = 0.4291277,
+            pa = 0.3913392,
+            po = 1.85424,
+            vgseng1 = 1.459184,
+            vgseng2 = 1.799894,
+            vgseng3 = 1.381696)
+
+#change_def_file()
+#test<- IOin_def_pars_simple(as.list("soil_shallowloam.def","porosity_decay", "1000", n = 150 ))
+
+```
+
+Run RHESSys once for validation
+
+```{r Run Rhessys Once for Validation, eval=FALSE, include=FALSE}
+
+start_time = Sys.time()
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   std_pars = stdpars,
+                   runID = 'validation')
+end_time = Sys.time()
+end_time - start_time
+
+```
+
+Read RHESSys Single Run Output
+
+```{r Read in RHESSys Validation Output}
+
+getwd()
+
+singlerunvalidation<- readin_rhessys_output("out/cwws32_runvalidation")
+
+plot(singlerunvalidation$bd$streamflow~singlerunvalidation$bd$date, type = "l", main = "Streamflow", xlab = "Date", ylab = "Streamflow", col = 'DarkBlue')
+
+plot(as.Date(singlerunvalidation$bd$date),singlerunvalidation$bd$rz_storage, type = "l", col = 'black', main = "Basin Scale Root Zone Storage",
+    xlab = "Date", ylab = "mm")
+
+#basin scale soil moisture
+plot(singlerunvalidation$bd$rz_storage/singlerunvalidation$bdg$root_depth~singlerunvalidation$bd$date, type = "l", main = "RZ_Storage/Root_Depth x Date", xlab = "Date", ylab = "rz_Storage/root_depth", col = 'brown')
+
+plot(singlerunvalidation$bd$lai~singlerunvalidation$bd$date, type = "l", main = "LAI", xlab = "Date", ylab = "LAI", col = 'DarkGreen')
+plot(singlerunvalidation$bd$pet~singlerunvalidation$bd$date, type = "l", main = "Potential Evapotranspiration", xlab = "Date", ylab = "PET", col = 'DarkBlue')
+plot(singlerunvalidation$bd$et~singlerunvalidation$bd$date, type = "l", main = "Evapotranspiration", xlab = "Date", ylab = "ET", col = 'darkslategray')
+
+plot((singlerunvalidation$bd$unsat_stor/singlerunvalidation$bd$sat_def_z)~singlerunvalidation$bd$date, type = "l", main = "unsat_stor/sat_def_z", xlab = "Date", ylab = "vwc", col = 'DarkGreen')
+
+
+```
+
+Merge Observed and Simulated Data
+
+```{r Merge Observed and Simulated Validation Datasets}
+## merge values instead of subsetting to match up with simulated dates
+singlerunvalidation$bd<- merge(singlerunvalidation$bd,obsws32, by.x = "date", by.y = "Date", all = FALSE)
+
+## merge soil moisture values but include all data
+singlerunvalidation$data <-merge(singlerunvalidation$bd,obsws32sm, by.x = "date", by.y = "Date", all = TRUE)
+```
+
+Plot Observed and Simulated Data, Plot RHESSys Outputs
+
+```{r Plot Observed and Simulated Validation Datasets}
+## Plot Hydrograph comparing modeled and observed streamflow
+{hydrograph(input=singlerunvalidation$bd, streamflow=singlerunvalidation$bd$observedstreamflow, streamflow2 = singlerunvalidation$bd$streamflow, timeSeries = singlerunvalidation$bd$date, precip = singlerunvalidation$bd$streamflow,
+           P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
+
+legend("topleft",inset = .2, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("blue","red"), lty=1:2)}
+
+{plot(singlerunvalidation$data$date,singlerunvalidation$data$observedstreamflow.x, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Streamflow")
+lines(singlerunvalidation$data$date, singlerunvalidation$data$streamflow, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:1)}
+
+{plot(singlerunvalidation$data$date,singlerunvalidation$data$observedstreamflow.x, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Log Streamflow", log = "y")
+lines(singlerunvalidation$data$date, singlerunvalidation$data$streamflow, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:1)}
+
+predictedvsobservedstreamlm<- lm(observedstreamflow~streamflow, data = singlerunvalidation$bd)
+
+{plot(singlerunvalidation$bd$observedstreamflow,singlerunvalidation$bd$streamflow, xlab = "Observed", ylab = "Predicted", main = "Predicted vs Observed Streamflow", xlim = c(0,55), ylim = c(0,55))
+abline(a=0, b=1, col = 'RED', lty = 2, lwd = 2)
+legend("right",inset = 0.01, legend = paste("R2 =",format(summary(predictedvsobservedstreamlm)$r.squared,digits=3)))}
+
+{plot(singlerunvalidation$data$date,(singlerunvalidation$data$rz_storage/singlerunvalidation$data$rootdepth), type = "l", ylim = c(0,0.35), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
+lines(singlerunvalidation$data$date, singlerunvalidation$data$mergedsoilmoisture, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("black","red"), lty=1:1)}
+
+predictedvsobservedsoillm<- lm((rz_storage/rootdepth)~mergedsoilmoisture, data = singlerunvalidation$data)
+
+{plot((singlerunvalidation$data$rz_storage/singlerunvalidation$data$rootdepth),singlerunvalidation$data$mergedsoilmoisture, xlab = "Observed", ylab = "Predicted", main = "Predicted vs Observed Basin Scale Soil Moisture", xlim = c(0.05,0.4), ylim = c(0.05,0.4))
+abline(a=0, b=1, col = 'RED', lty = 2, lwd = 2)
+legend("right",inset = 0.01, legend = paste("R2 =",format(summary(predictedvsobservedsoillm)$r.squared,digits=3)))}
+
+## Plot other model outputs
+
+par(mfrow=c(5,1), mar = c(2,5,4,2))
+
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$tmin, type = "l", col = 'BLUE', ylim = c(-15,30), ylab = "Temperature", xlab = "Date")
+lines(singlerunvalidation$bd$date,singlerunvalidation$bd$tmax, type = "l", col = 'RED')
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$precip, type = "h", ylab = "Precipitation", xlab = "Date")
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$streamflow, type = "l", ylab = "Streamflow", xlab = "Date", col = 'blue')
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$baseflow, type = "l", ylab = "Baseflow", xlab = "Date", col = 'brown')
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$rz_storage, type = "l", ylab = "RZ Storage", xlab = "Date", col = 'dark green')
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$psn ,type = "l", ylab = "PSN", xlab = "Date")
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$et, type = "l", ylab = "Evaoptranspiration", xlab = "Date")
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$pet, type = "l", ylab = "PET", xlab = "Date")
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$gw.Qout, type = "l", ylab = "Q out", xlab = "Date")
+plot(singlerunvalidation$bd$date,singlerunvalidation$bd$gw.storage, type = "l", ylab = "GW Storage", xlab = "Date")
+
+par(mfrow=c(1,1))
+
+### will only plot in growth mode , used to check that vegetation is initialized properly ##
+plot(singlerunvalidation$bdg$date, singlerunvalidation$bdg$lai, type = "l", main = "LAI", xlab = "Date", col = 'dark green')
+plot(singlerunvalidation$bdg$date, singlerunvalidation$bdg$soilc, type = "l", main = "Soil Carbon", xlab = "Date", col = 'brown')
+
+
+## plot cal/val sets
+
+{plot(singlerunvalidation$data$date,(singlerunvalidation$data$rz_storage/singlerunvalidation$data$rootdepth), type = "l", ylim = c(0,0.35), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
+lines(obsws32smcal$Date,obsws32smcal$mergedsoilmoisture, col = "BLUE")
+lines(obsws32smval$Date,obsws32smval$mergedsoilmoisture, col = "RED")
+legend("topright",inset = 0, legend=c("Predicted Soil Moisture","Observed Calibration Soil Moisture", "Observed Validation Soil Moisture"), col=c("black","blue","red"), lty=c(1,1,1))}
+
+{plot(singlerunvalidation$data$date,singlerunvalidation$data$streamflow, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Basin Scale Streamflow")
+lines(obsws32cal$Date,obsws32cal$observedstreamflow, col = "BLUE")
+lines(obsws32val$Date,obsws32val$observedstreamflow, col = "RED")
+legend("topright",inset = 0, legend=c("Predicted Streamflow","Observed Calibration Streamflow", "Observed Validation Streamflow"), col=c("black","blue","red"), lty=c(1,1,1))}
+```
+
+Spatial Data import and display of inputs
+
+```{r Display Spatial Inputs and Simulated Validation Soil Moisture, fig.height=10, fig.width=14}
+# Original input maps have been cropped before processing in R, without cropping the RHESSYs preparation in the R environment will not function properly, below are the input maps used by R
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+patches<- raster("grassexport/cwt_ws32/patch.tif")
+acc10<- raster("grassexport/cwt_ws32/acc10.tif")
+aspect10<- raster("grassexport/cwt_ws32/aspect10.tif")
+#bt1000<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/b.t1000.tif")
+dem10<- raster("grassexport/cwt_ws32/dem10.tif")
+dem10f<- raster("grassexport/cwt_ws32/dem10f.tif")
+dir10<- raster("grassexport/cwt_ws32/dir10.tif")
+drain10<- raster("grassexport/cwt_ws32/drain10.tif")
+#ht1000<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/h.t1000.tif")
+hillslope<- raster("grassexport/cwt_ws32/hillslope.tif")
+roads<- brick("grassexport/cwt_ws32/roads.tif")
+#shade10<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/shade10.tif")
+slope10<- raster("grassexport/cwt_ws32/slope10.tif")
+streams<- raster("grassexport/cwt_ws32/streams.tif")
+topidx10<- raster("grassexport/cwt_ws32/topidx10_100.tif")
+#xmap<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/xmap.tif")
+#ymap<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/ymap.tif")
+
+
+plot(ws32, main ="ws32")
+plot(patches, main = "patches")
+plot(acc10, main = "acc10")
+plot(aspect10, main = "aspect10")
+#levelplot(bt1000, col.regions = brewer.pal(name='Spectral', n = 11),at=seq(0,6500,1))
+#plot(bt1000, main = "bt1000")
+plot(dem10, main = "dem10")
+plot(dem10f, main = "dem10f")
+plot(dir10, main = "dir10")
+plot(drain10, main = "drain10")
+#plot(ht1000, main = "ht1000")
+{plot(hillslope, main = "hillslope")
+  points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+plot(roads, main = "roads")
+#plot(shade10, main = "shade10")
+plot(slope10, main = "slope10")
+plot(streams, main = "streams")
+plot(topidx10, main = "topidx10")
+#plot(xmap, main = "xmap")
+#plot(ymap, main = "ymap")
+
+```
+
+Show locations of measured soil moisture and soil maps
+
+```{r Display Locations of Observed Soil Moisture, fig.height=10, fig.width=10}
+
+colorramp<- viridis(128)
+
+{plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations")
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+
+
+matrix(c(ObservedSMLocations$Name[3],ObservedSMLocations$Name[4],ObservedSMLocations$Name[5],ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 3)
+
+
+{plot(soilstaticmap, col = colorramp, main = "Coweeta Observed Soil Moisture Locations on Static Soil Map")
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+
+{plot(soilssurgo, col = colorramp, main = "Coweeta Observed Soil Moisture Locations on SSURGO Soil Map")
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+
+{plot(soildsm, col = colorramp, main = "Coweeta Observed Soil Moisture Locations on RSS Soil Map")
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
+
+
+
+
+
+```
+
+Display outputs from model run
+
+```{r Display Spatial Outputs and Simulated Validation Soil Moisture, fig.height=10, fig.width=14}
+## Extract values for single date
+displayday <- singlerunvalidation$pd[which(singlerunvalidation$pd$date=="2018-03-21")]
+
+## reclassify all patches to na and then reclassify to model output values
+reclass_all<- c(-2147483648, 2147483647,NA)
+reclass_allm<- matrix(reclass_all, ncol = 3, byrow = TRUE)
+displaydaypatches<- reclassify(patches,reclass_allm)
+
+displayday$calculatedrzsm <- displayday$rz_storage/displayday$root.depth
+
+reclass_displayday <- cbind(displayday$patchID,displayday$calculatedrzsm)
+reclass_displayday <- as.matrix(reclass_displayday)
+
+displaydaypatches<- reclassify(patches,reclass_displayday)
+
+## Plot Spatial Data Output for RZ Storage
+#plot(displaydaypatches, xlim = c(280900,282500), ylim = c(4870000,4872000))
+
+{plot(mask(displaydaypatches,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 RZ Soil Moisture Prediction for 1 day", line = -2)
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", cex = 2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+
+reclass_displayday <- cbind(displayday$patchID,displayday$root.depth)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches2<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches2,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 root.depth Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+
+reclass_displayday <- cbind(displayday$patchID,displayday$rz_storage)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches3<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches3,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 rz_storage Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,displayday$sat_def)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches4<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches4,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 Saturation Deficit Prediction for 1 day in mm", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,(displayday$unsat_stor/displayday$sat_def_z))
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches5<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches5,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 unsaturated soil moisture vwc Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+
+reclass_displayday <- cbind(displayday$patchID,((displayday$root_zone.S*displayday$potential_rz_store)/displayday$root.depth))
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches6<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches6,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600), zlim = c(0,0.50))
+title("CW WS32 Rooting Depth VWC Prediction for 1 day", line = -2)
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", cex = 2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+{plot(mask(displaydaypatches,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600), zlim = c(0,0.50))
+title("CW WS32 RZ Soil Moisture Prediction for 1 day", line = -2)
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", cex = 2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+
+
+
+## Plot Hydrograph
+{hydrograph(input=singlerunvalidation$bd, streamflow=singlerunvalidation$bd$observedstreamflow, streamflow2 = singlerunvalidation$bd$streamflow, timeSeries = singlerunvalidation$bd$date, precip = singlerunvalidation$bd$streamflow,
+           P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
+legend("topleft",inset = .2, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("blue","red"), lty=1:2)}
+
+### end show patch map
+
+
+
+
+patchnumbers<- raster::extract(patches,matrix(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 2))
+
+
+ObserveSoilMoisturePatches <- matrix(c(ObservedSMLocations$Name[3],ObservedSMLocations$Name[4],ObservedSMLocations$Name[5],ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2],patchnumbers), nrow = 3, ncol = 4)
+
+
+## Extract values for a single patch, select patch ID
+ObserveSoilMoisturePatches[1,4]
+displaypatch<- singlerunvalidation$pd[which(singlerunvalidation$pd$patchID==ObserveSoilMoisturePatches[1,4])]
+ObserveSoilMoisturePatches[2,4]
+displaypatch2<- singlerunvalidation$pd[which(singlerunvalidation$pd$patchID==ObserveSoilMoisturePatches[2,4])]
+ObserveSoilMoisturePatches[3,4]
+displaypatch3<- singlerunvalidation$pd[which(singlerunvalidation$pd$patchID==ObserveSoilMoisturePatches[3,4])]
+
+plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #147322', ylim = c(0,.4))
+
+{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", ylim = c(0,.4), col = 'darkorange', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patches",
+     xlab = "Date", ylab = "Soil Moisture mm")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30A,type = "l", col = 'darkred')
+lines(smws32_3mean$Group.1,smws32_3mean$smois30A,type = "l", col = 'blue')
+lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'red', lty = 2)
+lines(displaypatch2$date,(displaypatch2$rz_storage/displaypatch2$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'green', lty = 2)
+lines(displaypatch3$date,(displaypatch3$rz_storage/displaypatch3$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'black', lty = 2)
+
+
+
+# plot(smws32_1mean$smois30A,(displaypatch$rz_storage/displaypatch$root.depth))
+
+legend("bottomleft",inset = .01, legend=c("Observed Patch 1","Predicted Patch 1","Observed Patch 2","Predicted Patch 2","Observed Patch 3","Predicted Patch 3"), col=c("darkorange", "red","darkred","green","blue","black"), lty=c(1,2,1,2,1,2))}
+
+{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patch #154914",
+     xlab = "Date", ylab = "Soil Moisture mm")
+lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",lwd = 2, xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
+lines(displaypatch$date, ((displaypatch$root_zone.S*displaypatch$potential_rz_store)/displaypatch$root.depth), type = "l", col = "green")
+legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
+
+
+#
+#obsws32cal <- obsws32[obsws32$Date >= Caldates[1] & obsws32$Date <= Caldates[2], ]
+#obsws32val <- obsws32[obsws32$Date >= Valdates[1] & obsws32$Date <= Valdates[2], ]
+#obsws32smcal <- obsws32sm[obsws32sm$Date >= Caldates[1] & obsws32sm$Date <= Caldates[2], ]
+#obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Valdates[2], ]
+
+head(obsws32cal)
+head(obsws32val)
+head(obsws32smcal)
+head(obsws32smval)
+
+#subset Validation range based on Val Dates set by available SM data
+
+validationsubset <- singlerunvalidation$bd[singlerunvalidation$bd$date >= Valdates[1] & singlerunvalidation$bd$date <= Valdates[2], ]
+
+## Fit tests for streamflow
+
+NSE(validationsubset$streamflow,validationsubset$observedstreamflow)
+
+NSE(validationsubset$streamflow,validationsubset$observedstreamflow, FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE)
+
+KGE(validationsubset$streamflow,validationsubset$observedstreamflow)
+
+# Plot Observed and Predicted Streamflow
+
+{plot(validationsubset$date,validationsubset$streamflow, type = 'l', lty = 2, col = 'RED', main = "Validation Subset Observed and Predicted Streamflow")
+lines(validationsubset$date,validationsubset$observedstreamflow, type = 'l', col = 'BLACK')
+legend("topright",inset = .1, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:2)}
+
+
+{plot(singlerunvalidation$bd$date,singlerunvalidation$bd$streamflow, type = 'l', lty = 2, col = 'RED', main = "Observed and Predicted Streamflow")
+lines(singlerunvalidation$bd$date,singlerunvalidation$bd$observedstreamflow, type = 'l', col = 'BLACK')
+legend("topright",inset = .1, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:2)}
+
+#Plot Model RZ SM outputs for patch
+{plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",ylim = c(0,0.50), ylab = "Root Zone Storage (mm/m) ", xlab = "Date", main = 'Root Zone Display Patch')
+lines(displaypatch$date,(displaypatch$rz_field_capacity/displaypatch$root.depth), type = "l", col = "blue")
+lines(displaypatch$date,(displaypatch$rz_wilting_point/displaypatch$root.depth), type = "l", col = "red")
+legend("bottomleft",inset = .1, legend=c("Predicted RZ Storage","RZ Field Capacity","RZ Wilting Point"), col=c("black","blue","red"), lty=1:1)}
+
+
+{plot(displaypatch$date,(displaypatch$unsat_stor/displaypatch$sat_def_z), type = "l",ylim = c(0,0.50), ylab = "Root Zone Storage (mm/m) ", xlab = "Date", main = 'Root Zone Display Patch')
+legend("bottomleft",inset = .1, legend=c("Predicted RZ Storage","RZ Field Capacity","RZ Wilting Point"), col=c("black","blue","red"), lty=1:1)}
+
+
+{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Saturated Zone VWC vs Patch #154914",
+     xlab = "Date", ylab = "Soil Moisture mm")
+lines(displaypatch$date,(displaypatch$unsat_stor/displaypatch$sat_def_z), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
+legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
+
+```
+
+Model Validation
+
+```{r}
+
+Valdates
+## for now run top run and record values
+
+paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
+
+paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
+
+
+{plot(cwws32_run136$bd$date,cwws32_run136$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top KGE Run", xlab = "Date", ylab = "Streamflow")
+lines(obsws32$Date,obsws32$discharge_mm, col = 'orange', lwd = 2, lty = 2)}
+
+
+valsubset <- simmerge136[simmerge136$Date >= Valdates[1] & simmerge136$Date <= Valdates[2], ]
+
+ValKGE<- KGE(sim = valsubset$streamflow, obs = valsubset$observedstreamflow)
+
+
+valsubsetsm<- simmergesm136[simmergesm136$Date >= Valdates[1] & simmergesm136$Date <= Valdates[2],]
+
+ValsmKGE<- KGE(sim = valsubsetsm$rz_storage/valsubsetsm$rootdepth, obs = valsubsetsm$mergedsoilmoisture)
+
+
+
+ValKGE
+
+ValsmKGE
+```
+
+Combine calibration outputs
+
+```{r}
+getwd()
+
+dsmdist<- read.csv("out/dsmcalibrationoutput1023.txt", sep=" ")
+ssurgodist<- read.csv("out/ssurgocalibrationoutput1023.txt", sep = " ")
+staticdist<- read.csv("out/staticcalibrationoutput1023.txt", sep = " ")
+
+paged_table(ssurgodist)
+paged_table(dsmdist)
+paged_table(staticdist)
+
+ssurgodist$treatment<- 'SSURGO'
+dsmdist$treatment<- 'RSS'
+staticdist$treatment<- 'Static'
+
+
+combineddist<- rbind(ssurgodist, dsmdist, staticdist)
+
+ggplot(combineddist, aes(calsmKGE, fill = treatment))+ geom_density(alpha=0.3)
+
+ggplot(combineddist, aes(calKGE, fill = treatment))+ geom_density(alpha=0.3)
+
+
+
+smKGEplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
+
+KGEplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
+
+ggarrange(smKGEplot,KGEplot, common.legend = TRUE, legend = "top")
+
+
+
+smKGEplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
+
+KGEplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
+
+ggarrange(smKGEplot,KGEplot, common.legend = TRUE, legend = "top")
+
+
+text <- "Coweeta Watershed 32 Calibration Performance"
+# Create a text grob
+tgrob <- text_grob(text,size = 16)
+# Draw the text
+plot_0 <- as_ggplot(tgrob) + theme(plot.margin = margin(0,3,0,12, "cm"))
+
+ggarrange(plot_0,NULL,smKGEplot,KGEplot,
+          ncol = 2,nrow = 2,heights = c(1,5), common.legend = TRUE, legend = "none")
+
+
+
+
+smKGEviolinplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_violin()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
+
+KGEviolinplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_violin()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
+
+ggarrange(smKGEviolinplot,KGEviolinplot, common.legend = TRUE, legend = "top")
+
+library(multcompView)
+library(datasets)
+
+oneway.test(valsmKGE~treatment, data= combineddist, var.equal = TRUE)
+
+anova<- aov(valsmKGE~treatment, data = combineddist)
+
+summary(anova)
+
+tukey <- TukeyHSD(anova)
+print(tukey)
+
+cld <- multcompLetters4(anova,tukey)
+
+print(cld)
+
+
+
+```
+
+Run top n model runs for validation
+
+50/50 weighting
+
+validation will only run 2 years before prediction time period
+
+```{r}
+combineddist
+
+plot(ssurgodist$calKGE, ssurgodist$calsmKGE, pch = 19, xlab = "Streamflow KGE", ylab = "Soil Moisture KGE")
+
+
+combineddist$weightedcal<- rowMeans(combineddist[,c("calKGE","calsmKGE")],)
+
+
+ordereddist <- combineddist[order(-combineddist$weightedcal),]
+
+ordereddist[ordereddist$treatment=="Static",]
+
+
+topstatic<- ordereddist[ordereddist$treatment=="Static",]
+topssurgo<- ordereddist[ordereddist$treatment=="SSURGO",]
+toprss<- ordereddist[ordereddist$treatment=="RSS",]
+
+toprss
+
+```
+
+RSS - prepare to run model n times for patch 1 - only for validation time series
+
+```{r}
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+getwd()
+
+validationruns <- 200
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valrss1",
+commandline_options = c("-b -p 1 110 136557 136557"))
+
+
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+RSS - Run RHESSYs
+
+```{r Run RHESSYS in Parallel using foreach RSS 1, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
+                            k = toprss[i,]$k,
+                            soil_dep= toprss[i,]$soil_dep,
+                            m_v = toprss[i,]$m_v,
+                            k_v = toprss[i,]$k_v,
+                            gw1 = toprss[i,]$gw1,
+                            gw2 = toprss[i,]$gw2,
+                            pa = toprss[i,]$pa,
+                            po = toprss[i,]$po,
+                            vgseng1 = toprss[i,]$vgseng1,
+                            vgseng2 = toprss[i,]$vgseng2,
+                            vgseng3 = toprss[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+RSS - prepare site specific soil moisture datasets, make sure that each patch looks at this
+Site 2 at 60cm A was removed from the averaging because of no data
+
+```{r}
+#Prepare observed Soil moisture data
+obsws32smvalclean<- data.frame(obsws32smval$Date,obsws32smval$mergedsoilmoisture)
+names(obsws32smvalclean)<- c('Date','mergedsoilmoisture')
+
+obsws32smvalclean
+
+
+
+obsws32smvalclean$Site3<- rowMeans(subset(obsws32smval, select = c(smois30site3a,smois60site3a,smois30site3b,smois60site3b), na.rm = TRUE))
+obsws32smvalclean$Site2<- rowMeans(subset(obsws32smval, select = c(smois30site2a,smois30site2b,smois60site2b), na.rm = TRUE))
+obsws32smvalclean$Site1<- rowMeans(subset(obsws32smval, select = c(smois30site1a,smois60site1a,smois30site1b,smois60site1b), na.rm = TRUE))
+
+
+
+obsws32smvalclean
+
+plot(obsws32smvalclean$Date,obsws32smvalclean$Site3, type = "l", main = "SITE 3 Averaged Sensor Output")
+
+obsws32smvalclean$Site3
+
+
+{plot(obsws32smvalclean$Date,obsws32smvalclean$mergedsoilmoisture, type = "l", main = "All site averaged sensor output", lty = 3, lwd = 2, ylim = c(0.10,0.35))
+lines(obsws32smvalclean$Date,obsws32smvalclean$Site1, col = 'BLUE')
+lines(obsws32smvalclean$Date,obsws32smvalclean$Site2, col = 'RED')
+lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
+
+
+```
+
+RSS - read 20 runs, create table and append to table for site 1
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valrss1_run",i), readin_rhessys_output(paste0("out/cwws32valrss1_run",i)))}
+
+
+plot(cwws32valrss1_run1$pd$date,cwws32valrss1_run1$pd$rz_storage/cwws32valrss1_run1$pd$root.depth, type = "l")
+
+
+
+
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss1_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite1<- c()
+validationsmlnNSElistsite1<- c()
+validationsmKGElistsite1<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+  validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite1
+
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+paste0("valmergesm",i,"$rz_storage","/valmergesm",i,"$root.depth")
+
+
+```
+
+RSS - Explore Site 1
+
+```{r}
+
+'Exploring Site 1 RSS'
+
+
+cwws32valrss1_run1
+
+{plot(cwws32valrss1_run1$bd$date, (cwws32valrss1_run1$bd$rz_storage/cwws32valrss1_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
+
+
+
+{plot(cwws32valrss1_run3$bd$date, (cwws32valrss1_run3$bd$rz_storage/cwws32valrss1_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, valmergesm3$Site1, type = "l")
+
+
+{plot(cwws32valrss1_run3$pd$date, (cwws32valrss1_run3$pd$rz_storage/cwws32valrss1_run3$pd$root.depth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
+
+
+{plot(cwws32valrss1_run3$pd$date, ((cwws32valrss1_run3$pd$root_zone.S*cwws32valrss1_run3$pd$potential_rz_store)/cwws32valrss1_run3$pd$root.depth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+
+{plot(cwws32valrss1_run3$bd$date, (cwws32valrss1_run3$bd$rz_storage/cwws32valrss1_run3$bd$rootdepth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss1_run43$pd$date, (cwws32valrss1_run43$pd$rz_storage/cwws32valrss1_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm43$Date,valmergesm43$Site1, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss1_run43$bd$date, (cwws32valrss1_run43$bd$rz_storage/cwws32valrss1_run43$bd$rootdepth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
+
+```
+
+RSS - prepare to run model n times for patch 2 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valrss2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+RSS - run model in parallel 
+
+```{r Run RHESSYS in Parallel using foreach RSS 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
+                            k = toprss[i,]$k,
+                            soil_dep= toprss[i,]$soil_dep,
+                            m_v = toprss[i,]$m_v,
+                            k_v = toprss[i,]$k_v,
+                            gw1 = toprss[i,]$gw1,
+                            gw2 = toprss[i,]$gw2,
+                            pa = toprss[i,]$pa,
+                            po = toprss[i,]$po,
+                            vgseng1 = toprss[i,]$vgseng1,
+                            vgseng2 = toprss[i,]$vgseng2,
+                            vgseng3 = toprss[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+RSS - read n runs, create table and append to table
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valrss2_run",i), readin_rhessys_output(paste0("out/cwws32valrss2_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite2<- c()
+validationsmlnNSElistsite2<- c()
+validationsmKGElistsite2<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+  validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite2
+
+
+
+
+
+
+```
+
+RSS - Explore Site 2
+
+```{r}
+
+'Exploring Site 2 RSS'
+
+
+cwws32valrss2_run1
+
+{plot(cwws32valrss2_run1$bd$date, (cwws32valrss2_run1$bd$rz_storage/cwws32valrss2_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
+
+
+
+{plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, valmergesm3$Site2, type = "l")
+
+
+{plot(cwws32valrss2_run3$pd$date, (cwws32valrss2_run3$pd$rz_storage/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+
+
+{plot(cwws32valrss2_run3$pd$date, ((cwws32valrss2_run3$pd$root_zone.S*cwws32valrss2_run3$pd$potential_rz_store)/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+
+{plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss2_run43$pd$date, (cwws32valrss2_run43$pd$rz_storage/cwws32valrss2_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm43$Date,valmergesm43$Site2, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss2_run43$bd$date, (cwws32valrss2_run43$bd$rz_storage/cwws32valrss2_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
+
+```
+
+prepare to run model 20 times for patch 3 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valrss3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+RSS - run model in parallel
+
+```{r Run RHESSYS in Parallel using foreach RSS 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
+                            k = toprss[i,]$k,
+                            soil_dep= toprss[i,]$soil_dep,
+                            m_v = toprss[i,]$m_v,
+                            k_v = toprss[i,]$k_v,
+                            gw1 = toprss[i,]$gw1,
+                            gw2 = toprss[i,]$gw2,
+                            pa = toprss[i,]$pa,
+                            po = toprss[i,]$po,
+                            vgseng1 = toprss[i,]$vgseng1,
+                            vgseng2 = toprss[i,]$vgseng2,
+                            vgseng3 = toprss[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+RSS - read n runs, create table and append to table
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valrss3_run",i), readin_rhessys_output(paste0("out/cwws32valrss3_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+validationsmNSElistsite3<- c()
+validationsmlnNSElistsite3<- c()
+validationsmKGElistsite3<- c()
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+  validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite3
+
+valmergesm2
+
+ 
+```
+
+RSS - Explore Site 3
+
+```{r}
+
+'Exploring Site 3 RSS'
+
+
+cwws32valrss3_run1
+
+{plot(cwws32valrss3_run1$bd$date, (cwws32valrss3_run1$bd$rz_storage/cwws32valrss3_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
+
+
+
+{plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+
+paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+plot(valmergesm3$Date, valmergesm3$Site3, type = "l")
+
+
+{plot(cwws32valrss3_run3$pd$date, (cwws32valrss3_run3$pd$rz_storage/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
+lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+
+
+{plot(cwws32valrss3_run3$pd$date, ((cwws32valrss3_run3$pd$root_zone.S*cwws32valrss3_run3$pd$potential_rz_store)/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
+lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+
+## based on landscape position the previous two figures differ, the second figure does not count inundation as "0" VWC
+
+#paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+
+
+{plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.0,0.45))
+lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss3_run43$pd$date, (cwws32valrss3_run43$pd$rz_storage/cwws32valrss3_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.35))
+lines(valmergesm43$Date,valmergesm43$Site3, col = 'BLUE', lty = 3)}
+
+{plot(cwws32valrss3_run43$bd$date, (cwws32valrss3_run43$bd$rz_storage/cwws32valrss3_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
+
+```
+
+
+RSS - merge all 3 sites
+
+```{r}
+
+threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
+
+
+threesitevalidation<-threesitevalidation1
+
+threesitevalidation$allsites<- rowMeans(threesitevalidation1,na.rm=FALSE)
+
+threesitevalidation
+
+
+boxplot(threesitevalidation1, main = "Boxplot of Patch Specific Soil Moisture KGE - RSS")
+boxplot(threesitevalidation, main = "Boxplot of Patch Specific Soil Moisture KGE - RSS")
+
+
+
+plot(validationsmKGElistsite1,validationsmKGElistsite3)
+
+write.csv(threesitevalidation,'threesitevalidationrss.csv')
+
+
+```
+
+STATIC
+
+run model n times for patch 1 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valstatic1",
+commandline_options = c("-b -p 1 110 136557 136557"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run static
+
+```{r Run RHESSYS in Parallel using foreach STATIC 1, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
+                            k = topstatic[i,]$k,
+                            soil_dep= topstatic[i,]$soil_dep,
+                            m_v = topstatic[i,]$m_v,
+                            k_v = topstatic[i,]$k_v,
+                            gw1 = topstatic[i,]$gw1,
+                            gw2 = topstatic[i,]$gw2,
+                            pa = topstatic[i,]$pa,
+                            po = topstatic[i,]$po,
+                            vgseng1 = topstatic[i,]$vgseng1,
+                            vgseng2 = topstatic[i,]$vgseng2,
+                            vgseng3 = topstatic[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table for patch 1
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valstatic1_run",i), readin_rhessys_output(paste0("out/cwws32valstatic1_run",i)))}
+
+
+plot(cwws32valstatic1_run1$pd$date,cwws32valstatic1_run1$pd$rz_storage/cwws32valstatic1_run1$pd$root.depth)
+
+
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic1_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite1<- c()
+validationsmlnNSElistsite1<- c()
+validationsmKGElistsite1<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+  validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite1
+
+
+
+```
+
+prepare to run model 20 times for patch 2 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valstatic2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run model in parallel 
+
+```{r Run RHESSYS in Parallel using foreach STATIC 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
+                            k = topstatic[i,]$k,
+                            soil_dep= topstatic[i,]$soil_dep,
+                            m_v = topstatic[i,]$m_v,
+                            k_v = topstatic[i,]$k_v,
+                            gw1 = topstatic[i,]$gw1,
+                            gw2 = topstatic[i,]$gw2,
+                            pa = topstatic[i,]$pa,
+                            po = topstatic[i,]$po,
+                            vgseng1 = topstatic[i,]$vgseng1,
+                            vgseng2 = topstatic[i,]$vgseng2,
+                            vgseng3 = topstatic[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valstatic2_run",i), readin_rhessys_output(paste0("out/cwws32valstatic2_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite2<- c()
+validationsmlnNSElistsite2<- c()
+validationsmKGElistsite2<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+  validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite2
+
+
+
+```
+
+run model 20 times for patch 3 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valstatic3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run model in parallel
+
+```{r Run RHESSYS in Parallel using foreach STATIC 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
+                            k = topstatic[i,]$k,
+                            soil_dep= topstatic[i,]$soil_dep,
+                            m_v = topstatic[i,]$m_v,
+                            k_v = topstatic[i,]$k_v,
+                            gw1 = topstatic[i,]$gw1,
+                            gw2 = topstatic[i,]$gw2,
+                            pa = topstatic[i,]$pa,
+                            po = topstatic[i,]$po,
+                            vgseng1 = topstatic[i,]$vgseng1,
+                            vgseng2 = topstatic[i,]$vgseng2,
+                            vgseng3 = topstatic[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valstatic3_run",i), readin_rhessys_output(paste0("out/cwws32valstatic3_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+validationsmNSElistsite3<- c()
+validationsmlnNSElistsite3<- c()
+validationsmKGElistsite3<- c()
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+  validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite3
+
+valmergesm2
+ 
+```
+
+merge all 3 sites 
+
+```{r}
+
+threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
+
+
+threesitevalidation<-threesitevalidation1
+
+threesitevalidation$allsites<- rowMeans(threesitevalidation1,na.rm=FALSE)
+
+threesitevalidation
+
+
+boxplot(threesitevalidation1, main = "Boxplot of Patch Specific Soil Moisture KGE - Static")
+boxplot(threesitevalidation, main = "Boxplot of Patch Specific Soil Moisture KGE - Static")
+
+
+
+plot(validationsmKGElistsite1,validationsmKGElistsite3)
+
+write.csv(threesitevalidation,'threesitevalidationstatic.csv')
+
+
+```
+
+SSURGO
+
+run model 20 times for patch 1 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valssurgo",
+commandline_options = c("-b -p 1 110 136557 136557"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run SSURGO
+
+```{r Run RHESSYS in Parallel using foreach SSURGO 1, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
+                            k = topssurgo[i,]$k,
+                            soil_dep= topssurgo[i,]$soil_dep,
+                            m_v = topssurgo[i,]$m_v,
+                            k_v = topssurgo[i,]$k_v,
+                            gw1 = topssurgo[i,]$gw1,
+                            gw2 = topssurgo[i,]$gw2,
+                            pa = topssurgo[i,]$pa,
+                            po = topssurgo[i,]$po,
+                            vgseng1 = topssurgo[i,]$vgseng1,
+                            vgseng2 = topssurgo[i,]$vgseng2,
+                            vgseng3 = topssurgo[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table for site 1
+
+```{r}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+
+getwd()
+
+validationruns <- 200
+
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) {assign(paste0("cwws32valssurgo_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo_run",i)))}
+
+plot(cwws32valssurgo_run1$pd$date,cwws32valssurgo_run1$pd$rz_storage/cwws32valssurgo_run1$pd$root.depth)
+
+
+
+
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite1<- c()
+validationsmlnNSElistsite1<- c()
+validationsmKGElistsite1<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+  validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite1
+
+
+
+```
+
+prepare to run model n times for patch 2 - only for validation time series
+
+```{r}
+
+validationruns <- 200
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valssurgo2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run model in parallel 
+
+```{r Run RHESSYS in Parallel using foreach SSURGO 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
+                            k = topssurgo[i,]$k,
+                            soil_dep= topssurgo[i,]$soil_dep,
+                            m_v = topssurgo[i,]$m_v,
+                            k_v = topssurgo[i,]$k_v,
+                            gw1 = topssurgo[i,]$gw1,
+                            gw2 = topssurgo[i,]$gw2,
+                            pa = topssurgo[i,]$pa,
+                            po = topssurgo[i,]$po,
+                            vgseng1 = topssurgo[i,]$vgseng1,
+                            vgseng2 = topssurgo[i,]$vgseng2,
+                            vgseng3 = topssurgo[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table for site 2
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valssurgo2_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo2_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+valmergesm1
+
+
+validationsmNSElistsite2<- c()
+validationsmlnNSElistsite2<- c()
+validationsmKGElistsite2<- c()
+
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+  validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+ validationsmKGElistsite2
+
+
+
+```
+
+run model 20 times for patch 3 - only for validation time series
+
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valssurgo3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
+
+run model in parallel
+
+```{r Run RHESSYS in Parallel using foreach SSURGO 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
+                            k = topssurgo[i,]$k,
+                            soil_dep= topssurgo[i,]$soil_dep,
+                            m_v = topssurgo[i,]$m_v,
+                            k_v = topssurgo[i,]$k_v,
+                            gw1 = topssurgo[i,]$gw1,
+                            gw2 = topssurgo[i,]$gw2,
+                            pa = topssurgo[i,]$pa,
+                            po = topssurgo[i,]$po,
+                            vgseng1 = topssurgo[i,]$vgseng1,
+                            vgseng2 = topssurgo[i,]$vgseng2,
+                            vgseng3 = topssurgo[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+read 20 runs, create table and append to table for site 3
+
+```{r}
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { assign(paste0("cwws32valssurgo3_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo3_run",i)))}
+
+##merge calibration runs with observed so dates match up, instead of subsetting 
+
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+  assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
+
+
+validationsmNSElistsite3<- c()
+validationsmlnNSElistsite3<- c()
+validationsmKGElistsite3<- c()
+
+#for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+#  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
+
+#for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+#  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
+
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+  validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
+
+
+validationsmKGElistsite3
+
+valmergesm2
+ 
+```
+
+merge all 3 sites
+
+```{r}
+
+threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
+
+
+threesitevalidation<-threesitevalidation1
+
+threesitevalidation$allsites<- rowMeans(threesitevalidation1,na.rm=FALSE)
+
+threesitevalidation
+
+
+boxplot(threesitevalidation1, main = "Boxplot of Patch Specific Root Zone Soil Moisture KGE - SSURGO")
+boxplot(threesitevalidation, main = "Boxplot of Patch Specific Root Zone Soil Moisture KGE - SSURGO")
+
+
+
+plot(validationsmKGElistsite1,validationsmKGElistsite3)
+
+write.csv(threesitevalidation,'threesitevalidationssurgo.csv')
+
+
+```
+
+Group by group
+color by site
+plot kge on y axis
+plot group on x axis
+
+```{r}
+
+ssurgovalidation<- read.csv("threesitevalidationssurgo.csv")
+rssvalidation<- read.csv("threesitevalidationrss.csv")
+staticvalidation<- read.csv("threesitevalidationstatic.csv")
+
+staticvalidation$group <- 'Static'
+rssvalidation$group <- 'RSS'
+ssurgovalidation$group<- 'SSURGO'
+
+combinedvalidation <- rbind(staticvalidation, rssvalidation, ssurgovalidation)
+
+
+combinedvalidationlong1<- data.frame("KGE" = combinedvalidation$site1, "group" = combinedvalidation$group)
+combinedvalidationlong2<- data.frame("KGE" = combinedvalidation$site2, "group" = combinedvalidation$group)
+combinedvalidationlong3<- data.frame("KGE" = combinedvalidation$site3, "group" = combinedvalidation$group)
+combinedvalidationlong4<- data.frame("KGE" = combinedvalidation$allsites, "group" = combinedvalidation$group)
+
+
+combinedvalidationlong1$site = '1'
+combinedvalidationlong2$site = '2'
+combinedvalidationlong3$site = '3'
+combinedvalidationlong4$site = 'All Sites'
+
+
+combinedvalidationlong<- rbind(combinedvalidationlong1,combinedvalidationlong2, combinedvalidationlong3, combinedvalidationlong4)
+
+combinedvalidationlong
+
+#Remove NA values so that boxplot will work
+
+validationnona<- subset(combinedvalidationlong,!is.na(combinedvalidationlong$KGE))
+
+
+threesitevalidationplot <- ggplot(validationnona, aes(group, y = KGE, fill = site))+ geom_boxplot()+ ylab("Soil Moisture KGE - Validation") +xlab("Soil Map Input")+ ggtitle("Patch Specific Soil Moisture KGE For ALL Calibration Runs, NA Excluded")+geom_hline(yintercept=-0.41,linetype=2, col = 'RED')+ scale_y_continuous(breaks=seq(-6,1,1))+ theme_minimal()
+
+threesitevalidationplot
+
+validationnona
+```
+

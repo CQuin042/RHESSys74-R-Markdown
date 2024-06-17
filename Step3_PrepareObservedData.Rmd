@@ -1,0 +1,742 @@
+---
+title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step2"
+author: "Carlos Quintero"
+date: "5/24/2024"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r include=FALSE}
+knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```
+
+Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. 
+
+The following R Markdown script prepares and runs the Regional Hydro-Ecologic Simulation System (RHESSYS) within the R environment. 
+Modified from RHESSysIOinR example scripts created by Will Burke and Ryan Bart. Includes CLHS code snippets and SDA code from Dylan Beaudette.
+
+Windows Subsystem via Linux must be installed before RHESSys will run in a Windows environment.
+GRASS8 must be installed to run the spatial preprocessing portion of the script.
+
+Code has been modified to run RHESSys 7.4 and 5.18. 
+7.4 vegetation processing differs slightly from 5.18.
+Various template differences exist between the two versions of RHESSys and template files must be carefully reviewed if moving between versions.
+This script is currently set up to run RHESSys 7.4
+
+```{r setup, include=TRUE, verbose = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+#install.packages("devtools")
+#devtools::install_github("ropensci/FedData")
+
+library(aqp)
+library(daymetr)
+library(clhs)
+library(EcoHydRology)
+library(elevatr)
+library(ezknitr)
+library(FedData)
+library(foreach)
+library(foreign)
+library(ggplot2)
+library(ggpubr)
+library(hydroGOF)
+library(imputeTS)
+library(knitr)
+library(latticeExtra)
+library(lubridate)
+library(Metrics)
+library(raster)
+library(rasterVis)
+library(readxl)
+library(reshape2)
+library(rgdal)
+library(rgrass)
+library(rmarkdown)
+library(Rmisc)
+library(RHESSysPreprocessing)
+library(RHESSysIOinR)
+library(sf)
+library(soilDB)
+library(sp)
+library(stats)
+library(stringi)
+library(tactile)
+library(terra)
+library(testthat)
+library(tidyverse)
+library(viridisLite)
+library(dplyr)
+
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+ 
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
+
+getwd()
+
+rh_path = file.path("modelfiles/rhessys", rh_ver)
+
+## Load in necessary files
+filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
+
+watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
+streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
+weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
+roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Reprojected32617.shp")
+
+CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
+CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
+CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
+
+newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
+
+```
+
+Plot and Filter Observed Soil Moisture
+
+This data has not been pre-prepared and must be cleaned
+
+"Legacy" Soil moisture datasets
+
+Coweeta Long Term Ecological Research Program and P. Bolstad. 2019. Continuously measured soil moisture, soil temperature, and air temperature from stations in Watershed 32, Coweeta Hydrologic Laboratory ver 19. Environmental Data Initiative. https://doi.org/10.6073/pasta/e47b36d4a18b8009b2a786acebeb9cba (Accessed 2024-06-17).
+
+```{r Read, Filter and Plot Observed Soil Moisture}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+smws32_1<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/CWT_132_1_0.txt"), header = T)
+smws32_2<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/CWT_232_1_1308.txt"), header = T)
+smws32_3<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/CWT_332_1_1308.txt"), header = T)
+
+smws32_1$Date<- as.Date(smws32_1$Date)
+smws32_2$Date<- as.Date(smws32_2$Date)
+smws32_3$Date<- as.Date(smws32_3$Date)
+
+smws32_1 <- smws32_1[,!sapply(smws32_1,is.character)]
+smws32_2 <- smws32_2[,!sapply(smws32_2,is.character)]
+smws32_3 <- smws32_3[,!sapply(smws32_3,is.character)]
+
+#range(smws32_3$smois30A)
+
+smws32_1mean<- aggregate(smws32_1, by = list(smws32_1$Date), FUN = function(x) mean(x, na.rm = TRUE))
+smws32_2mean<- aggregate(smws32_2, by = list(smws32_2$Date), FUN = function(x) mean(x, na.rm = TRUE))
+smws32_3mean<- aggregate(smws32_3, by = list(smws32_3$Date), FUN = function(x) mean(x, na.rm = TRUE))
+
+smws32_1mean <- smws32_1mean[order(smws32_1mean$Date),]
+smws32_2mean <- smws32_2mean[order(smws32_2mean$Date),]
+smws32_3mean <- smws32_3mean[order(smws32_3mean$Date),]
+
+#Filter Soil Moisture Datasets
+
+smws32_1mean  <- smws32_1mean[smws32_1mean$smois30A>'0',]
+smws32_3mean  <- smws32_3mean[smws32_3mean$smois30A<='0.45',]
+smws32_3mean  <- smws32_3mean[smws32_3mean$Date<='2018-05-15',]
+
+
+plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", main = "Soil Moisture 30cm Site 1", xlab = "Date", ylab = "Soil Moisture 30A")
+plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", col = "blue", main = "Soil Moisture 30cm Site 2", xlab = "Date", ylab = "Soil Moisture 30A")
+plot(smws32_3mean$Group.1,smws32_3mean$smois30A, type = "l", col = "red", main = "Soil Moisture 30cm Site 3", xlab = "Date", ylab = "Soil Moisture 30A")
+
+
+{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Observed Soil Moisture WS32 30cm")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_3mean$Group.1,smws32_3mean$smois30A, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+smws32_1mean  <- smws32_1mean[smws32_1mean$Date>='2017-01-01',]
+smws32_2mean  <- smws32_2mean[smws32_2mean$Date>='2017-01-01',]
+smws32_3mean  <- smws32_3mean[smws32_3mean$Date>='2017-01-01',]
+
+smws32_1mean  <- smws32_1mean[smws32_1mean$Date<='2018-05-15',]
+smws32_2mean  <- smws32_2mean[smws32_2mean$Date<='2018-05-15',]
+smws32_3mean  <- smws32_3mean[smws32_3mean$Date<='2018-05-15',]
+
+{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 30cm")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_3mean$Group.1,smws32_3mean$smois30A, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+{plot(density(smws32_1mean$smois30A), ylim = c(0,14), xlim = c(0,0.35), col = 'red', main = "Density of Observed Soil Moisture WS32 30cm")
+lines(density(smws32_2mean$smois30A), col = 'blue')
+lines(density(smws32_3mean$smois30A), col = 'black')
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 1")
+lines(smws32_1mean$Group.1,smws32_1mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws32_1mean$Group.1,smws32_1mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_1mean$Group.1,smws32_1mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1-30A","SM1-30B","SM1-60A","SM1-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+
+{plot(density(smws32_1mean$smois30A), ylim = c(0,14), xlim = c(0,0.35), col = 'red', main = "Density of Observed Soil Moisture WS32 Station 1")
+lines(density(smws32_1mean$smois30B), col = 'orange')
+lines(density(smws32_1mean$smois60A), col = 'blue')
+lines(density(smws32_1mean$smois60B), col = 'black')
+legend("topright",inset = 0.05, legend=c("SM1-30A","SM1-30B","SM1-60A","SM1-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+
+{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 2")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws32_2mean$Group.1,smws32_2mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_2mean$Group.1,smws32_2mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM2-30A","SM2-30B","SM2-60A","SM2-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+##extra filtering for smws32_60a
+smws32_2mean <- smws32_2mean %>%
+  mutate(smois60A = replace(smois60A,Date >= "2017-11-26", NA ))
+
+{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 2 Filtered")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws32_2mean$Group.1,smws32_2mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_2mean$Group.1,smws32_2mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM2-30A","SM2-30B","SM2-60A","SM2-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+{plot(smws32_3mean$Group.1,smws32_3mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 3")
+lines(smws32_3mean$Group.1,smws32_3mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws32_3mean$Group.1,smws32_3mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws32_3mean$Group.1,smws32_3mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM3-30A","SM3-30B","SM3-60A","SM3-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+soilmoisture30a<- data.frame(smws32_1mean$Date,smws32_1mean$smois30A, smws32_1mean$smois30B,smws32_1mean$smois60A,smws32_1mean$smois60B)
+soilmoisture30b<- data.frame(smws32_2mean$Date,smws32_2mean$smois30A, smws32_2mean$smois30B,smws32_2mean$smois60A,smws32_2mean$smois60B)
+soilmoisture30c<- data.frame(smws32_3mean$Date,smws32_3mean$smois30A,smws32_3mean$smois30B,smws32_3mean$smois60A,smws32_3mean$smois60B)
+
+
+merged30a<- merge(soilmoisture30a,soilmoisture30b, by.x = "smws32_1mean.Date", by.y = "smws32_2mean.Date", all = FALSE)
+
+merged30b<- merge(merged30a,soilmoisture30c, by.x = "smws32_1mean.Date", by.y = "smws32_3mean.Date", all = TRUE)
+
+merged30c<- as.data.frame(rowMeans((merged30b[-1]), na.rm= TRUE))
+
+
+mergedsm<- cbind(merged30b,merged30c)
+
+colnames(mergedsm)<- c("Date","smois30site1a","smois30site1b","smois60site1a","smois60site1b","smois30site2a","smois30site2b","smois60site2a","smois60site2b","smois30site3a","smois30site3b","smois60site3a","smois60site3b","mergedsoilmoisture")
+
+plot(mergedsm$Date, mergedsm$mergedsoilmoisture, type = "l", main = "Average WS32 Soil Moisture", xlab = "Date", ylab = "Merged Soil Moisture All Data")
+
+
+plot(mergedsm)
+
+## Calculate Calibration/Validation Split based on SM data
+
+daysofsmdata<- as.numeric(range(mergedsm$Date)[2] - range(mergedsm$Date)[1])
+
+#70/30 split
+
+Caldays<- round(0.7*daysofsmdata)
+Valdays<- daysofsmdata-Caldays
+
+Caldates<- as.Date(1)
+
+Caldates[1]<- range(mergedsm$Date)[1]
+
+Caldates[2]<- range(mergedsm$Date)[1]+Caldays
+
+Valdates<- as.Date(1)
+
+Valdates[1]<-  range(Caldates)[2]+1
+
+Valdates[2]<- range(mergedsm$Date)[2]
+
+
+```
+
+Plot and Filter Observed Streamflow Data
+
+Original Datasets are recorded as Water Year, We convert to calendar year
+
+```{r Read and Prepare observed Streamflow data for WS32}
+## import daily flow dataset
+obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32.csv"), header = F) 
+
+# dataset is recorded as water year, here we convert from water year and note that the water year for this landscape begins in November
+## calendar year seems to be correct
+
+obsws32$WYR <- as.numeric(obsws32$V1)
+obsws32$Month <- as.numeric(obsws32$V2)
+obsws32$Day <- as.numeric(obsws32$V3)
+obsws32$flow <- as.numeric(obsws32$V4)
+
+obsws32$CalendarYear<- ifelse((obsws32$Month=="12"|obsws32$Month=="11"),obsws32$WYR-1,obsws32$WYR)
+
+obsws32$CalendarDate <- as.Date(with(obsws32,paste(CalendarYear,Month,Day,sep="-")),"%Y-%m-%d") 
+
+##this removal of 0s may be reason for lag, 0s may be purposefully included in dataset
+# instead create timeseries of date from start to end of timeseries and then merge
+#obsws32<- obsws32[!(obsws32$flow=="0"),]
+
+obsws32 <- drop_na(obsws32)
+
+plot(obsws32$CalendarDate, obsws32$flow, type = "l", ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Discharge WS32 Older Dataset")
+
+obsws32_1<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2017.csv"), header = T)
+obsws32_2<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2018.csv"), header = T)
+obsws32_3<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2019.csv"), header = T)
+obsws32_4<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2020.csv"), header = T)
+obsws32_5<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32_2021.csv"), header = T)
+
+obsws32b<- rbind(obsws32_1,obsws32_2,obsws32_3,obsws32_4,obsws32_5)
+
+obsws32b$CalendarDate <- as.Date(with(obsws32b,paste(year,month,day,sep="-")),"%Y-%m-%d")
+
+plot(obsws32b$CalendarDate,obsws32b$flow, type = "l", xlab = "Date", ylab = "Streamflow", main = "Observed Discharge WS32 Newer Datasets Merged")
+
+dataset1   <- data.frame(Date=obsws32$CalendarDate,flow=obsws32$flow)
+dataset2   <- data.frame(Date=obsws32b$CalendarDate,flow=obsws32b$flow)
+
+fullset<- rbind(dataset1,dataset2)
+
+### Streamflow at Coweeta logged as CSM
+### conversion from EcohydRology project
+## because we are converting from CSM we set watershed area to 1
+
+fullset$discharge_mm<- ConvertFlowUnits(cfs = fullset$flow, WA=1, AREAunits = "mi2")
+
+#{plot(fullset$Date,fullset$flow, type = "l", xlab = "Date", ylab = "Flow", main = "Streamflow WS32")
+#lines(fullset$Date,fullset$discharge_mm, col = 'red')}
+
+plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = "Discharge mm/d", main = "Observed Discharge WS32 All Datasets Merged")
+
+plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = " Log Discharge mm/d", main = "Log of Observed Discharge WS32 All Datasets Merged", log = "y")
+
+fullset$observedstreamflow<- fullset$discharge_mm
+
+write.csv(fullset,paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
+
+obsws32<- fullset
+
+obsws32sm<- merge(obsws32,mergedsm, by = "Date")
+
+#Caldates
+#Valdates
+
+obsws32cal <- obsws32[obsws32$Date >= Caldates[1] & obsws32$Date <= Caldates[2], ]
+  
+obsws32val <- obsws32[obsws32$Date >= Valdates[1] & obsws32$Date <= Valdates[2], ]
+  
+obsws32smcal <- obsws32sm[obsws32sm$Date >= Caldates[1] & obsws32sm$Date <= Caldates[2], ]
+
+obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Valdates[2], ]
+
+```
+
+Merge Observed and Simulated Data
+
+```{r Merge Observed and Simulated Datasets}
+## merge values instead of subsetting to match up with simulated dates
+singleruntest$bd<- merge(singleruntest$bd,obsws32, by.x = "date", by.y = "Date", all = FALSE)
+
+## merge soil moisture values but include all data
+singleruntest$data <-merge(singleruntest$bd,obsws32sm, by.x = "date", by.y = "Date", all = TRUE)
+```
+
+Plot Observed and Simulated Data, Plot RHESSys Outputs
+
+```{r Plot Observed and Simulated Datasets}
+## Plot Hydrograph comparing modeled and observed streamflow
+{hydrograph(input=singleruntest$bd, streamflow=singleruntest$bd$observedstreamflow, streamflow2 = singleruntest$bd$streamflow, timeSeries = singleruntest$bd$date, precip = singleruntest$bd$streamflow,
+           P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
+
+legend("topleft",inset = .2, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("blue","red"), lty=1:2)}
+
+{plot(singleruntest$data$date,singleruntest$data$observedstreamflow.x, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Streamflow")
+lines(singleruntest$data$date, singleruntest$data$streamflow, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:1)}
+
+{plot(singleruntest$data$date,singleruntest$data$observedstreamflow.x, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Log Streamflow", log = "y")
+lines(singleruntest$data$date, singleruntest$data$streamflow, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:1)}
+
+predictedvsobservedstreamlm<- lm(observedstreamflow~streamflow, data = singleruntest$bd)
+
+{plot(singleruntest$bd$observedstreamflow,singleruntest$bd$streamflow, xlab = "Observed", ylab = "Predicted", main = "Predicted vs Observed Streamflow", xlim = c(0,55), ylim = c(0,55))
+abline(a=0, b=1, col = 'RED', lty = 2, lwd = 2)
+legend("right",inset = 0.01, legend = paste("R2 =",format(summary(predictedvsobservedstreamlm)$r.squared,digits=3)))}
+
+{plot(singleruntest$data$date,(singleruntest$data$rz_storage/singleruntest$data$rootdepth), type = "l", ylim = c(0,0.35), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
+lines(singleruntest$data$date, singleruntest$data$mergedsoilmoisture, col = 'RED')
+legend("topright",inset = 0, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("black","red"), lty=1:1)}
+
+predictedvsobservedsoillm<- lm((rz_storage/rootdepth)~mergedsoilmoisture, data = singleruntest$data)
+
+{plot((singleruntest$data$rz_storage/singleruntest$data$rootdepth),singleruntest$data$mergedsoilmoisture, xlab = "Observed", ylab = "Predicted", main = "Predicted vs Observed Basin Scale Soil Moisture", xlim = c(0.05,0.4), ylim = c(0.05,0.4))
+abline(a=0, b=1, col = 'RED', lty = 2, lwd = 2)
+legend("right",inset = 0.01, legend = paste("R2 =",format(summary(predictedvsobservedsoillm)$r.squared,digits=3)))}
+
+## Plot other model outputs
+
+par(mfrow=c(5,1), mar = c(2,5,4,2))
+
+plot(singleruntest$bd$date,singleruntest$bd$tmin, type = "l", col = 'BLUE', ylim = c(-15,30), ylab = "Temperature", xlab = "Date")
+lines(singleruntest$bd$date,singleruntest$bd$tmax, type = "l", col = 'RED')
+plot(singleruntest$bd$date,singleruntest$bd$precip, type = "h", ylab = "Precipitation", xlab = "Date")
+plot(singleruntest$bd$date,singleruntest$bd$streamflow, type = "l", ylab = "Streamflow", xlab = "Date", col = 'blue')
+plot(singleruntest$bd$date,singleruntest$bd$baseflow, type = "l", ylab = "Baseflow", xlab = "Date", col = 'brown')
+plot(singleruntest$bd$date,singleruntest$bd$rz_storage, type = "l", ylab = "RZ Storage", xlab = "Date", col = 'dark green')
+plot(singleruntest$bd$date,singleruntest$bd$psn ,type = "l", ylab = "PSN", xlab = "Date")
+plot(singleruntest$bd$date,singleruntest$bd$et, type = "l", ylab = "Evaoptranspiration", xlab = "Date")
+plot(singleruntest$bd$date,singleruntest$bd$pet, type = "l", ylab = "PET", xlab = "Date")
+plot(singleruntest$bd$date,singleruntest$bd$gw.Qout, type = "l", ylab = "Q out", xlab = "Date")
+plot(singleruntest$bd$date,singleruntest$bd$gw.storage, type = "l", ylab = "GW Storage", xlab = "Date")
+
+par(mfrow=c(1,1))
+
+### will only plot in growth mode , used to check that vegetation is initialized properly ##
+plot(singleruntest$bd$date, singleruntest$bd$lai, type = "l", main = "LAI", xlab = "Date")
+plot(singleruntest$bd$date, singleruntest$bd$soilc, type = "l", main = "Soil Carbon", xlab = "Date")
+
+
+## plot cal/val sets
+
+{plot(singleruntest$data$date,(singleruntest$data$rz_storage/singleruntest$data$rootdepth), type = "l", ylim = c(0,0.35),xlim = c(obsws32smcal$Date[1],obsws32smval$Date[length(obsws32smval$Date)]), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
+lines(obsws32smcal$Date,obsws32smcal$mergedsoilmoisture, col = "BLUE")
+lines(obsws32smval$Date,obsws32smval$mergedsoilmoisture, col = "RED")
+legend("topright",inset = 0, legend=c("Predicted Soil Moisture","Observed Calibration Soil Moisture", "Observed Validation Soil Moisture"), col=c("black","blue","red"), lty=c(1,1,1))}
+
+{plot(singleruntest$data$date,singleruntest$data$streamflow, type = "l", xlab = "Date", ylab = "Streamflow", main = "Predicted vs Observed Basin Scale Streamflow",xlim = c(obsws32smcal$Date[1],obsws32smval$Date[length(obsws32smval$Date)]))
+lines(obsws32cal$Date,obsws32cal$observedstreamflow, col = "BLUE")
+lines(obsws32val$Date,obsws32val$observedstreamflow, col = "RED")
+legend("topright",inset = 0, legend=c("Predicted Streamflow","Observed Calibration Streamflow", "Observed Validation Streamflow"), col=c("black","blue","red"), lty=c(1,1,1))}
+```
+
+Testing Precip input vs model precip
+
+```{r eval=FALSE, include=FALSE}
+str(daymet_data$data)
+
+daymetdate <- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), format = "%Y - %j")
+
+str(daymetdate)
+
+daymet_data$data$appendeddate<- daymetdate
+
+xlim= c(as.Date(singleruntest$bd$date[1]),as.Date(singleruntest$bd$date[length(singleruntest$bd$date)]))
+
+plot(daymet_data$data$appendeddate,daymet_data$data$prcp..mm.day., type = 'h')
+
+
+
+{plot(singleruntest$bd$date, singleruntest$bd$precip, type = 'h')
+
+
+lines(daymet_data$data$appendeddate,daymet_data$data$prcp..mm.day., type = 'h', col = 'red')}
+
+
+## lag likely caused by mismatch in in put precip data and model input precip data
+
+## attempt to remedy this by creating date vector and appending precip values, replace blanks with na or 0
+
+
+{plot(singleruntest$bd$date, singleruntest$bd$precip, type = 'h')
+
+lines(fulldaymetprecip$Dates,fulldaymetprecip$prcp..mm.day., type = 'h', col = 'red')}
+
+
+```
+
+Spatial Data Display
+
+# Original input maps have been cropped before processing in R, cropping seemed to reduce errors in preparation, below are the input maps used by R
+
+```{r Display Spatial Inputs and Simulated Soil Moisture, fig.height=10, fig.width=14}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# Original input maps have been cropped before processing in R, without cropping the RHESSYs preparation in the R environment will not function properly, below are the input maps used by R
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+patches<- raster("grassexport/cwt_ws32/patch.tif")
+acc10<- raster("grassexport/cwt_ws32/acc10.tif")
+aspect10<- raster("grassexport/cwt_ws32/aspect10.tif")
+#bt1000<- raster("grassexport/cwt_ws32/b.t1000.tif")
+dem10<- raster("grassexport/cwt_ws32/dem10.tif")
+dem10f<- raster("grassexport/cwt_ws32/dem10f.tif")
+dir10<- raster("grassexport/cwt_ws32/dir10.tif")
+drain10<- raster("grassexport/cwt_ws32/drain10.tif")
+#ht1000<- raster("grassexport/cwt_ws32/h.t1000.tif")
+hillslope<- raster("grassexport/cwt_ws32/hillslope.tif")
+roads<- brick("grassexport/cwt_ws32/roads.tif")
+#shade10<- raster("grassexport/cwt_ws32/shade10.tif")
+slope10<- raster("grassexport/cwt_ws32/slope10.tif")
+streams<- raster("grassexport/cwt_ws32/streams.tif")
+topidx10<- raster("grassexport/cwt_ws32/topidx10_100.tif")
+#xmap<- raster("grassexport/cwt_ws32/xmap.tif")
+#ymap<- raster("grassexport/cwt_ws32/ymap.tif")
+
+soilstatic<- raster("grassexport/cwt_ws32/ssurgosoil.tif")
+
+reclass_df <- c(0,256,9)
+reclass_static <- matrix(reclass_df, ncol = 3, byrow = TRUE)
+soilstaticmap<- reclassify(soilstatic, reclass_static)
+
+
+soilssurgo<- raster("grassexport/cwt_ws32/ssurgosoil.tif")
+soildsm<- raster("grassexport/cwt_ws32/dsmsoil.tif")
+veg<- raster("grassexport/cwt_ws32/nlcdveg.tif")
+
+
+plot(ws32, main ="ws32")
+plot(patches, main = "patches")
+plot(acc10, main = "acc10")
+plot(aspect10, main = "aspect10")
+#levelplot(bt1000, col.regions = brewer.pal(name='Spectral', n = 11),at=seq(0,6500,1))
+#plot(bt1000, main = "bt1000")
+plot(dem10, main = "dem10")
+plot(dem10f, main = "dem10f")
+plot(dir10, main = "dir10")
+plot(drain10, main = "drain10")
+#plot(ht1000, main = "ht1000")
+plot(hillslope, main = "hillslope")
+plot(roads, main = "roads")
+#plot(shade10, main = "shade10")
+plot(slope10, main = "slope10")
+plot(streams, main = "streams")
+plot(topidx10, main = "topidx10")
+#plot(xmap, main = "xmap")
+#plot(ymap, main = "ymap")
+
+plot(soilstaticmap, main = "Static Soil Input", zlim = c(0,26))
+plot(soilssurgo, main = "SSURGO Soil Input", zlim = c(0,26))
+plot(soildsm, main = "RSS Soil Input", zlim = c(0,26))
+
+plot(veg, main = "NLCD Veg Input")
+
+```
+
+New Soil Map Figure
+
+```{r}
+
+## plot 3 rasters with common legend, legend should only be integers shown in rasters
+
+
+```
+
+Quick map creation for WS7 soil moisture data display
+
+```{r}
+
+ws7demcrop <- crop(resampleddem,x[27,])
+ws7demcrop <- mask(ws7demcrop,x[27,])
+plot(ws7demcrop)
+
+Observedws7SMLocationsnt <- read_sf("C:/Users/Carlos/Desktop/ORISE/Soil Moisture Data/CW/knb-lter-cwt.1305.19/1305.kml")
+Observedws7SMLocations <- st_transform(Observedws7SMLocationsnt, crs(dem10))
+
+Newsoilmoisturelocationsnt<- read_sf(newsmlocations)
+Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
+
+colorramp<- viridis(1028)
+
+{plot(ws7demcrop, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
+points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+
+```
+
+Show Observed Soil Moisture Locations
+
+```{r Map of Locations of Observed Soil Moisture, fig.height=10, fig.width=10}
+
+ObservedSMLocationsnt <- read_sf(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/1308.kml"))
+
+ObservedSMLocations <- st_transform(ObservedSMLocationsnt, crs(dem10))
+
+Newsoilmoisturelocationsnt<- read_sf(newsmlocations)
+
+Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
+
+colorramp<- viridis(1028)
+
+{plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations")
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+
+}
+
+ {plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+
+ObservedSMLocations$Name[3]
+ObservedSMLocations[[3]][[3]]
+
+ObservedSMLocations$Name[4]
+ObservedSMLocations[[3]][[4]]
+
+ObservedSMLocations$Name[5]
+ObservedSMLocations[[3]][[5]]
+
+matrix(c(ObservedSMLocations$Name[3],ObservedSMLocations$Name[4],ObservedSMLocations$Name[5],ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 3)
+
+library(mapview)
+
+Coweeta <- st_read(watershedshapefile)
+
+mapview(Coweeta, label = Coweeta$WS, alpha.regions = 0.1, alpha = 1) +
+  mapview(ObservedSMLocations[3:5,]) 
+
+par(mfrow=c(1,2),mar=c(2, 3, 2, 5))
+ {plot(dem10, col = colorramp, main = "WS32", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+
+{plot(ws7demcrop, col = colorramp, main = "WS7", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
+points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
+points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
+}
+par(mfrow=c(1,1))
+```
+
+Display Observed and Simulated Soil Moisture
+
+```{r Display Spatial Outputs and Simulated Soil Moisture, fig.height=10, fig.width=14}
+## Extract values for single date
+displayday <- singleruntest$pd[which(singleruntest$pd$date=="2018-10-21")]
+
+## reclassify all patches to na and then reclassify to model output values
+reclass_all<- c(-2147483648, 2147483647,NA)
+reclass_allm<- matrix(reclass_all, ncol = 3, byrow = TRUE)
+displaydaypatches<- reclassify(patches,reclass_allm)
+
+displayday$calculatedrzsm <- displayday$rz_storage/displayday$root.depth
+
+reclass_displayday <- cbind(displayday$patchID,displayday$calculatedrzsm)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches<- reclassify(patches,reclass_displayday)
+
+## Plot Spatial Data Output for RZ Storage
+#plot(displaydaypatches, xlim = c(280900,282500), ylim = c(4870000,4872000))
+
+{plot(mask(displaydaypatches,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 RZ Soil Moisture Prediction for 1 day", line = -2)
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", cex = 2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,displayday$root.depth)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches2<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches2,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 root.depth Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,displayday$rz_storage)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches3<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches3,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 rz_storage Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,displayday$sat_def)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches4<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches4,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 saturation deficit Prediction for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+reclass_displayday <- cbind(displayday$patchID,displayday$rz_field_capacity/1000)
+reclass_displayday <- as.matrix(reclass_displayday)
+displaydaypatches5<- reclassify(patches,reclass_displayday)
+
+{plot(mask(displaydaypatches5,ws32), xlim = c(275000,276200), ylim = c(3881000,3881600))
+title("CW WS32 RZ Field Capacity for 1 day", line = -2)
+scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
+
+## Plot Hydrograph
+{hydrograph(input=singleruntest$bd, streamflow=singleruntest$bd$observedstreamflow, streamflow2 = singleruntest$bd$streamflow, timeSeries = singleruntest$bd$date, precip = singleruntest$bd$streamflow,
+           P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
+legend("topleft",inset = .2, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("blue","red"), lty=1:2)}
+
+### end show patch map
+
+patchnumbers<- raster::extract(patches,matrix(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), nrow = 3, ncol = 2))
+
+ObserveSoilMoisturePatches <- matrix(c(ObservedSMLocations$Name[3],ObservedSMLocations$Name[4],ObservedSMLocations$Name[5],ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1],ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2],patchnumbers), nrow = 3, ncol = 4)
+
+## Extract values for a single patch, select patch ID
+ObserveSoilMoisturePatches[1,4]
+displaypatch<- singleruntest$pd[which(singleruntest$pd$patchID==ObserveSoilMoisturePatches[1,4])]
+ObserveSoilMoisturePatches[2,4]
+displaypatch2<- singleruntest$pd[which(singleruntest$pd$patchID==ObserveSoilMoisturePatches[2,4])]
+ObserveSoilMoisturePatches[3,4]
+displaypatch3<- singleruntest$pd[which(singleruntest$pd$patchID==ObserveSoilMoisturePatches[3,4])]
+
+plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #147322', ylim = c(0,.4))
+
+{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", ylim = c(0,.4), col = 'darkorange', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patches",
+     xlab = "Date", ylab = "Soil Moisture mm")
+lines(smws32_2mean$Group.1,smws32_2mean$smois30A,type = "l", col = 'darkred')
+lines(smws32_3mean$Group.1,smws32_3mean$smois30A,type = "l", col = 'blue')
+lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'red', lty = 2)
+lines(displaypatch2$date,(displaypatch2$rz_storage/displaypatch2$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'green', lty = 2)
+lines(displaypatch3$date,(displaypatch3$rz_storage/displaypatch3$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'black', lty = 2)
+
+legend("bottomleft",inset = .01, legend=c("Observed Patch 1","Predicted Patch 1","Observed Patch 2","Predicted Patch 2","Observed Patch 3","Predicted Patch 3"), col=c("darkorange", "red","darkred","green","blue","black"), lty=c(1,2,1,2,1,2))}
+
+{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patch #154914",
+     xlab = "Date", ylab = "Soil Moisture mm")
+lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
+legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
+
+#obsws32cal <- obsws32[obsws32$Date >= Caldates[1] & obsws32$Date <= Caldates[2], ]
+#obsws32val <- obsws32[obsws32$Date >= Valdates[1] & obsws32$Date <= Valdates[2], ]
+#obsws32smcal <- obsws32sm[obsws32sm$Date >= Caldates[1] & obsws32sm$Date <= Caldates[2], ]
+#obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Valdates[2], ]
+
+head(obsws32cal)
+head(obsws32val)
+head(obsws32smcal)
+head(obsws32smval)
+
+#subset Validation range based on Val Dates set by available SM data
+
+validationsubset <- singleruntest$bd[singleruntest$bd$date >= Valdates[1] & singleruntest$bd$date <= Valdates[2], ]
+
+## Fit tests for streamflow
+
+NSE(validationsubset$streamflow,validationsubset$observedstreamflow)
+
+NSE(validationsubset$streamflow,validationsubset$observedstreamflow, FUN=log, epsilon = "Pushpalatha2012", na.rm=TRUE)
+
+nse_value <- NSE(log(validationsubset$streamflow + 1), log(validationsubset$observedstreamflow + 1), na.rm = TRUE)
+
+
+ KGE(validationsubset$streamflow,validationsubset$observedstreamflow)
+
+plot(validationsubset$streamflow~validationsubset$date, type = "l", col = 'red')
+lines(validationsubset$observedstreamflow~validationsubset$date)
+
+# Plot Observed and Predicted Streamflow
+
+{plot(validationsubset$date,validationsubset$streamflow, type = 'l', lty = 2, col = 'RED', main = "Streamflow")
+lines(validationsubset$date,validationsubset$observedstreamflow, type = 'l', col = 'BLACK')
+legend("topright",inset = .1, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:2)}
+
+
+{plot(singleruntest$bd$date,singleruntest$bd$streamflow, type = 'l', lty = 2, col = 'RED', main = "Streamflow")
+lines(singleruntest$bd$date,singleruntest$bd$observedstreamflow, type = 'l', col = 'BLACK')
+legend("topright",inset = .1, legend=c("Observed Streamflow","Predicted Streamflow"), col=c("black","red"), lty=1:2)}
+
+#Plot Model RZ SM outputs for patch
+{plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",ylim = c(0,0.50), ylab = "Root Zone Storage (mm/m) ", xlab = "Date", main = 'Root Zone Display Patch')
+lines(displaypatch$date,(displaypatch$rz_field_capacity/displaypatch$root.depth), type = "l", col = "blue")
+lines(displaypatch$date,(displaypatch$rz_wilting_point/displaypatch$root.depth), type = "l", col = "red")
+legend("bottomleft",inset = .1, legend=c("Predicted RZ Storage","RZ Field Capacity","RZ Wilting Point"), col=c("black","blue","red"), lty=1:1)}
+
+```

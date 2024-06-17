@@ -2186,7 +2186,7 @@ create_flownet(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
   map_dir = "grassexport/cwt_ws32",
   streams = "streams.tif",
   overwrite = TRUE,
-  parallel = FALSE,
+  parallel = TRUE,
   make_stream = TRUE)
 
 
