@@ -114,8 +114,8 @@ read_clim("clim/cwtws32local.rain", dates_out=TRUE)
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world",
-  world_hdr_prefix = "CWWS32",
+  world_file = "CWWS32static.world",
+  world_hdr_prefix = "CWWS32static",
   flowtable = "CWWS32.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
@@ -123,7 +123,7 @@ input_rhessys = IOin_rhessys_input(
   output_prefix = "cwws32",
   commandline_options = c("-b -g"))
 
-input_tec_data = IOin_tec_std(start = "1776 11 1 1",
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
                               output_state = TRUE)
 
@@ -176,9 +176,9 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32static.world.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
   output_folder = "out",
@@ -200,7 +200,7 @@ Read Spinup and confirm that Soil C and Soil N have stabilized
 
 ```{r Read RHESSys Spinup}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-spinupoutput<- readin_rhessys_output("out/cwws32_runspinup")
+spinupoutput<- readin_rhessys_output("out/CWWS32static_runspinup")
 
 #spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
 #spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")

@@ -2144,6 +2144,8 @@ template file 'CWWS32_STATICspinup.template' is used to spin up model. Only diff
 
 # must setup automatic spinup and preprocessing for all treatments, right now spinup requires manual template input and 2 runs for creation
 
+## create 3 templates
+
 ```{r RHESSys PreProcess and Flowtable Conversion, verbose = FALSE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 

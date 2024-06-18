@@ -1,7 +1,7 @@
 ---
-title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step4"
+title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step5"
 author: "Carlos Quintero"
-date: "5/24/2024"
+date: "6/17/2024"
 output:
   html_document: default
   pdf_document: default
@@ -638,7 +638,6 @@ valsubsetsm<- simmergesm136[simmergesm136$Date >= Valdates[1] & simmergesm136$Da
 ValsmKGE<- KGE(sim = valsubsetsm$rz_storage/valsubsetsm$rootdepth, obs = valsubsetsm$mergedsoilmoisture)
 
 
-
 ValKGE
 
 ValsmKGE
@@ -661,7 +660,6 @@ ssurgodist$treatment<- 'SSURGO'
 dsmdist$treatment<- 'RSS'
 staticdist$treatment<- 'Static'
 
-
 combineddist<- rbind(ssurgodist, dsmdist, staticdist)
 
 ggplot(combineddist, aes(calsmKGE, fill = treatment))+ geom_density(alpha=0.3)
@@ -669,13 +667,11 @@ ggplot(combineddist, aes(calsmKGE, fill = treatment))+ geom_density(alpha=0.3)
 ggplot(combineddist, aes(calKGE, fill = treatment))+ geom_density(alpha=0.3)
 
 
-
 smKGEplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
 
 KGEplot<- ggplot(combineddist, aes(calKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Streamflow KGE - Calibration")+ylab(NULL)
 
 ggarrange(smKGEplot,KGEplot, common.legend = TRUE, legend = "top")
-
 
 
 smKGEplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_boxplot()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
@@ -693,9 +689,6 @@ plot_0 <- as_ggplot(tgrob) + theme(plot.margin = margin(0,3,0,12, "cm"))
 
 ggarrange(plot_0,NULL,smKGEplot,KGEplot,
           ncol = 2,nrow = 2,heights = c(1,5), common.legend = TRUE, legend = "none")
-
-
-
 
 smKGEviolinplot<- ggplot(combineddist, aes(calsmKGE, y = treatment, fill = treatment))+ geom_violin()+ xlab("Soil Moisture KGE - Calibration") +ylab("Soil Map Input")
 
@@ -719,8 +712,6 @@ cld <- multcompLetters4(anova,tukey)
 
 print(cld)
 
-
-
 ```
 
 Run top n model runs for validation
@@ -734,14 +725,11 @@ combineddist
 
 plot(ssurgodist$calKGE, ssurgodist$calsmKGE, pch = 19, xlab = "Streamflow KGE", ylab = "Soil Moisture KGE")
 
-
 combineddist$weightedcal<- rowMeans(combineddist[,c("calKGE","calsmKGE")],)
-
 
 ordereddist <- combineddist[order(-combineddist$weightedcal),]
 
 ordereddist[ordereddist$treatment=="Static",]
-
 
 topstatic<- ordereddist[ordereddist$treatment=="Static",]
 topssurgo<- ordereddist[ordereddist$treatment=="SSURGO",]
@@ -771,8 +759,6 @@ input_rhessys = IOin_rhessys_input(
   output_folder = "out",
   output_prefix = "cwws32valrss1",
 commandline_options = c("-b -p 1 110 136557 136557"))
-
-
 
 #commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
 
@@ -1271,7 +1257,6 @@ lines(valmergesm43$Date,valmergesm43$Site3, col = 'BLUE', lty = 3)}
 lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
 
 ```
-
 
 RSS - merge all 3 sites
 
