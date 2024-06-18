@@ -738,7 +738,8 @@ toprss
 RSS - prepare to run model n times for patch 1 - only for validation time series
 
 ```{r}
-setwd(system.file("extdata/", package = "RHESSysIOinR"))
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 getwd()
 
 validationruns <- 200
@@ -746,15 +747,19 @@ validationruns <- 200
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
   start = "2015 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32valrss1",
-commandline_options = c(""))
+commandline_options = c("-b -p 1 110 136557 136557"))
 
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
 input_tec_data = IOin_tec_std(start = "2017 11 1 1",
                               end = "2018 11 1 1",
                               output_state = FALSE)
@@ -767,6 +772,7 @@ input_hdr = IOin_hdr(
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
+
 
 ```
 RSS - Run RHESSYs
@@ -784,7 +790,7 @@ start_time = Sys.time()
   
   foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
     
-    stdpars<- IOin_cmd_pars(m = toprss[i,]$m,
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
                             k = toprss[i,]$k,
                             soil_dep= toprss[i,]$soil_dep,
                             m_v = toprss[i,]$m_v,
@@ -800,16 +806,14 @@ start_time = Sys.time()
     run_rhessys_single(input_rhessys = input_rhessys,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
-                       cmd_pars = stdpars,
-                       output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
+                       std_pars = stdpars,
                        runID = i)
   } 
   
   end_time = Sys.time()
   end_time - start_time
-  
 ```
-##prepare data
+
 RSS - prepare site specific soil moisture datasets, make sure that each patch looks at this
 Site 2 at 60cm A was removed from the averaging because of no data
 
@@ -842,7 +846,6 @@ lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
 
 
 ```
-
 RSS - read 20 runs, create table and append to table for site 1
 
 ```{r}
@@ -851,6 +854,10 @@ for(i in 1:validationruns) { assign(paste0("cwws32valrss1_run",i), readin_rhessy
 
 
 plot(cwws32valrss1_run1$pd$date,cwws32valrss1_run1$pd$rz_storage/cwws32valrss1_run1$pd$root.depth, type = "l")
+
+
+
+
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
@@ -931,8 +938,77 @@ lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 ```
 RSS - prepare to run model n times for patch 2 - only for validation time series
 
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valrss2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 RSS - run model in parallel 
 
+```{r Run RHESSYS in Parallel using foreach RSS 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
+                            k = toprss[i,]$k,
+                            soil_dep= toprss[i,]$soil_dep,
+                            m_v = toprss[i,]$m_v,
+                            k_v = toprss[i,]$k_v,
+                            gw1 = toprss[i,]$gw1,
+                            gw2 = toprss[i,]$gw2,
+                            pa = toprss[i,]$pa,
+                            po = toprss[i,]$po,
+                            vgseng1 = toprss[i,]$vgseng1,
+                            vgseng2 = toprss[i,]$vgseng2,
+                            vgseng3 = toprss[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 RSS - read n runs, create table and append to table
 
 ```{r}
@@ -944,11 +1020,14 @@ for(i in 1:validationruns) { assign(paste0("cwws32valrss2_run",i), readin_rhessy
 for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
+
 valmergesm1
+
 
 validationsmNSElistsite2<- c()
 validationsmlnNSElistsite2<- c()
 validationsmKGElistsite2<- c()
+
 
 #for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
 #  valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
@@ -959,7 +1038,13 @@ validationsmKGElistsite2<- c()
 for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
   validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
+
 validationsmKGElistsite2
+
+
+
+
+
 
 ```
 RSS - Explore Site 2
@@ -1008,8 +1093,77 @@ lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
 ```
 prepare to run model 20 times for patch 3 - only for validation time series
 
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valrss3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 RSS - run model in parallel
 
+```{r Run RHESSYS in Parallel using foreach RSS 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = toprss[i,]$m,
+                            k = toprss[i,]$k,
+                            soil_dep= toprss[i,]$soil_dep,
+                            m_v = toprss[i,]$m_v,
+                            k_v = toprss[i,]$k_v,
+                            gw1 = toprss[i,]$gw1,
+                            gw2 = toprss[i,]$gw2,
+                            pa = toprss[i,]$pa,
+                            po = toprss[i,]$po,
+                            vgseng1 = toprss[i,]$vgseng1,
+                            vgseng2 = toprss[i,]$vgseng2,
+                            vgseng3 = toprss[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 RSS - read n runs, create table and append to table
 
 ```{r}
@@ -1129,8 +1283,12 @@ input_rhessys = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32valstatic1",
-commandline_options = c(""))
+commandline_options = c("-b -p 1 110 136557 136557"))
 
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
 input_tec_data = IOin_tec_std(start = "2017 11 1 1",
                               end = "2018 11 1 1",
                               output_state = FALSE)
@@ -1143,6 +1301,7 @@ input_hdr = IOin_hdr(
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
+
 
 ```
 run static
@@ -1160,7 +1319,7 @@ start_time = Sys.time()
   
   foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
     
-    stdpars<- IOin_cmd_pars(m = topstatic[i,]$m,
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
                             k = topstatic[i,]$k,
                             soil_dep= topstatic[i,]$soil_dep,
                             m_v = topstatic[i,]$m_v,
@@ -1176,8 +1335,7 @@ start_time = Sys.time()
     run_rhessys_single(input_rhessys = input_rhessys,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
-                       cmd_pars = stdpars,
-                       output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
+                       std_pars = stdpars,
                        runID = i)
   } 
   
@@ -1193,12 +1351,16 @@ for(i in 1:validationruns) { assign(paste0("cwws32valstatic1_run",i), readin_rhe
 
 plot(cwws32valstatic1_run1$pd$date,cwws32valstatic1_run1$pd$rz_storage/cwws32valstatic1_run1$pd$root.depth)
 
+
+
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
 for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic1_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
+
 valmergesm1
+
 
 validationsmNSElistsite1<- c()
 validationsmlnNSElistsite1<- c()
@@ -1214,12 +1376,85 @@ validationsmKGElistsite1<- c()
 for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
   validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
+
 validationsmKGElistsite1
+
+
 
 ```
 prepare to run model 20 times for patch 2 - only for validation time series
 
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valstatic2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 run model in parallel 
+
+```{r Run RHESSYS in Parallel using foreach STATIC 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
+                            k = topstatic[i,]$k,
+                            soil_dep= topstatic[i,]$soil_dep,
+                            m_v = topstatic[i,]$m_v,
+                            k_v = topstatic[i,]$k_v,
+                            gw1 = topstatic[i,]$gw1,
+                            gw2 = topstatic[i,]$gw2,
+                            pa = topstatic[i,]$pa,
+                            po = topstatic[i,]$po,
+                            vgseng1 = topstatic[i,]$vgseng1,
+                            vgseng2 = topstatic[i,]$vgseng2,
+                            vgseng3 = topstatic[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 
 read 20 runs, create table and append to table
 
@@ -1257,10 +1492,79 @@ validationsmKGElistsite2
 
 ```
 
-prepare to run model 20 times for patch 3 - only for validation time series
+run model 20 times for patch 3 - only for validation time series
 
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valstatic3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 run model in parallel
 
+```{r Run RHESSYS in Parallel using foreach STATIC 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topstatic[i,]$m,
+                            k = topstatic[i,]$k,
+                            soil_dep= topstatic[i,]$soil_dep,
+                            m_v = topstatic[i,]$m_v,
+                            k_v = topstatic[i,]$k_v,
+                            gw1 = topstatic[i,]$gw1,
+                            gw2 = topstatic[i,]$gw2,
+                            pa = topstatic[i,]$pa,
+                            po = topstatic[i,]$po,
+                            vgseng1 = topstatic[i,]$vgseng1,
+                            vgseng2 = topstatic[i,]$vgseng2,
+                            vgseng3 = topstatic[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 read 20 runs, create table and append to table
 
 ```{r}
@@ -1333,8 +1637,12 @@ input_rhessys = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32valssurgo",
-commandline_options = c(""))
+commandline_options = c("-b -p 1 110 136557 136557"))
 
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
 input_tec_data = IOin_tec_std(start = "2017 11 1 1",
                               end = "2018 11 1 1",
                               output_state = FALSE)
@@ -1347,6 +1655,7 @@ input_hdr = IOin_hdr(
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
+
 
 ```
 run SSURGO
@@ -1364,7 +1673,7 @@ start_time = Sys.time()
   
   foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
     
-    stdpars<- IOin_cmd_pars(m = topssurgo[i,]$m,
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
                             k = topssurgo[i,]$k,
                             soil_dep= topssurgo[i,]$soil_dep,
                             m_v = topssurgo[i,]$m_v,
@@ -1380,7 +1689,7 @@ start_time = Sys.time()
     run_rhessys_single(input_rhessys = input_rhessys,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
-                       cmd_pars = stdpars,
+                       std_pars = stdpars,
                        runID = i)
   } 
   
@@ -1393,6 +1702,8 @@ read 20 runs, create table and append to table for site 1
 
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+
+
 getwd()
 
 validationruns <- 200
@@ -1402,12 +1713,18 @@ for(i in 1:validationruns) {assign(paste0("cwws32valssurgo_run",i), readin_rhess
 
 plot(cwws32valssurgo_run1$pd$date,cwws32valssurgo_run1$pd$rz_storage/cwws32valssurgo_run1$pd$root.depth)
 
+
+
+
+
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
 for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
+
 valmergesm1
+
 
 validationsmNSElistsite1<- c()
 validationsmlnNSElistsite1<- c()
@@ -1426,11 +1743,84 @@ for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric
 
 validationsmKGElistsite1
 
+
+
 ```
 prepare to run model n times for patch 2 - only for validation time series
 
+```{r}
+
+validationruns <- 200
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valssurgo2",
+ commandline_options = c("-b -p 1 108 141942 141942"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 run model in parallel 
 
+```{r Run RHESSYS in Parallel using foreach SSURGO 2, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
+                            k = topssurgo[i,]$k,
+                            soil_dep= topssurgo[i,]$soil_dep,
+                            m_v = topssurgo[i,]$m_v,
+                            k_v = topssurgo[i,]$k_v,
+                            gw1 = topssurgo[i,]$gw1,
+                            gw2 = topssurgo[i,]$gw2,
+                            pa = topssurgo[i,]$pa,
+                            po = topssurgo[i,]$po,
+                            vgseng1 = topssurgo[i,]$vgseng1,
+                            vgseng2 = topssurgo[i,]$vgseng2,
+                            vgseng3 = topssurgo[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 read 20 runs, create table and append to table for site 2
 
 ```{r}
@@ -1466,10 +1856,79 @@ for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric
 
 
 ```
-prepare to run model 20 times for patch 3 - only for validation time series
+run model 20 times for patch 3 - only for validation time series
 
+```{r}
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo1.flow",
+  start = "2015 11 1 1",
+  end = "2018 11 1 1",
+  output_folder = "out",
+  output_prefix = "cwws32valssurgo3",
+ commandline_options = c("-b -p 1 108 149478 149478"))
+
+#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
+
+## TEC file dictates model output, begin output a year in to allow model SM to stabilize
+# do not output_state or worldfile may be overwritten as output is created
+input_tec_data = IOin_tec_std(start = "2017 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32local.base")
+
+
+```
 run model in parallel
 
+```{r Run RHESSYS in Parallel using foreach SSURGO 3, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
+
+start_time = Sys.time()
+  
+  foreach(i = 1:validationruns, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = topssurgo[i,]$m,
+                            k = topssurgo[i,]$k,
+                            soil_dep= topssurgo[i,]$soil_dep,
+                            m_v = topssurgo[i,]$m_v,
+                            k_v = topssurgo[i,]$k_v,
+                            gw1 = topssurgo[i,]$gw1,
+                            gw2 = topssurgo[i,]$gw2,
+                            pa = topssurgo[i,]$pa,
+                            po = topssurgo[i,]$po,
+                            vgseng1 = topssurgo[i,]$vgseng1,
+                            vgseng2 = topssurgo[i,]$vgseng2,
+                            vgseng3 = topssurgo[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
 read 20 runs, create table and append to table for site 3
 
 ```{r}

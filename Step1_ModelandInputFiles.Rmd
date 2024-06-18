@@ -2144,8 +2144,6 @@ template file 'CWWS32_STATICspinup.template' is used to spin up model. Only diff
 
 # must setup automatic spinup and preprocessing for all treatments, right now spinup requires manual template input and 2 runs for creation
 
-## create 3 templates
-
 ```{r RHESSys PreProcess and Flowtable Conversion, verbose = FALSE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -2156,11 +2154,7 @@ roads = "roads.tif"
 
 # With certain configurations roads does not work. Returns message: road width cannot be 0 during preprocessing
 
-
-
-
-
-# 
+ 
 # RHESSysPreprocess(
 #   template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
 #   name = "CWWS32",
@@ -2192,5 +2186,28 @@ create_flownet(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
   make_stream = TRUE)
 
 
+
+
+
+RHESSysPreprocess(
+  template = "templates/RHESSYSinR_Coweeta_WS32_static.template",
+  name = "CWWS32static",
+  map_dir = "grassexport/cwt_ws32",
+  streams = "streams.tif",
+  overwrite = TRUE,
+  header = TRUE,
+  parallel = TRUE,
+  make_stream = TRUE)
+
+
+RHESSysPreprocess(
+  template = "templates/RHESSYSinR_Coweeta_WS32_ssurgo.template",
+  name = "CWWS32ssurgo",
+  map_dir = "grassexport/cwt_ws32",
+  streams = "streams.tif",
+  overwrite = TRUE,
+  header = TRUE,
+  parallel = TRUE,
+  make_stream = TRUE)
 
 ```
