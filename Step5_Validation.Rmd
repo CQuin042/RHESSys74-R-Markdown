@@ -136,17 +136,17 @@ patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 
-start_time = Sys.time()
-start_time
-run_rhessys_single(input_rhessys = input_rhessys,
-                   hdr_files = input_hdr,
-                   tec_data = input_tec_data,
-                   cmd_pars = stdpars,
-                   output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
-                   runID = 'single')
-end_time = Sys.time()
-end_time - start_time
-end_time
+# start_time = Sys.time()
+# start_time
+# run_rhessys_single(input_rhessys = input_rhessys,
+#                    hdr_files = input_hdr,
+#                    tec_data = input_tec_data,
+#                    cmd_pars = stdpars,
+#                    output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
+#                    runID = 'single')
+# end_time = Sys.time()
+# end_time - start_time
+# end_time
 
 
 ```
@@ -173,20 +173,21 @@ Use World Statefile created during spin-up. To run model one time at patch scale
 patches listed top to bottom
 
 ```{r Configure RHESSys Inputs for Validation}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
   world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS321.flow",
+  flowtable = "CWWS32.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32",
 #  commandline_options = c("-b -g -p"))
  
- commandline_options = c("-b -p"))
+ commandline_options = c("-b -g -p"))
 
 #commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
 #1 107 141942 136557
@@ -225,7 +226,7 @@ paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
 paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
 paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
 
-stdpars<- IOin_std_pars(
+stdpars<- IOin_cmd_pars(
             m = 1.581785,
             k = 41.12945,
             soil_dep= 0.1776117,
@@ -239,20 +240,19 @@ stdpars<- IOin_std_pars(
             vgseng2 = 1.799894,
             vgseng3 = 1.381696)
 
-#change_def_file()
-#test<- IOin_def_pars_simple(as.list("soil_shallowloam.def","porosity_decay", "1000", n = 150 ))
 
 ```
 
 Run RHESSys once for validation
 
 ```{r Run Rhessys Once for Validation, eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 start_time = Sys.time()
 run_rhessys_single(input_rhessys = input_rhessys,
                    hdr_files = input_hdr,
                    tec_data = input_tec_data,
-                   std_pars = stdpars,
+                   cmd_pars = stdpars,
                    runID = 'validation')
 end_time = Sys.time()
 end_time - start_time
@@ -262,7 +262,7 @@ end_time - start_time
 Read RHESSys Single Run Output
 
 ```{r Read in RHESSys Validation Output}
-
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 getwd()
 
 singlerunvalidation<- readin_rhessys_output("out/cwws32_runvalidation")
@@ -367,6 +367,14 @@ Spatial Data import and display of inputs
 
 ```{r Display Spatial Inputs and Simulated Validation Soil Moisture, fig.height=10, fig.width=14}
 # Original input maps have been cropped before processing in R, without cropping the RHESSYs preparation in the R environment will not function properly, below are the input maps used by R
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+ObservedSMLocationsnt <- read_sf(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/1308.kml"))
+
+ObservedSMLocations <- st_transform(ObservedSMLocationsnt, crs(dem10))
+
+
 ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
 patches<- raster("grassexport/cwt_ws32/patch.tif")
 acc10<- raster("grassexport/cwt_ws32/acc10.tif")
@@ -510,9 +518,6 @@ title("CW WS32 RZ Soil Moisture Prediction for 1 day", line = -2)
 points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", cex = 2)
 scalebar(200, xy=c(275200, 3880800), type='line',divs = "2")}
 
-
-
-
 ## Plot Hydrograph
 {hydrograph(input=singlerunvalidation$bd, streamflow=singlerunvalidation$bd$observedstreamflow, streamflow2 = singlerunvalidation$bd$streamflow, timeSeries = singlerunvalidation$bd$date, precip = singlerunvalidation$bd$streamflow,
            P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
@@ -621,16 +626,16 @@ paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
 paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
 
 
-{plot(cwws32_run136$bd$date,cwws32_run136$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top KGE Run", xlab = "Date", ylab = "Streamflow")
+{plot(cwws32_run6$bd$date,cwws32_run6$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top KGE Run", xlab = "Date", ylab = "Streamflow")
 lines(obsws32$Date,obsws32$discharge_mm, col = 'orange', lwd = 2, lty = 2)}
 
 
-valsubset <- simmerge136[simmerge136$Date >= Valdates[1] & simmerge136$Date <= Valdates[2], ]
+valsubset <- simmerge6[simmerge6$Date >= Valdates[1] & simmerge6$Date <= Valdates[2], ]
 
 ValKGE<- KGE(sim = valsubset$streamflow, obs = valsubset$observedstreamflow)
 
 
-valsubsetsm<- simmergesm136[simmergesm136$Date >= Valdates[1] & simmergesm136$Date <= Valdates[2],]
+valsubsetsm<- simmergesm6[simmergesm6$Date >= Valdates[1] & simmergesm6$Date <= Valdates[2],]
 
 ValsmKGE<- KGE(sim = valsubsetsm$rz_storage/valsubsetsm$rootdepth, obs = valsubsetsm$mergedsoilmoisture)
 
@@ -643,11 +648,12 @@ ValsmKGE
 Combine calibration outputs
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 getwd()
 
-dsmdist<- read.csv("out/dsmcalibrationoutput1023.txt", sep=" ")
-ssurgodist<- read.csv("out/ssurgocalibrationoutput1023.txt", sep = " ")
-staticdist<- read.csv("out/staticcalibrationoutput1023.txt", sep = " ")
+dsmdist<- read.csv("out/dsmcalibrationoutput.txt", sep=" ")
+ssurgodist<- read.csv("out/ssurgocalibrationoutput.txt", sep = " ")
+staticdist<- read.csv("out/staticcalibrationoutput.txt", sep = " ")
 
 paged_table(ssurgodist)
 paged_table(dsmdist)
@@ -820,13 +826,9 @@ names(obsws32smvalclean)<- c('Date','mergedsoilmoisture')
 
 obsws32smvalclean
 
-
-
 obsws32smvalclean$Site3<- rowMeans(subset(obsws32smval, select = c(smois30site3a,smois60site3a,smois30site3b,smois60site3b), na.rm = TRUE))
 obsws32smvalclean$Site2<- rowMeans(subset(obsws32smval, select = c(smois30site2a,smois30site2b,smois60site2b), na.rm = TRUE))
 obsws32smvalclean$Site1<- rowMeans(subset(obsws32smval, select = c(smois30site1a,smois60site1a,smois30site1b,smois60site1b), na.rm = TRUE))
-
-
 
 obsws32smvalclean
 
@@ -834,12 +836,10 @@ plot(obsws32smvalclean$Date,obsws32smvalclean$Site3, type = "l", main = "SITE 3 
 
 obsws32smvalclean$Site3
 
-
 {plot(obsws32smvalclean$Date,obsws32smvalclean$mergedsoilmoisture, type = "l", main = "All site averaged sensor output", lty = 3, lwd = 2, ylim = c(0.10,0.35))
 lines(obsws32smvalclean$Date,obsws32smvalclean$Site1, col = 'BLUE')
 lines(obsws32smvalclean$Date,obsws32smvalclean$Site2, col = 'RED')
 lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
-
 
 ```
 

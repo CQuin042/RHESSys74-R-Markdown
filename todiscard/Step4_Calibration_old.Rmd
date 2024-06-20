@@ -135,18 +135,18 @@ patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    spatial_ID = "1:110:149478:149478",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
-# 
-# start_time = Sys.time()
-# start_time
-# run_rhessys_single(input_rhessys = input_rhessys,
-#                    hdr_files = input_hdr,
-#                    tec_data = input_tec_data,
-#                    cmd_pars = stdpars,
-#                    output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
-#                    runID = 'single')
-# end_time = Sys.time()
-# end_time - start_time
-# end_time
+
+start_time = Sys.time()
+start_time
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
+                   runID = 'single')
+end_time = Sys.time()
+end_time - start_time
+end_time
 
 
 ```
@@ -352,19 +352,18 @@ start_time = Sys.time()
   end_time - start_time
 ```
 
-Prepare Static, SSURGO, and DSM Inputs
+Prepare Static Inputs
 
-```{r Static SSURGO DSM }
-setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```{r Static }
 # prepare RHESSys for run
 params<- as.data.frame(params)
 
-input_rhessys_static = IOin_rhessys_input(
+input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32static.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
   world_hdr_prefix = "CWWS32static",
-  flowtable = "CWWS32static.flow",
+  flowtable = "CWWS32static1.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -375,7 +374,7 @@ input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
                               output_state = FALSE)
 
-input_hdr_static = IOin_hdr(
+input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
@@ -383,22 +382,71 @@ input_hdr_static = IOin_hdr(
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
+ 
+```
 
+Run RHESSys Calibration with Static Maps
 
+```{r Run RHESSYS in Parallel using foreach Static, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
 
-input_rhessys_ssurgo = IOin_rhessys_input(
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+Prepare SSURGO Inputs
+
+```{r SSURGO}
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32ssurgo.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
   world_hdr_prefix = "CWWS32ssurgo",
-  flowtable = "CWWS32ssurgo.flow",
+  flowtable = "CWWS32ssurgo1.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32ssurgo",
   commandline_options = c("-b"))
 
-input_hdr_ssurgo = IOin_hdr(
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
@@ -406,22 +454,73 @@ input_hdr_ssurgo = IOin_hdr(
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
+ 
+```
 
+Run RHESSys with SSURGO Maps
 
+```{r Run RHESSYS in Parallel using foreach SSURGO, eval=FALSE, include=FALSE}
+n.cores <- parallel::detectCores() - 4  
+  
+my.cluster <- parallel::makeCluster(
+    n.cores, 
+    type = "PSOCK"
+  )
+doParallel::registerDoParallel(cl = my.cluster)
 
-input_rhessys_dsm = IOin_rhessys_input(
+start_time = Sys.time()
+  
+  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
+    
+    stdpars<- IOin_std_pars(m = params[i,]$m,
+                            k = params[i,]$k,
+                            soil_dep= params[i,]$soil_dep,
+                            m_v = params[i,]$m_v,
+                            k_v = params[i,]$k_v,
+                            gw1 = params[i,]$gw1,
+                            gw2 = params[i,]$gw2,
+                            pa = params[i,]$pa,
+                            po = params[i,]$po,
+                            vgseng1 = params[i,]$vgseng1,
+                            vgseng2 = params[i,]$vgseng2,
+                            vgseng3 = params[i,]$vgseng3)
+    
+    run_rhessys_single(input_rhessys = input_rhessys,
+                       hdr_files = input_hdr,
+                       tec_data = input_tec_data,
+                       std_pars = stdpars,
+                       runID = i)
+  } 
+  
+  end_time = Sys.time()
+  end_time - start_time
+```
+
+Prepare DSM/RSS Inputs
+
+```{r DSM}
+# prepare RHESSys for run
+params<- as.data.frame(params)
+
+input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm1.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32dsm",
   commandline_options = c("-b"))
 
-input_hdr_dsm = IOin_hdr(
+#commandline_options = c("-b -p 1 128 154914 154914 ")) <- Patch Specific Output
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = FALSE)
+
+input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
@@ -429,96 +528,12 @@ input_hdr_dsm = IOin_hdr(
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
-  
-```
-
-Run RHESSys Calibration with Static Maps
-
-```{r Run RHESSYS in Parallel using foreach Static, echo=TRUE}
-setwd(system.file("extdata/", package = "RHESSysIOinR"))
-n.cores <- parallel::detectCores() - 4  
-  
-my.cluster <- parallel::makeCluster(
-    n.cores, 
-    type = "PSOCK"
-  )
-doParallel::registerDoParallel(cl = my.cluster)
-
-start_time = Sys.time()
-  
-  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
-    
-    stdpars<- IOin_cmd_pars(m = params[i,]$m,
-                            k = params[i,]$k,
-                            soil_dep= params[i,]$soil_dep,
-                            m_v = params[i,]$m_v,
-                            k_v = params[i,]$k_v,
-                            gw1 = params[i,]$gw1,
-                            gw2 = params[i,]$gw2,
-                            pa = params[i,]$pa,
-                            po = params[i,]$po,
-                            vgseng1 = params[i,]$vgseng1,
-                            vgseng2 = params[i,]$vgseng2,
-                            vgseng3 = params[i,]$vgseng3)
-    
-    run_rhessys_single(input_rhessys = input_rhessys_static,
-                       hdr_files = input_hdr_static,
-                       tec_data = input_tec_data,
-                       cmd_pars = stdpars,
-                       runID = i)
-  } 
-  
-  end_time = Sys.time()
-  end_time - start_time
-```
-
-
-
-Run RHESSys with SSURGO Maps
-
-```{r Run RHESSYS in Parallel using foreach SSURGO, echo=TRUE}
-setwd(system.file("extdata/", package = "RHESSysIOinR"))
-n.cores <- parallel::detectCores() - 4  
-  
-my.cluster <- parallel::makeCluster(
-    n.cores, 
-    type = "PSOCK"
-  )
-doParallel::registerDoParallel(cl = my.cluster)
-
-start_time = Sys.time()
-  
-  foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
-    
-    stdpars<- IOin_cmd_pars(m = params[i,]$m,
-                            k = params[i,]$k,
-                            soil_dep= params[i,]$soil_dep,
-                            m_v = params[i,]$m_v,
-                            k_v = params[i,]$k_v,
-                            gw1 = params[i,]$gw1,
-                            gw2 = params[i,]$gw2,
-                            pa = params[i,]$pa,
-                            po = params[i,]$po,
-                            vgseng1 = params[i,]$vgseng1,
-                            vgseng2 = params[i,]$vgseng2,
-                            vgseng3 = params[i,]$vgseng3)
-    
-    run_rhessys_single(input_rhessys = input_rhessys,
-                       hdr_files = input_hdr,
-                       tec_data = input_tec_data,
-                       cmd_pars = stdpars,
-                       runID = i)
-  } 
-  
-  end_time = Sys.time()
-  end_time - start_time
+ 
 ```
 
 Run RHESSys with RSS Maps
 
-```{r Run RHESSYS in Parallel using foreach DSM, echo=TRUE}
-
-setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```{r Run RHESSYS in Parallel using foreach DSM, include=FALSE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -531,7 +546,7 @@ start_time = Sys.time()
   
   foreach(i = 1:n, .packages = 'RHESSysIOinR') %dopar% {
     
-    stdpars<- IOin_cmd_pars(m = params[i,]$m,
+    stdpars<- IOin_std_pars(m = params[i,]$m,
                             k = params[i,]$k,
                             soil_dep= params[i,]$soil_dep,
                             m_v = params[i,]$m_v,
@@ -547,7 +562,7 @@ start_time = Sys.time()
     run_rhessys_single(input_rhessys = input_rhessys,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
-                       cmd_pars = stdpars,
+                       std_pars = stdpars,
                        runID = i)
   } 
   
@@ -564,7 +579,7 @@ Calibration is performed using GLUE methodology and Nash-Sutcliffe Model Efficie
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
-testoutput<- readin_rhessys_output("out/cwws32_run5")
+testoutput<- readin_rhessys_output("out/cwws32_run200")
 
 
 # Read in RHESSys Calibration runs
@@ -710,7 +725,7 @@ which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE)
 which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE)
 which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE)
 
-paramtable<- read.table(file = "out/cwparamtable.txt")
+paramtable<- read.table(file = "out/cwparamtable091923.txt")
 
 paramtable[which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),]
 paramtable[which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),]
@@ -756,10 +771,10 @@ paramtable$valsmKGE<- valsmKGElist
 
 paramtable<- as.data.frame(lapply(paramtable,unlist))
 
-write.table(paramtable, file = "out/dsmcalibrationoutput.txt")
+write.table(paramtable, file = "out/dsmcalibrationoutput1023.txt")
 
 
-top100<- paramtable[order(-paramtable$lnNSE),][1:n,]
+top100<- paramtable[order(-paramtable$lnNSE),][1:100,]
 
 top100$run
 
@@ -928,8 +943,8 @@ paste0("cwws32_run",which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),"$b
 paste0("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow")
 
 
-{plot(cwws32_run3$bd$date,cwws32_run3$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow")
-lines(cwws32_run5$bd$date,cwws32_run5$bd$streamflow, col = 'blue')
+{plot(cwws32_run33$bd$date,cwws32_run33$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow")
+lines(cwws32_run65$bd$date,cwws32_run65$bd$streamflow, col = 'blue')
 #lines(cwws32_run46$bd$date,cwws32_run46$bd$streamflow, col = 'green')
 lines(simmerge1$Date,simmerge1$observedstreamflow, col = 'orange', lwd = 2, lty = 2)}
 
@@ -940,7 +955,7 @@ lines(simmerge1$Date,simmerge1$observedstreamflow, col = 'orange', lwd = 2, lty 
 #lines(paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), col = 'orange', lwd = 2, lty = 2)
 #legend("topleft",inset = 0.05, legend=c("Oberved Discharge","Best NSE","BEST lnNSE","Best KGE"), col=c("orange","red","blue","green"), lty=c(2,1,1,1))}
 
-{plot(cwws32_run4$bd$date,cwws32_run4$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
+{plot(cwws32_run24$bd$date,cwws32_run24$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
 #lines(cwws32_run47$bd$date,cwws32_run47$bd$streamflow, col = 'blue')
 lines(obsws32$Date,obsws32$discharge_mm, col = 'black', lwd = 2, lty = 2)}
 
