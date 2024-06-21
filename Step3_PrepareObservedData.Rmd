@@ -223,7 +223,6 @@ colnames(mergedsm)<- c("Date","smois30site1a","smois30site1b","smois60site1a","s
 
 plot(mergedsm$Date, mergedsm$mergedsoilmoisture, type = "l", main = "Average WS32 Soil Moisture", xlab = "Date", ylab = "Merged Soil Moisture All Data")
 
-
 plot(mergedsm)
 
 ## Calculate Calibration/Validation Split based on SM data
@@ -332,6 +331,11 @@ obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Vald
 Merge Observed and Simulated Data
 
 ```{r Merge Observed and Simulated Datasets}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+getwd()
+
+singleruntest<- readin_rhessys_output("out/cwws32_runsingle")
+
 ## merge values instead of subsetting to match up with simulated dates
 singleruntest$bd<- merge(singleruntest$bd,obsws32, by.x = "date", by.y = "Date", all = FALSE)
 
@@ -411,6 +415,16 @@ legend("topright",inset = 0, legend=c("Predicted Streamflow","Observed Calibrati
 Testing Precip input vs model precip
 
 ```{r eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+getwd()
+
+daymet_data <- download_daymet("Coweeta_WS32",
+                               lat = 35.04867,
+                               lon = -83.4601,
+                               start = 1980,
+                               end = 2021,
+                               internal = TRUE)
+
 str(daymet_data$data)
 
 daymetdate <- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), format = "%Y - %j")
@@ -436,9 +450,9 @@ lines(daymet_data$data$appendeddate,daymet_data$data$prcp..mm.day., type = 'h', 
 ## attempt to remedy this by creating date vector and appending precip values, replace blanks with na or 0
 
 
-{plot(singleruntest$bd$date, singleruntest$bd$precip, type = 'h')
+#{plot(singleruntest$bd$date, singleruntest$bd$precip, type = 'h')
 
-lines(fulldaymetprecip$Dates,fulldaymetprecip$prcp..mm.day., type = 'h', col = 'red')}
+#lines(fulldaymetprecip$Dates,fulldaymetprecip$prcp..mm.day., type = 'h', col = 'red')}
 
 
 ```
@@ -518,7 +532,57 @@ New Soil Map Figure
 
 
 ```
+##IN STEP 1
+```{r Download and Prepare DEM}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+# use watershed polygons for BBOX to request elevation data
+x <- read_sf(watershedshapefile)
+# buffer to ensure that there are no truncated watersheds
+x.buff <- st_as_sf(st_buffer(st_as_sfc(st_bbox(x)), dist = 1000))
+# convert to GCS WGS84 -> no transformation / warp will be applied to DEM
+x.gcs <- st_transform(x, 4326)
+x.buff.gcs <- st_transform(x.buff, 4326)
+# requires sf collection (geometry + attributes)
+# get DEM in GCS WGS84 and use z = 14 for best available data
+elevationraster <- get_elev_raster(locations = x.buff.gcs, z = 14, clip = 'bbox')
+
+res(elevationraster)
+
+# check: OK
+{plot(elevationraster, main = "DEM, Watershed Outline and Buffer" )
+  plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)}
+
+{plot(elevationraster, main = "DEM and selected Watershed")
+  plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+cropped_dem<- crop(elevationraster,st_bbox(x.gcs))
+
+plot(cropped_dem, main = "DEM cropped to Buffer")
+plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)
+
+
+newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+
+reproje<- projectRaster(from = cropped_dem, crs = newproj, method = 'bilinear')
+
+plot(reproje, main = "Reprojected cropped DEM")
+
+dummydata<- reproje
+
+res(dummydata) <- 10
+
+resampleddem <- resample(reproje, dummydata, method = 'bilinear')
+
+plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+
+{plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+  plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)}
+
+```
+##In STEP1
 Quick map creation for WS7 soil moisture data display
 
 ```{r}

@@ -104,8 +104,9 @@ Original spinup 0219 to 2017. Modified output to 1776-2017 to test code without 
 Climate files have been modified to original DAYMET timeseries. 
 
 ##spinup runs have been shortened from 1775-2018 to 2015-2018
+#spinup static
 
-```{r RHESsys Spinup Configuration}
+```{r RHESsys Spinup Configuration static}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 ## Read climate file to see length available climate data
 read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
@@ -114,8 +115,8 @@ read_clim("clim/cwtws32local.rain", dates_out=TRUE)
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world",
-  world_hdr_prefix = "CWWS32",
+  world_file = "CWWS32static.world",
+  world_hdr_prefix = "CWWS32static",
   flowtable = "CWWS32.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
@@ -123,7 +124,7 @@ input_rhessys = IOin_rhessys_input(
   output_prefix = "cwws32",
   commandline_options = c("-b -g"))
 
-input_tec_data = IOin_tec_std(start = "1776 11 1 1",
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
                               output_state = TRUE)
 
@@ -154,7 +155,7 @@ Run Spinup #1
 Spinup runs model on one processor for x number of years. Takes a very long time. 
 Spinup has been turned off for the purposes of this demonstration. Using previously spun up file ~ 12 hours, run multiple times.
 
-```{r Spinup Run, eval=FALSE, include=FALSE}
+```{r Spinup Run 1, eval=FALSE, include=FALSE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 start_time = Sys.time()
 run_rhessys_single(input_rhessys = input_rhessys,
@@ -176,9 +177,9 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32static.world.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32static",
+  flowtable = "CWWS32static.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
   output_folder = "out",
@@ -198,9 +199,9 @@ end_time - start_time
 
 Read Spinup and confirm that Soil C and Soil N have stabilized
 
-```{r Read RHESSys Spinup}
+```{r Read RHESSys Spinup for static}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-spinupoutput<- readin_rhessys_output("out/cwws32_runspinup")
+spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
 
 #spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
 #spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")
@@ -224,6 +225,248 @@ soilntrend <- glm(spinupoutput$bdg$soiln~spinupoutput$bdg$date)
 abline(soilntrend , col = 'green')}
 
 ```
+
+##spinupssurgo
+
+```{r RHESsys Spinup Configuration ssurgo}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+## Read climate file to see length available climate data
+read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
+read_clim("clim/cwtws32local.rain", dates_out=TRUE)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo.flow",
+  start = "1775 11 1 1",
+  end = "2018 11 2 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+  commandline_options = c("-b -g"))
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = TRUE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32extended.base")
+
+##suggested standard hydrologic spinup parameters from rhessys wiki, gw values modified based on previous results from Coweeta Landscape
+
+stdpars<- IOin_cmd_pars( 
+            m = 1,
+            k = 10,
+            soil_dep= 0.4,
+            m_v = 1,
+            k_v = 1,
+            gw1 = 0.15,
+            gw2 = 0.35)
+
+
+```
+
+Run Spinup #1 and #2
+Spinup runs model on one processor for x number of years. Takes a very long time. 
+Spinup has been turned off for the purposes of this demonstration. Using previously spun up file ~ 12 hours, run multiple times.
+
+```{r Spinup Run for ssurgo, eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+start_time = Sys.time()
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   runID = 'spinup')
+end_time = Sys.time()
+end_time - start_time
+
+# Run Spinup again, Run Spinup #2
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32ssurgo.world.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32ssurgo",
+  flowtable = "CWWS32ssurgo.flow",
+  start = "1775 11 1 1",
+  end = "2018 11 2 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+  commandline_options = c("-b -g"))
+
+start_time = Sys.time()
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   runID = 'spinup')
+end_time = Sys.time()
+end_time - start_time
+
+```
+
+Read Spinup and confirm that Soil C and Soil N have stabilized
+
+```{r Read RHESSys Spinup for ssurgo}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
+
+#spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
+#spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")
+
+spinupoutput$bd$date <- make_date(year=spinupoutput$bd$year, month = spinupoutput$bd$month, day = spinupoutput$bd$day)
+spinupoutput$bdg$date <- make_date(year=spinupoutput$bdg$year, month = spinupoutput$bdg$month, day = spinupoutput$bdg$day)
+
+range(spinupoutput$bd$year)
+
+plot(spinupoutput$bd$streamflow, type = "l")
+
+plot(spinupoutput$bd$date,spinupoutput$bd$streamflow, type = "l", col = 'black', main = "Predicted Streamflow",
+    xlab = "Date", ylab = "Streamflow mm")
+
+plot(spinupoutput$bdg$date, spinupoutput$bdg$lai, type = "l", main = "LAI", xlab = "Date")
+{plot(spinupoutput$bdg$soilc~spinupoutput$bdg$date,type = "l", main = "Spinup Soil Carbon", xlab = "Date")
+soilctrend <- glm(spinupoutput$bdg$soilc~spinupoutput$bdg$date)
+abline(soilctrend, col = 'red')}
+{plot(spinupoutput$bdg$date,spinupoutput$bdg$soiln, type = "l", main = "Spinup Soil Nitrogen", xlab = "Date")
+soilntrend <- glm(spinupoutput$bdg$soiln~spinupoutput$bdg$date)
+abline(soilntrend , col = 'green')}
+
+```
+
+##spinupssurgo
+
+
+##spinupdsm
+
+```{r RHESsys Spinup Configuration dsm}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+## Read climate file to see length available climate data
+read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
+read_clim("clim/cwtws32local.rain", dates_out=TRUE)
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "CWWS32dsm.world",
+  world_hdr_prefix = "cwws32dsm",
+  flowtable = "cwws32dsm.flow",
+  start = "1775 11 1 1",
+  end = "2018 11 2 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+  commandline_options = c("-b -g"))
+
+input_tec_data = IOin_tec_std(start = "2015 11 1 1",
+                              end = "2018 11 1 1",
+                              output_state = TRUE)
+
+input_hdr = IOin_hdr(
+  basin = "defs/basin.def",
+  hillslope = "defs/hillslope.def",
+  zone = "defs/zone.def",
+  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  landuse = "defs/lu_undev.def",
+  stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
+  basestations = "clim/cwtws32extended.base")
+
+##suggested standard hydrologic spinup parameters from rhessys wiki, gw values modified based on previous results from Coweeta Landscape
+
+stdpars<- IOin_cmd_pars( 
+            m = 1,
+            k = 10,
+            soil_dep= 0.4,
+            m_v = 1,
+            k_v = 1,
+            gw1 = 0.15,
+            gw2 = 0.35)
+
+
+```
+
+Run Spinup #1 and #2
+Spinup runs model on one processor for x number of years. Takes a very long time. 
+Spinup has been turned off for the purposes of this demonstration. Using previously spun up file ~ 12 hours, run multiple times.
+
+```{r Spinup Run for dsm, eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+start_time = Sys.time()
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   runID = 'spinup')
+end_time = Sys.time()
+end_time - start_time
+
+# Run Spinup again, Run Spinup #2
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+input_rhessys = IOin_rhessys_input(
+  version = rh_path,
+  tec_file = "tecfiles/tec_daily",
+  world_file = "cwws32dsm.world.Y2018M11D1H1.state",
+  world_hdr_prefix = "cwws32dsm",
+  flowtable = "cwws32dsm.flow",
+  start = "1775 11 1 1",
+  end = "2018 11 2 1",
+  output_folder = "out",
+  output_prefix = "cwws32",
+  commandline_options = c("-b -g"))
+
+start_time = Sys.time()
+run_rhessys_single(input_rhessys = input_rhessys,
+                   hdr_files = input_hdr,
+                   tec_data = input_tec_data,
+                   cmd_pars = stdpars,
+                   runID = 'spinup')
+end_time = Sys.time()
+end_time - start_time
+
+```
+
+Read Spinup and confirm that Soil C and Soil N have stabilized
+
+```{r Read RHESSys Spinup for dsm}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
+
+#spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
+#spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")
+
+spinupoutput$bd$date <- make_date(year=spinupoutput$bd$year, month = spinupoutput$bd$month, day = spinupoutput$bd$day)
+spinupoutput$bdg$date <- make_date(year=spinupoutput$bdg$year, month = spinupoutput$bdg$month, day = spinupoutput$bdg$day)
+
+range(spinupoutput$bd$year)
+
+plot(spinupoutput$bd$streamflow, type = "l")
+
+plot(spinupoutput$bd$date,spinupoutput$bd$streamflow, type = "l", col = 'black', main = "Predicted Streamflow",
+    xlab = "Date", ylab = "Streamflow mm")
+
+plot(spinupoutput$bdg$date, spinupoutput$bdg$lai, type = "l", main = "LAI", xlab = "Date")
+{plot(spinupoutput$bdg$soilc~spinupoutput$bdg$date,type = "l", main = "Spinup Soil Carbon", xlab = "Date")
+soilctrend <- glm(spinupoutput$bdg$soilc~spinupoutput$bdg$date)
+abline(soilctrend, col = 'red')}
+{plot(spinupoutput$bdg$date,spinupoutput$bdg$soiln, type = "l", main = "Spinup Soil Nitrogen", xlab = "Date")
+soilntrend <- glm(spinupoutput$bdg$soiln~spinupoutput$bdg$date)
+abline(soilntrend , col = 'green')}
+
+```
+
+##spinupsdsm
+
 
 Configure RHESSys Inputs/Outputs for a single run.
 

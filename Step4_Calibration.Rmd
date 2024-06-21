@@ -135,6 +135,34 @@ patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    spatial_ID = "1:110:149478:149478",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
+
+basinfilter_static = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "static_basin_daily",
+                                   spatial_level = "basin",
+                                   spatial_ID = "1",
+                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+
+
+basinfilter_ssurgo = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "ssurgo_basin_daily",
+                                   spatial_level = "basin",
+                                   spatial_ID = "1",
+                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+
+
+basinfilter_dsm = build_output_filter(timestep = "daily",
+                                   output_format = "csv",
+                                   output_path = "outputfilter",
+                                   output_filename = "dsm_basin_daily",
+                                   spatial_level = "basin",
+                                   spatial_ID = "1",
+                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+
+
 # 
 # start_time = Sys.time()
 # start_time
@@ -369,7 +397,7 @@ input_rhessys_static = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32static",
-  commandline_options = c("-b"))
+  commandline_options = c())
 
 input_tec_data = IOin_tec_std(start = "2015 11 1 1",
                               end = "2018 11 1 1",
@@ -396,7 +424,7 @@ input_rhessys_ssurgo = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32ssurgo",
-  commandline_options = c("-b"))
+  commandline_options = c())
 
 input_hdr_ssurgo = IOin_hdr(
   basin = "defs/basin.def",
@@ -419,7 +447,7 @@ input_rhessys_dsm = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32dsm",
-  commandline_options = c("-b"))
+  commandline_options = c())
 
 input_hdr_dsm = IOin_hdr(
   basin = "defs/basin.def",
@@ -465,14 +493,13 @@ start_time = Sys.time()
                        hdr_files = input_hdr_static,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
+                       output_filter = basinfilter_static,
                        runID = i)
   } 
   
   end_time = Sys.time()
   end_time - start_time
 ```
-
-
 
 Run RHESSys with SSURGO Maps
 
@@ -503,10 +530,11 @@ start_time = Sys.time()
                             vgseng2 = params[i,]$vgseng2,
                             vgseng3 = params[i,]$vgseng3)
     
-    run_rhessys_single(input_rhessys = input_rhessys,
+    run_rhessys_single(input_rhessys = input_rhessys_ssurgo,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
+                       output_filter = basinfilter_ssurgo,
                        runID = i)
   } 
   
@@ -544,10 +572,11 @@ start_time = Sys.time()
                             vgseng2 = params[i,]$vgseng2,
                             vgseng3 = params[i,]$vgseng3)
     
-    run_rhessys_single(input_rhessys = input_rhessys,
+    run_rhessys_single(input_rhessys = input_rhessys_dsm,
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
+                       output_filter = basinfilter_dsm,
                        runID = i)
   } 
   
@@ -563,9 +592,7 @@ Calibration is performed using GLUE methodology and Nash-Sutcliffe Model Efficie
  
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-
 testoutput<- readin_rhessys_output("out/cwws32_run5")
-
 
 # Read in RHESSys Calibration runs
 for(i in 1:n) { assign(paste0("cwws32_run",i), readin_rhessys_output(paste0("out/cwws32_run",i)))}
@@ -607,13 +634,7 @@ Calculate calibration performance metrics
 ```{r calculate fit values and append them to a list, fig.height=9, fig.width=14, paged.print=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-NSElist<- c()
-lnNSElist<- c()
-KGElist<- c()
-
-smNSElist<- c()
-smlnNSElist<- c()
-smKGElist<- c()
+NSElist <- lnNSElist <- KGElist <- smNSElist <- smlnNSElist <- smKGElist <- list()
 
 for(i in 1:n) { assign(paste0("NSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow")))) ))
   NSElist[[i]]<- eval(parse(text = paste0("NSEobs",i))) }
@@ -635,13 +656,7 @@ for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(te
 
 ## modified for calsubset
 
-calNSElist<- c()
-callnNSElist<- c()
-calKGElist<- c()
-
-calsmNSElist<- c()
-calsmlnNSElist<- c()
-calsmKGElist<- c()
+calNSElist<- callnNSElist <- calKGElist <- calsmNSElist<- calsmlnNSElist<- calsmKGElist<- list()
 
 for(i in 1:n) { assign(paste0("cNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow")))) ))
   calNSElist[[i]]<- eval(parse(text = paste0("cNSEobs",i))) }
@@ -663,14 +678,7 @@ for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(t
 
 ## modified for val subset
 
-valNSElist<- c()
-vallnNSElist<- c()
-valKGElist<- c()
-
-valsmNSElist<- c()
-valsmlnNSElist<- c()
-valsmKGElist<- c()
-
+valNSElist<- vallnNSElist<- valKGElist<- valsmNSElist <- valsmlnNSElist<- valsmKGElist <- list()
 
 for(i in 1:n) { assign(paste0("vNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow")))) ))
   valNSElist[[i]]<- eval(parse(text = paste0("vNSEobs",i))) }
@@ -689,10 +697,6 @@ for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse
 
 for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
-
-NSElist[1:5]
-KGElist[1:5]
-lnNSElist[1:5]
 
 Reduce(max, NSElist)
 Reduce(max, lnNSElist)
@@ -719,8 +723,6 @@ paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
 paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
 paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
 paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
-
-# paramtable[7,]
 
 ###plot all data for GLUE
 
