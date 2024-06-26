@@ -96,6 +96,30 @@ CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv
 newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
 
 ```
+#in step 4
+
+```{r}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+#Prepare observed Streamflow data
+
+
+obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
+
+
+obsws32$Date<- as.Date(obsws32$Date)
+
+Caldates<- read.csv("outputfilter/caldates.csv")
+Valdates<- read.csv("outputfilter/valdates.csv")
+
+Caldates<- Caldates[,2]
+Valdates<- Valdates[,2]
+
+mergedsm<- read.table("outputfilter/mergedsm.csv", header = T, sep = ",")
+obsws32sm<- read.table("outputfilter/obsws32sm.csv", header = T, sep = ",")
+obsws32sm$Date<- as.Date(obsws32sm$Date,"%Y-%m-%d")
+```
+
 New Patch Filter
 
 Basin - Basin 
@@ -107,14 +131,13 @@ Patch - Patch
 1 110 141942
 1 110 149478
 
-
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 patchfilterpatch1 = build_output_filter(timestep = "daily",
                                    output_format = "csv",
                                    output_path = "outputfilter",
-                                   output_filename = "ws32patch1",
+                                   output_filename = "valws32patch1",
                                    spatial_level = "patch",
                                    spatial_ID = "1:112:136557:136557",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
@@ -122,7 +145,7 @@ patchfilterpatch1 = build_output_filter(timestep = "daily",
 patchfilterpatch2 = build_output_filter(timestep = "daily",
                                    output_format = "csv",
                                    output_path = "outputfilter",
-                                   output_filename = "ws32patch2",
+                                   output_filename = "valws32patch2",
                                    spatial_level = "patch",
                                    spatial_ID = "1:110:141942:141942",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
@@ -130,7 +153,7 @@ patchfilterpatch2 = build_output_filter(timestep = "daily",
 patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    output_format = "csv",
                                    output_path = "outputfilter",
-                                   output_filename = "ws32patch3",
+                                   output_filename = "valws32patch3",
                                    spatial_level = "patch",
                                    spatial_ID = "1:110:149478:149478",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
@@ -210,21 +233,6 @@ input_hdr = IOin_hdr(
 
 ## Calibrated Values 
 
-which(NSElist == Reduce(max, NSElist), arr.ind=TRUE)
-which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE)
-which(KGElist == Reduce(max, KGElist), arr.ind=TRUE)
-
-which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE)
-which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE)
-which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE)
-
-paramtable[which(NSElist == Reduce(max, NSElist), arr.ind=TRUE),]
-paramtable[which(lnNSElist == Reduce(max, lnNSElist), arr.ind=TRUE),]
-paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
-
-paramtable[which(smNSElist == Reduce(max, smNSElist), arr.ind=TRUE),]
-paramtable[which(smlnNSElist == Reduce(max, smlnNSElist), arr.ind=TRUE),]
-paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
 
 stdpars<- IOin_cmd_pars(
             m = 1.581785,
@@ -297,6 +305,8 @@ singlerunvalidation$data <-merge(singlerunvalidation$bd,obsws32sm, by.x = "date"
 Plot Observed and Simulated Data, Plot RHESSys Outputs
 
 ```{r Plot Observed and Simulated Validation Datasets}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 ## Plot Hydrograph comparing modeled and observed streamflow
 {hydrograph(input=singlerunvalidation$bd, streamflow=singlerunvalidation$bd$observedstreamflow, streamflow2 = singlerunvalidation$bd$streamflow, timeSeries = singlerunvalidation$bd$date, precip = singlerunvalidation$bd$streamflow,
            P.units = "mm", S.units = "mm normalized by basin area", S1.col = 'Blue', S2.col = 'Red')
@@ -352,6 +362,28 @@ plot(singlerunvalidation$bdg$date, singlerunvalidation$bdg$soilc, type = "l", ma
 
 ## plot cal/val sets
 
+
+obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
+
+
+obsws32$Date<- as.Date(obsws32$Date)
+
+Caldates<- read.csv("outputfilter/caldates.csv")
+Valdates<- read.csv("outputfilter/valdates.csv")
+
+Caldates<- Caldates[,2]
+Valdates<- Valdates[,2]
+
+mergedsm<- read.table("outputfilter/mergedsm.csv", header = T, sep = ",")
+obsws32sm<- read.table("outputfilter/obsws32sm.csv", header = T, sep = ",")
+obsws32sm$Date<- as.Date(obsws32sm$Date,"%Y-%m-%d")
+
+obsws32cal <- obsws32[obsws32$Date >= Caldates[1] & obsws32$Date <= Caldates[2], ]
+obsws32val <- obsws32[obsws32$Date >= Valdates[1] & obsws32$Date <= Valdates[2], ]
+obsws32smcal <- obsws32sm[obsws32sm$Date >= Caldates[1] & obsws32sm$Date <= Caldates[2], ]
+obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Valdates[2], ]
+
+
 {plot(singlerunvalidation$data$date,(singlerunvalidation$data$rz_storage/singlerunvalidation$data$rootdepth), type = "l", ylim = c(0,0.35), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
 lines(obsws32smcal$Date,obsws32smcal$mergedsoilmoisture, col = "BLUE")
 lines(obsws32smval$Date,obsws32smval$mergedsoilmoisture, col = "RED")
@@ -370,9 +402,7 @@ Spatial Data import and display of inputs
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
-ObservedSMLocationsnt <- read_sf(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/1308.kml"))
 
-ObservedSMLocations <- st_transform(ObservedSMLocationsnt, crs(dem10))
 
 
 ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
@@ -394,6 +424,9 @@ topidx10<- raster("grassexport/cwt_ws32/topidx10_100.tif")
 #xmap<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/xmap.tif")
 #ymap<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/rasters/cwt_ws32/ws32/ymap.tif")
 
+ObservedSMLocationsnt <- read_sf(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1308.19/1308.kml"))
+
+ObservedSMLocations <- st_transform(ObservedSMLocationsnt, crs(dem10))
 
 plot(ws32, main ="ws32")
 plot(patches, main = "patches")
@@ -421,6 +454,13 @@ plot(topidx10, main = "topidx10")
 Show locations of measured soil moisture and soil maps
 
 ```{r Display Locations of Observed Soil Moisture, fig.height=10, fig.width=10}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+soilstaticmap<- raster("grassexport/cwt_ws32/staticsoil.tif")
+
+soilssurgo<- raster("grassexport/cwt_ws32/ssurgosoil.tif")
+soildsm<- raster("grassexport/cwt_ws32/dsmsoil.tif")
 
 colorramp<- viridis(128)
 
@@ -446,6 +486,7 @@ points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],Obser
 Display outputs from model run
 
 ```{r Display Spatial Outputs and Simulated Validation Soil Moisture, fig.height=10, fig.width=14}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 ## Extract values for single date
 displayday <- singlerunvalidation$pd[which(singlerunvalidation$pd$date=="2018-03-21")]
 
@@ -541,32 +582,31 @@ displaypatch3<- singlerunvalidation$pd[which(singlerunvalidation$pd$patchID==Obs
 
 plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #147322', ylim = c(0,.4))
 
-{plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", ylim = c(0,.4), col = 'darkorange', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patches",
-     xlab = "Date", ylab = "Soil Moisture mm")
-lines(smws32_2mean$Group.1,smws32_2mean$smois30A,type = "l", col = 'darkred')
-lines(smws32_3mean$Group.1,smws32_3mean$smois30A,type = "l", col = 'blue')
-lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'red', lty = 2)
-lines(displaypatch2$date,(displaypatch2$rz_storage/displaypatch2$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'green', lty = 2)
-lines(displaypatch3$date,(displaypatch3$rz_storage/displaypatch3$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'black', lty = 2)
+
+# 
+# ##rewrite to take markdown into account, must load in means
+# {plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", ylim = c(0,.4), col = 'darkorange', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patches",
+#      xlab = "Date", ylab = "Soil Moisture mm")
+# lines(smws32_2mean$Group.1,smws32_2mean$smois30A,type = "l", col = 'darkred')
+# lines(smws32_3mean$Group.1,smws32_3mean$smois30A,type = "l", col = 'blue')
+# lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'red', lty = 2)
+# lines(displaypatch2$date,(displaypatch2$rz_storage/displaypatch2$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'green', lty = 2)
+# lines(displaypatch3$date,(displaypatch3$rz_storage/displaypatch3$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'black', lty = 2)
+# 
+# 
+# 
+# # plot(smws32_1mean$smois30A,(displaypatch$rz_storage/displaypatch$root.depth))
+# 
+# legend("bottomleft",inset = .01, legend=c("Observed Patch 1","Predicted Patch 1","Observed Patch 2","Predicted Patch 2","Observed Patch 3","Predicted Patch 3"), col=c("darkorange", "red","darkred","green","blue","black"), lty=c(1,2,1,2,1,2))}
+# 
+# {plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patch #154914",
+#      xlab = "Date", ylab = "Soil Moisture mm")
+# lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",lwd = 2, xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
+# lines(displaypatch$date, ((displaypatch$root_zone.S*displaypatch$potential_rz_store)/displaypatch$root.depth), type = "l", col = "green")
+# legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
 
 
 
-# plot(smws32_1mean$smois30A,(displaypatch$rz_storage/displaypatch$root.depth))
-
-legend("bottomleft",inset = .01, legend=c("Observed Patch 1","Predicted Patch 1","Observed Patch 2","Predicted Patch 2","Observed Patch 3","Predicted Patch 3"), col=c("darkorange", "red","darkred","green","blue","black"), lty=c(1,2,1,2,1,2))}
-
-{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patch #154914",
-     xlab = "Date", ylab = "Soil Moisture mm")
-lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",lwd = 2, xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
-lines(displaypatch$date, ((displaypatch$root_zone.S*displaypatch$potential_rz_store)/displaypatch$root.depth), type = "l", col = "green")
-legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
-
-
-#
-#obsws32cal <- obsws32[obsws32$Date >= Caldates[1] & obsws32$Date <= Caldates[2], ]
-#obsws32val <- obsws32[obsws32$Date >= Valdates[1] & obsws32$Date <= Valdates[2], ]
-#obsws32smcal <- obsws32sm[obsws32sm$Date >= Caldates[1] & obsws32sm$Date <= Caldates[2], ]
-#obsws32smval <- obsws32sm[obsws32sm$Date >= Valdates[1] & obsws32sm$Date <= Valdates[2], ]
 
 head(obsws32cal)
 head(obsws32val)
@@ -606,48 +646,19 @@ legend("bottomleft",inset = .1, legend=c("Predicted RZ Storage","RZ Field Capaci
 {plot(displaypatch$date,(displaypatch$unsat_stor/displaypatch$sat_def_z), type = "l",ylim = c(0,0.50), ylab = "Root Zone Storage (mm/m) ", xlab = "Date", main = 'Root Zone Display Patch')
 legend("bottomleft",inset = .1, legend=c("Predicted RZ Storage","RZ Field Capacity","RZ Wilting Point"), col=c("black","blue","red"), lty=1:1)}
 
+# must take seperate markdown file into account, load in mean sm files
 
-{plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Saturated Zone VWC vs Patch #154914",
-     xlab = "Date", ylab = "Soil Moisture mm")
-lines(displaypatch$date,(displaypatch$unsat_stor/displaypatch$sat_def_z), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
-legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
+# {plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Saturated Zone VWC vs Patch #154914",
+#      xlab = "Date", ylab = "Soil Moisture mm")
+# lines(displaypatch$date,(displaypatch$unsat_stor/displaypatch$sat_def_z), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
+# legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
 
-```
-
-Model Validation
-
-```{r}
-
-Valdates
-## for now run top run and record values
-
-paramtable[which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),]
-
-paramtable[which(smKGElist == Reduce(max, smKGElist), arr.ind=TRUE),]
-
-
-{plot(cwws32_run6$bd$date,cwws32_run6$bd$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top KGE Run", xlab = "Date", ylab = "Streamflow")
-lines(obsws32$Date,obsws32$discharge_mm, col = 'orange', lwd = 2, lty = 2)}
-
-
-valsubset <- simmerge6[simmerge6$Date >= Valdates[1] & simmerge6$Date <= Valdates[2], ]
-
-ValKGE<- KGE(sim = valsubset$streamflow, obs = valsubset$observedstreamflow)
-
-
-valsubsetsm<- simmergesm6[simmergesm6$Date >= Valdates[1] & simmergesm6$Date <= Valdates[2],]
-
-ValsmKGE<- KGE(sim = valsubsetsm$rz_storage/valsubsetsm$rootdepth, obs = valsubsetsm$mergedsoilmoisture)
-
-
-ValKGE
-
-ValsmKGE
 ```
 
 Combine calibration outputs
 
 ```{r}
+
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 getwd()
 
@@ -747,12 +758,12 @@ RSS - prepare to run model n times for patch 1 - only for validation time series
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 getwd()
 
-validationruns <- 200
+validationruns <- 6
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
   world_hdr_prefix = "CWWS32",
   flowtable = "CWWS32.flow",
   start = "2015 11 1 1",
@@ -778,6 +789,8 @@ input_hdr = IOin_hdr(
 RSS - Run RHESSYs
 
 ```{r Run RHESSYS in Parallel using foreach RSS 1, eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -842,19 +855,29 @@ lines(obsws32smvalclean$Date,obsws32smvalclean$Site2, col = 'RED')
 lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
 
 ```
-
+# must modify vwc calculation to use * instead of /
 RSS - read 20 runs, create table and append to table for site 1
 
 ```{r}
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valrss1_run",i), readin_rhessys_output(paste0("out/cwws32valrss1_run",i)))}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
-plot(cwws32valrss1_run1$pd$date,cwws32valrss1_run1$pd$rz_storage/cwws32valrss1_run1$pd$root.depth, type = "l")
+
+for(i in 1:validationruns) { 
+  
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch1_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  assign(paste0("cwws32valrss1_run",i),temp_dataset)
+}
+
+
+plot(cwws32valrss1_run1$date,cwws32valrss1_run1$rootzone.S/cwws32valrss1_run1$rootzone.potential_sat, type = "l")
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss1_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss1_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -872,16 +895,11 @@ validationsmKGElistsite1<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$rootzone.S","/valmergesm",i,"$rootzone.potential_sat))")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
   validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
 validationsmKGElistsite1
-
-
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
-
-paste0("valmergesm",i,"$rz_storage","/valmergesm",i,"$root.depth")
 
 
 ```
@@ -894,39 +912,39 @@ RSS - Explore Site 1
 
 cwws32valrss1_run1
 
-{plot(cwws32valrss1_run1$bd$date, (cwws32valrss1_run1$bd$rz_storage/cwws32valrss1_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run1$date, (cwws32valrss1_run1$rootzone.S/cwws32valrss1_run1$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 
 
 
-{plot(cwws32valrss1_run3$bd$date, (cwws32valrss1_run3$bd$rz_storage/cwws32valrss1_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
 paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
 
-plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
-plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+plot((valmergesm3$rootzone.S*valmergesm3$rootzone.potential_sat), type = "l")
+plot(valmergesm3$Date, (valmergesm3$rz_storage), type = "l")
 plot(valmergesm3$Date, valmergesm3$Site1, type = "l")
 
 
-{plot(cwws32valrss1_run3$pd$date, (cwws32valrss1_run3$pd$rz_storage/cwws32valrss1_run3$pd$root.depth), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
 
-{plot(cwws32valrss1_run3$pd$date, ((cwws32valrss1_run3$pd$root_zone.S*cwws32valrss1_run3$pd$potential_rz_store)/cwws32valrss1_run3$pd$root.depth), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run3$date, ((cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat)), type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
 paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
 
 
-{plot(cwws32valrss1_run3$bd$date, (cwws32valrss1_run3$bd$rz_storage/cwws32valrss1_run3$bd$rootdepth), type = 'l', ylim = c(0.0,0.26))
+{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.0,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
-{plot(cwws32valrss1_run43$pd$date, (cwws32valrss1_run43$pd$rz_storage/cwws32valrss1_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
-lines(valmergesm43$Date,valmergesm43$Site1, col = 'BLUE', lty = 3)}
-
-{plot(cwws32valrss1_run43$bd$date, (cwws32valrss1_run43$bd$rz_storage/cwws32valrss1_run43$bd$rootdepth), type = 'l', ylim = c(0.0,0.26))
-lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
+# {plot(cwws32valrss1_run44$date, (cwws32valrss1_run44$rootzone.S/cwws32valrss1_run44$root.depth), type = 'l', ylim = c(0.0,0.26))
+# lines(valmergesm4$Date,valmergesm4$Site1, col = 'BLUE', lty = 3)}
+# 
+# {plot(cwws32valrss1_run43$date, (cwws32valrss1_run43$rootzone.S/cwws32valrss1_run43$rootzone.potential_sat), type = 'l', ylim = c(0.0,0.26))
+# lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 
 ```
 RSS - prepare to run model n times for patch 2 - only for validation time series

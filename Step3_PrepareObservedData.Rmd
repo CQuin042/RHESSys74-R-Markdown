@@ -247,6 +247,11 @@ Valdates[1]<-  range(Caldates)[2]+1
 Valdates[2]<- range(mergedsm$Date)[2]
 
 
+write.csv(Caldates, "outputfilter/caldates.csv")
+write.csv(Valdates, "outputfilter/valdates.csv")
+
+write.csv(mergedsm,"outputfilter/mergedsm.csv")
+
 ```
 
 Plot and Filter Observed Streamflow Data
@@ -315,6 +320,7 @@ obsws32<- fullset
 
 obsws32sm<- merge(obsws32,mergedsm, by = "Date")
 
+write.csv(obsws32sm, paste0("outputfilter/obsws32sm.csv"))
 #Caldates
 #Valdates
 
@@ -489,6 +495,11 @@ soilstatic<- raster("grassexport/cwt_ws32/ssurgosoil.tif")
 reclass_df <- c(0,256,9)
 reclass_static <- matrix(reclass_df, ncol = 3, byrow = TRUE)
 soilstaticmap<- reclassify(soilstatic, reclass_static)
+
+#export soil static map to raster
+
+
+writeRaster(soilstaticmap,"grassexport/cwt_ws32/staticsoil.tif",format = "GTiff", overwrite = TRUE)
 
 
 soilssurgo<- raster("grassexport/cwt_ws32/ssurgosoil.tif")
