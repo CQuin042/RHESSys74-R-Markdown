@@ -2142,8 +2142,6 @@ Preprocessing is controlled by template file.
 Template file 'CWWS32_STATIC.template' is used to run model normally
 template file 'CWWS32_STATICspinup.template' is used to spin up model. Only difference is artificially extended climate dataset. 
 
-# must setup automatic spinup and preprocessing for all treatments, right now spinup requires manual template input and 2 runs for creation
-
 ```{r RHESSys PreProcess and Flowtable Conversion, verbose = FALSE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 

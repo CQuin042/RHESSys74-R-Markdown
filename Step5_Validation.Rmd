@@ -401,10 +401,6 @@ Spatial Data import and display of inputs
 # Original input maps have been cropped before processing in R, without cropping the RHESSYs preparation in the R environment will not function properly, below are the input maps used by R
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-
-
-
-
 ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
 patches<- raster("grassexport/cwt_ws32/patch.tif")
 acc10<- raster("grassexport/cwt_ws32/acc10.tif")
@@ -788,7 +784,7 @@ input_hdr = IOin_hdr(
 ```
 RSS - Run RHESSYs
 
-```{r Run RHESSYS in Parallel using foreach RSS 1, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach RSS 1, echo=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 n.cores <- parallel::detectCores() - 4  
@@ -864,16 +860,13 @@ RSS - read 20 runs, create table and append to table for site 1
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
-
+#create rootzonevwc column
 for(i in 1:validationruns) { 
-  
   temp_dataset<- read.csv(paste0("outputfilter/valws32patch1_",i,".csv"))
   temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
   assign(paste0("cwws32valrss1_run",i),temp_dataset)
 }
-
-
-plot(cwws32valrss1_run1$date,cwws32valrss1_run1$rootzone.S/cwws32valrss1_run1$rootzone.potential_sat, type = "l")
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
@@ -895,7 +888,7 @@ validationsmKGElistsite1<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$rootzone.S","/valmergesm",i,"$rootzone.potential_sat))")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
   validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -912,32 +905,31 @@ RSS - Explore Site 1
 
 cwws32valrss1_run1
 
-{plot(cwws32valrss1_run1$date, (cwws32valrss1_run1$rootzone.S/cwws32valrss1_run1$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run1$date, cwws32valrss1_run1$rootzonevwc, type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm1$Date,valmergesm1$Site1, col = 'BLUE', lty = 3)}
 
 
 
-{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run3$date, cwws32valrss1_run3$rootzonevwc, type = 'l', ylim = c(0.12,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
 
 plot((valmergesm3$rootzone.S*valmergesm3$rootzone.potential_sat), type = "l")
 plot(valmergesm3$Date, (valmergesm3$rz_storage), type = "l")
 plot(valmergesm3$Date, valmergesm3$Site1, type = "l")
 
 
-{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.12,0.26))
+{plot(cwws32valrss1_run3$date, cwws32valrss1_run3$rootzonevwc, type = 'l', ylim = c(0.0,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
 
-{plot(cwws32valrss1_run3$date, ((cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat)), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
+{plot(cwws32valrss1_run2$date, cwws32valrss1_run2$rootzonevwc, type = 'l', ylim = c(0.0,0.26))
+lines(valmergesm2$Date,valmergesm2$Site1, col = 'BLUE', lty = 3)}
 
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
+paste0("valmergesm",i,"$rootzonevwc")
 
 
-{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S/cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.0,0.26))
+{plot(cwws32valrss1_run3$date, (cwws32valrss1_run3$rootzone.S*cwws32valrss1_run3$rootzone.potential_sat), type = 'l', ylim = c(0.0,0.26))
 lines(valmergesm3$Date,valmergesm3$Site1, col = 'BLUE', lty = 3)}
 
 # {plot(cwws32valrss1_run44$date, (cwws32valrss1_run44$rootzone.S/cwws32valrss1_run44$root.depth), type = 'l', ylim = c(0.0,0.26))
@@ -954,12 +946,19 @@ RSS - run model in parallel
 RSS - read n runs, create table and append to table
 
 ```{r}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valrss2_run",i), readin_rhessys_output(paste0("out/cwws32valrss2_run",i)))}
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch2_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valrss2_run",i),temp_dataset)
+}
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss2_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 valmergesm1
@@ -974,54 +973,54 @@ validationsmKGElistsite2<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
   validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 validationsmKGElistsite2
 
 ```
 RSS - Explore Site 2
-
+## not updated 6/27
 ```{r}
-
-'Exploring Site 2 RSS'
-
-
-cwws32valrss2_run1
-
-{plot(cwws32valrss2_run1$bd$date, (cwws32valrss2_run1$bd$rz_storage/cwws32valrss2_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
-
-
-
-{plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
-
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
-
-plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
-plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
-plot(valmergesm3$Date, valmergesm3$Site2, type = "l")
-
-
-{plot(cwws32valrss2_run3$pd$date, (cwws32valrss2_run3$pd$rz_storage/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
-lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
-
-
-{plot(cwws32valrss2_run3$pd$date, ((cwws32valrss2_run3$pd$root_zone.S*cwws32valrss2_run3$pd$potential_rz_store)/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
-lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
-
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
-
-
-{plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
-
-{plot(cwws32valrss2_run43$pd$date, (cwws32valrss2_run43$pd$rz_storage/cwws32valrss2_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
-lines(valmergesm43$Date,valmergesm43$Site2, col = 'BLUE', lty = 3)}
-
-{plot(cwws32valrss2_run43$bd$date, (cwws32valrss2_run43$bd$rz_storage/cwws32valrss2_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
+# 
+# 'Exploring Site 2 RSS'
+# 
+# 
+# cwws32valrss2_run1
+# 
+# {plot(cwws32valrss2_run1$bd$date, (cwws32valrss2_run1$bd$rz_storage/cwws32valrss2_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
+# 
+# 
+# 
+# {plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+# 
+# paste0("valmergesm",i,"$rootzonevwc")
+# 
+# plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
+# plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+# plot(valmergesm3$Date, valmergesm3$Site2, type = "l")
+# 
+# 
+# {plot(cwws32valrss2_run3$pd$date, (cwws32valrss2_run3$pd$rz_storage/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+# lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+# 
+# 
+# {plot(cwws32valrss2_run3$pd$date, ((cwws32valrss2_run3$pd$root_zone.S*cwws32valrss2_run3$pd$potential_rz_store)/cwws32valrss2_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+# lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+# 
+# paste0("valmergesm",i,"$rootzonevwc")
+# 
+# 
+# {plot(cwws32valrss2_run3$bd$date, (cwws32valrss2_run3$bd$rz_storage/cwws32valrss2_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm3$Date,valmergesm3$Site2, col = 'BLUE', lty = 3)}
+# 
+# {plot(cwws32valrss2_run43$pd$date, (cwws32valrss2_run43$pd$rz_storage/cwws32valrss2_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.26))
+# lines(valmergesm43$Date,valmergesm43$Site2, col = 'BLUE', lty = 3)}
+# 
+# {plot(cwws32valrss2_run43$bd$date, (cwws32valrss2_run43$bd$rz_storage/cwws32valrss2_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm1$Date,valmergesm1$Site2, col = 'BLUE', lty = 3)}
 
 ```
 prepare to run model 20 times for patch 3 - only for validation time series
@@ -1031,12 +1030,18 @@ RSS - run model in parallel
 RSS - read n runs, create table and append to table
 
 ```{r}
-# Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valrss3_run",i), readin_rhessys_output(paste0("out/cwws32valrss3_run",i)))}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+# Read in RHESSys Validation runs
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch3_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valrss3_run",i),temp_dataset)
+}
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valrss3_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -1050,7 +1055,7 @@ validationsmKGElistsite3<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
   validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1061,54 +1066,55 @@ valmergesm2
  
 ```
 RSS - Explore Site 3
-
+#not updated 6/27
 ```{r}
-
-'Exploring Site 3 RSS'
-
-
-cwws32valrss3_run1
-
-{plot(cwws32valrss3_run1$bd$date, (cwws32valrss3_run1$bd$rz_storage/cwws32valrss3_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
-
-
-
-{plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
-
-paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
-
-plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
-plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
-plot(valmergesm3$Date, valmergesm3$Site3, type = "l")
-
-
-{plot(cwws32valrss3_run3$pd$date, (cwws32valrss3_run3$pd$rz_storage/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
-lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
-
-
-{plot(cwws32valrss3_run3$pd$date, ((cwws32valrss3_run3$pd$root_zone.S*cwws32valrss3_run3$pd$potential_rz_store)/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
-lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
-
-## based on landscape position the previous two figures differ, the second figure does not count inundation as "0" VWC
-
-#paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")
-
-
-{plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.0,0.45))
-lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
-
-{plot(cwws32valrss3_run43$pd$date, (cwws32valrss3_run43$pd$rz_storage/cwws32valrss3_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.35))
-lines(valmergesm43$Date,valmergesm43$Site3, col = 'BLUE', lty = 3)}
-
-{plot(cwws32valrss3_run43$bd$date, (cwws32valrss3_run43$bd$rz_storage/cwws32valrss3_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
-lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
+# 
+# 'Exploring Site 3 RSS'
+# 
+# 
+# cwws32valrss3_run1
+# 
+# {plot(cwws32valrss3_run1$bd$date, (cwws32valrss3_run1$bd$rz_storage/cwws32valrss3_run1$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
+# 
+# 
+# 
+# {plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+# 
+# paste0("valmergesm",i,"$rootzonevwc")
+# 
+# plot((valmergesm3$root_zone.S*valmergesm3$potential_rz_store)/(valmergesm3$root.depth), type = "l")
+# plot(valmergesm3$Date, (valmergesm3$rz_storage/valmergesm3$root.depth), type = "l")
+# plot(valmergesm3$Date, valmergesm3$Site3, type = "l")
+# 
+# 
+# {plot(cwws32valrss3_run3$pd$date, (cwws32valrss3_run3$pd$rz_storage/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
+# lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+# 
+# 
+# {plot(cwws32valrss3_run3$pd$date, ((cwws32valrss3_run3$pd$root_zone.S*cwws32valrss3_run3$pd$potential_rz_store)/cwws32valrss3_run3$pd$root.depth), type = 'l', ylim = c(0.0,0.45))
+# lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+# 
+# ## based on landscape position the previous two figures differ, the second figure does not count inundation as "0" VWC
+# 
+# #paste0("valmergesm",i,"$rootzonevwc")
+# 
+# 
+# {plot(cwws32valrss3_run3$bd$date, (cwws32valrss3_run3$bd$rz_storage/cwws32valrss3_run3$bd$rootdepth), type = 'l', ylim = c(0.0,0.45))
+# lines(valmergesm3$Date,valmergesm3$Site3, col = 'BLUE', lty = 3)}
+# 
+# {plot(cwws32valrss3_run43$pd$date, (cwws32valrss3_run43$pd$rz_storage/cwws32valrss3_run43$pd$root.depth), type = 'l', ylim = c(0.0,0.35))
+# lines(valmergesm43$Date,valmergesm43$Site3, col = 'BLUE', lty = 3)}
+# 
+# {plot(cwws32valrss3_run43$bd$date, (cwws32valrss3_run43$bd$rz_storage/cwws32valrss3_run43$bd$rootdepth), type = 'l', ylim = c(0.12,0.26))
+# lines(valmergesm1$Date,valmergesm1$Site3, col = 'BLUE', lty = 3)}
 
 ```
 RSS - merge all 3 sites
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
 
@@ -1136,13 +1142,14 @@ STATIC
 run model n times for patch 1 - only for validation time series
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32static.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_file = "CWWS32static.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
   world_hdr_prefix = "CWWS32static",
-  flowtable = "CWWS32static1.flow",
+  flowtable = "CWWS32static.flow",
   start = "2015 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -1165,7 +1172,9 @@ input_hdr = IOin_hdr(
 ```
 run static
 
-```{r Run RHESSYS in Parallel using foreach STATIC 1, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach STATIC 1, echo=TRUE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -1205,15 +1214,20 @@ start_time = Sys.time()
 read 20 runs, create table and append to table for patch 1
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valstatic1_run",i), readin_rhessys_output(paste0("out/cwws32valstatic1_run",i)))}
 
-
-plot(cwws32valstatic1_run1$pd$date,cwws32valstatic1_run1$pd$rz_storage/cwws32valstatic1_run1$pd$root.depth)
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch1_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valstatic1_run",i),temp_dataset)
+}
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic1_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic1_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 valmergesm1
@@ -1229,7 +1243,7 @@ validationsmKGElistsite1<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
   validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 validationsmKGElistsite1
@@ -1242,12 +1256,20 @@ run model in parallel
 read 20 runs, create table and append to table
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valstatic2_run",i), readin_rhessys_output(paste0("out/cwws32valstatic2_run",i)))}
+
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch2_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valstatic2_run",i),temp_dataset)
+}
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic2_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -1265,7 +1287,7 @@ validationsmKGElistsite2<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
   validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1282,12 +1304,20 @@ run model in parallel
 read 20 runs, create table and append to table
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valstatic3_run",i), readin_rhessys_output(paste0("out/cwws32valstatic3_run",i)))}
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch3_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valstatic3_run",i),temp_dataset)
+}
+
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valstatic3_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -1301,7 +1331,7 @@ validationsmKGElistsite3<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
   validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1313,6 +1343,8 @@ valmergesm2
 merge all 3 sites 
 
 ```{r}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
 
@@ -1344,9 +1376,9 @@ run model 20 times for patch 1 - only for validation time series
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32ssurgo.world.Y2018M10D31H1.state.Y2018M10D31H1.state",
+  world_file = "CWWS32ssurgo.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
   world_hdr_prefix = "CWWS32ssurgo",
-  flowtable = "CWWS32ssurgo1.flow",
+  flowtable = "CWWS32ssurgo.flow",
   start = "2015 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -1369,7 +1401,7 @@ input_hdr = IOin_hdr(
 ```
 run SSURGO
 
-```{r Run RHESSYS in Parallel using foreach SSURGO 1, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach SSURGO 1, echo=TRUE}
 n.cores <- parallel::detectCores() - 4  
   
 my.cluster <- parallel::makeCluster(
@@ -1399,6 +1431,7 @@ start_time = Sys.time()
                        hdr_files = input_hdr,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
+                       output_filter = c(patchfilterpatch1,patchfilterpatch2,patchfilterpatch3),
                        runID = i)
   } 
   
@@ -1413,16 +1446,19 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 getwd()
 
-validationruns <- 200
 
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) {assign(paste0("cwws32valssurgo_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo_run",i)))}
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch1_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valssurgo_run",i),temp_dataset)
+}
 
-plot(cwws32valssurgo_run1$pd$date,cwws32valssurgo_run1$pd$rz_storage/cwws32valssurgo_run1$pd$root.depth)
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 valmergesm1
@@ -1438,7 +1474,7 @@ validationsmKGElistsite1<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site1"))))))
   validationsmKGElistsite1[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1452,12 +1488,20 @@ run model in parallel
 read 20 runs, create table and append to table for site 2
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valssurgo2_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo2_run",i)))}
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch2_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valssurgo2_run",i),temp_dataset)
+}
+
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo2_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo2_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -1475,7 +1519,7 @@ validationsmKGElistsite2<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site2"))))))
   validationsmKGElistsite2[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1491,12 +1535,21 @@ run model in parallel
 read 20 runs, create table and append to table for site 3
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 # Read in RHESSys Validation runs
-for(i in 1:validationruns) { assign(paste0("cwws32valssurgo3_run",i), readin_rhessys_output(paste0("out/cwws32valssurgo3_run",i)))}
+
+for(i in 1:validationruns) { 
+  temp_dataset<- read.csv(paste0("outputfilter/valws32patch3_",i,".csv"))
+  temp_dataset$date<- as.Date(paste(temp_dataset$year, temp_dataset$month, temp_dataset$day, sep = "-"), format = "%Y-%m-%d")
+  temp_dataset$rootzonevwc<- temp_dataset$rootzone.S*temp_dataset$rootzone.potential_sat 
+  assign(paste0("cwws32valssurgo3_run",i),temp_dataset)
+}
+
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
-for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo3_run",i,"$pd"))), by.x = "Date", by.y="date", all = FALSE))
+for(i in 1:validationruns) { assign(paste0("valmergesm",i), merge(obsws32smvalclean,eval(parse(text = paste0("cwws32valssurgo3_run",i))), by.x = "Date", by.y="date", all = FALSE))
   assign(paste0("valsubsetsm",i),eval(parse(text = paste0("valmergesm",i)))[eval(parse(text = paste0("valmergesm",i,"$date"))) >= Valdates[1] & eval(parse(text = paste0("valmergesm",i,"$date"))) <= Valdates[2], ])}
 
 
@@ -1510,7 +1563,7 @@ validationsmKGElistsite3<- c()
 #for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rz_storage","/valsubsetsm",i,"$rootdepth")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
 #  valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("((valmergesm",i,"$root_zone.S","*valmergesm",i,"$potential_rz_store)","/valmergesm",i,"$root.depth)")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
+for(i in 1:validationruns) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valmergesm",i,"$rootzonevwc")))), obs = as.numeric(eval(parse(text = paste0("valmergesm",i,"$Site3"))))))
   validationsmKGElistsite3[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 
@@ -1522,6 +1575,7 @@ valmergesm2
 merge all 3 sites
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
 
@@ -1550,6 +1604,7 @@ plot kge on y axis
 plot group on x axis
 
 ```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 ssurgovalidation<- read.csv("threesitevalidationssurgo.csv")
 rssvalidation<- read.csv("threesitevalidationrss.csv")
