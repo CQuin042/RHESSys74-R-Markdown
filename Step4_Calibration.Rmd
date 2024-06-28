@@ -88,8 +88,6 @@ roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Repr
 CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
 CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
 
-CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
-CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
 CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
 CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
 
@@ -216,7 +214,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # number of samples for full data space
 fs <- 10000
 # number of samples to calibrate over, 100 samples take approx 40 mins in base R and 1 hour in rmarkdown
-n <- 6
+n <- 100
 # create data frame
 d <- data.frame(
   m = runif(fs, min=0.5, max=5),
@@ -254,7 +252,7 @@ params[1:5,]
 getwd()
 
 ##UNCOMMENT TO WRITE NEW PARAMS
-#  write.table(params, file = "out/cwparamtable.txt")
+  write.table(params, file = "out/cwparamtable.txt")
 ###
 
 ### writes new params table with todays date to a text file
@@ -462,7 +460,7 @@ input_hdr_dsm = IOin_hdr(
 
 Run RHESSys Calibration with Static Maps
 
-```{r Run RHESSYS in Parallel using foreach Static, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach Static, echo=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 n.cores <- parallel::detectCores() - 4  
   
@@ -503,7 +501,7 @@ start_time = Sys.time()
 
 Run RHESSys with SSURGO Maps
 
-```{r Run RHESSYS in Parallel using foreach SSURGO, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach SSURGO, echo=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 n.cores <- parallel::detectCores() - 4  
   
@@ -544,7 +542,7 @@ start_time = Sys.time()
 
 Run RHESSys with RSS Maps
 
-```{r Run RHESSYS in Parallel using foreach DSM, eval=FALSE, include=FALSE}
+```{r Run RHESSYS in Parallel using foreach DSM, echo=TRUE}
 
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 n.cores <- parallel::detectCores() - 4  
@@ -609,14 +607,9 @@ for(i in 1:n) { static_df <- read.csv(paste0("outputfilter/static_basin_daily_",
 
   }
 
-
-#for(i in 1:n) { assign(paste0("cwws32_run",i), readin_rhessys_output(paste0("out/cwws32_run",i)))}
-
 #Prepare observed Streamflow data
 
-
 obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
-
 
 obsws32$Date<- as.Date(obsws32$Date)
 
@@ -630,8 +623,6 @@ mergedsm<- read.table("outputfilter/mergedsm.csv", header = T, sep = ",")
 obsws32sm<- read.table("outputfilter/obsws32sm.csv", header = T, sep = ",")
 obsws32sm$Date<- as.Date(obsws32sm$Date,"%Y-%m-%d")
 
-
-
 ## plot observed data for period of record and calibration/validation periods as defined by SM data
 {plot(obsws32$Date,obsws32$discharge_mm, type = 'l', xlim=c(as.Date(input_rhessys$start_date, "%Y%m%d"),as.Date(input_rhessys$end_date, "%Y%m%d")),ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Streamflow Discharge for period of time model is run")
 abline(v=as.Date(Caldates[1]), col = 'red', lwd = 2, lty = 2)
@@ -639,8 +630,6 @@ abline(v=as.Date(Caldates[2]), col = 'red', lwd = 2, lty = 2)
 abline(v=as.Date(Valdates[1]), col = 'blue', lwd = 2, lty = 5)
 abline(v=as.Date(Valdates[2]), col = 'blue', lwd = 2, lty = 5)
 legend("topright",inset = 0.05, legend=c("Calibration","Validation"), col=c("red","blue"), lty=1)}
-
-
 
 ```
 
@@ -808,7 +797,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 #creates cal subset, val subset, and merged streamflow
 
 for(i in 1:n) { assign(paste0("simmerge",i), merge(obsws32,eval(parse(text = paste0("cwws32_ssurgo_run",i))), by.x = "Date", by.y="date", all = FALSE))
-  assign(paste0("simmergesm",i), merge(obsws32sm,eval(parse(text = paste0("cwws32_static_run",i))), by.x = "Date",by.y="date", all = FALSE))
+  assign(paste0("simmergesm",i), merge(obsws32sm,eval(parse(text = paste0("cwws32_ssurgo_run",i))), by.x = "Date",by.y="date", all = FALSE))
   assign(paste0("calsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ])
   assign(paste0("valsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Valdates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Valdates[2], ])
   assign(paste0("calsubsetsm",i),eval(parse(text = paste0("simmergesm",i)))[eval(parse(text = paste0("simmergesm",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ])
@@ -959,7 +948,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 #creates cal subset, val subset, and merged streamflow
 
 for(i in 1:n) { assign(paste0("simmerge",i), merge(obsws32,eval(parse(text = paste0("cwws32_dsm_run",i))), by.x = "Date", by.y="date", all = FALSE))
-  assign(paste0("simmergesm",i), merge(obsws32sm,eval(parse(text = paste0("cwws32_static_run",i))), by.x = "Date",by.y="date", all = FALSE))
+  assign(paste0("simmergesm",i), merge(obsws32sm,eval(parse(text = paste0("cwws32_dsm_run",i))), by.x = "Date",by.y="date", all = FALSE))
   assign(paste0("calsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ])
   assign(paste0("valsubset",i),eval(parse(text = paste0("simmerge",i)))[eval(parse(text = paste0("simmerge",i,"$Date"))) >= Valdates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Valdates[2], ])
   assign(paste0("calsubsetsm",i),eval(parse(text = paste0("simmergesm",i)))[eval(parse(text = paste0("simmergesm",i,"$Date"))) >= Caldates[1] & eval(parse(text = paste0("simmerge",i,"$Date"))) <= Caldates[2], ])
@@ -1094,11 +1083,6 @@ paramtable<- as.data.frame(lapply(paramtable,unlist))
 
 write.table(paramtable, file = "out/dsmcalibrationoutput.txt")
 ```
-
-
-
-
-
 
 ```{r create plots, fig.height=9, fig.width=14, paged.print=TRUE}
 top100<- paramtable[order(-paramtable$lnNSE),][1:n,]
@@ -1255,7 +1239,7 @@ lines(simmerge1$Date,simmerge1$observedstreamflow, col = 'orange', lwd = 2, lty 
 #lines(paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$date", sep = ""),paste("cwws32_run",which(KGElist == Reduce(max, KGElist), arr.ind=TRUE),"$bd$streamflow", sep = ""), col = 'orange', lwd = 2, lty = 2)
 #legend("topleft",inset = 0.05, legend=c("Oberved Discharge","Best NSE","BEST lnNSE","Best KGE"), col=c("orange","red","blue","green"), lty=c(2,1,1,1))}
 
-{plot(cwws32_dsm_run4$date,cwws32_dsm_run4$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
+{plot(cwws32_dsm_run16$date,cwws32_dsm_run16$streamflow, type = "l", col = 'red', main = "Observed Streamflow vs Top Runs", xlab = "Date", ylab = "Streamflow", ylim = c(0,10))
 #lines(cwws32_dsm_run47$bd$date,cwws32_dsm_run47$bd$streamflow, col = 'blue')
 lines(obsws32$Date,obsws32$discharge_mm, col = 'black', lwd = 2, lty = 2)}
 

@@ -93,8 +93,6 @@ roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Repr
 CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
 CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
 
-CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
-CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
 CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
 CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
 
@@ -558,7 +556,6 @@ northing = NULL
 dir.create("grassdata")
 
 initGRASS(gisBase = "C:/Program Files/GRASS GIS 8.2",
-          #gisDbase = "C:/Users/Carlos/Documents/grassdata",
           gisDbase = "grassdata",
           location = "Coweeta1", 
           mapset = "PERMANENT", 
@@ -1130,7 +1127,7 @@ plot(r.taxpartsize)
 
 ###quick and dirty incorporate new DSM map with two depth classes
 
-r.taxpartsizetest<- raster("C:/Users/Carlos/Documents/R/win-library/4.0/RHESSysIOinR/extdata/Raster Soil Survey/rss-soiltype-class.tif")
+r.taxpartsizetest<- raster(paste0(filedir,"input_files/soil_maps/rss-soiltype-class.tif"))
 
 r.taxpartsize <- projectRaster(r.taxpartsizetest, ws32, method = 'ngb')
 

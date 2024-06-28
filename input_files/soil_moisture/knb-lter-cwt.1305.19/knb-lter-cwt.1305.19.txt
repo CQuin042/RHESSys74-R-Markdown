@@ -1,0 +1,878 @@
+Dataset title:  Continuously measured soil moisture, soil temperature, and air temperature from stations in Watershed 7, Coweeta Hydrologic Laboratory
+
+Dataset ID:  knb-lter-cwt.1305.1.1
+Dataset Creator
+
+	Organization:	Coweeta Long Term Ecological Research Program
+	
+	Address:
+			Daniel B. Warnell School of Forestry and Natural Resources
+			University of Georgia
+			Athens, Georgia 30602  USA
+	
+	Email:		cwtim@uga.edu
+	URL:		http://coweeta.uga.edu/
+
+	Name:		Dr. Paul Bolstad
+	Organization:	University of Minnesota
+	
+	Address:
+			Department of Forest Resources
+			St. Paul, MN 55108  USA
+	
+	Email:		pbolstad@umn.edu
+	URL:		http://www.forestry.umn.edu/people/paul-v-bolstad
+
+
+Metadata Provider
+
+
+
+Dataset Abstract
+
+	Long-term soil moisture stations were established within the Coweeta Hydrologic Lab Basin to collect measurements of soil moisture, soil temperature, air temperature, and relative humidity at a range of spatial scales, from ridge to cove and low to high elevations in the southern Appalachians, and across the regional range of rainfall amounts.
+
+
+Dataset Keywords
+
+	ecohydrology
+	elevation gradients
+	southern Appalachian Mountains
+	water availability
+	Coweeta Hydrologic Laboratory
+	North Carolina
+	USA
+	CWT
+	LTER
+	air temperature
+	Coweeta Hydrologic Laboratory
+	microclimate
+	soil moisture
+	soil temperature
+	soil water content
+	time domain reflectometry
+	Movement of Inorganic Matter
+
+
+Intellectual Rights
+
+	publicly available
+
+
+Distribution
+
+	Online distribution:  http://coweeta.uga.edu/dbpublic/dataset_details.asp?accession=1305
+
+
+Temporal Coverage
+
+	Start Date:  2015-08-04
+	End Date:  2019-02-04
+
+
+Dataset Contact
+
+
+
+Methods
+
+	Sampling Description 
+
+
+
+	Method Step 
+
+		Description 
+
+
+
+		Instrumentation
+
+			Soil moisture probes: Campbell Scientific model CS650
+
+
+	Method Step 
+
+		Description 
+
+
+
+		Instrumentation
+
+			Soil temperature probes: Campbell Scientific model CS650, Campbell Scientific model 107
+
+
+	Method Step 
+
+		Description 
+
+
+
+		Instrumentation
+
+			Air temperture and relative humidity probe: Campbell Scientific model HC2S3
+
+
+Data Table
+
+	Entity Name:  CWT_107
+	Entity Description:  Watershed 7 Ridge Station
+	Object Name:  CWT_107_1_2610.TXT
+
+
+
+Data Format
+
+	Number of Header Lines:  1
+	Attribute Orientation:  column
+	Field Delimiter:  \t
+
+
+
+Attributes
+
+	Attribute Name:  Site
+	Attribute Label:  
+	Attribute Definition:  Site code
+	Storage Type:  string
+	Measurement Scale: 
+		Site code
+	Missing Value Code: 
+
+
+	Attribute Name:  Date
+	Attribute Label:  
+	Attribute Definition:  Calendar date and time of observation
+	Storage Type:  string
+	Measurement Scale: 
+	Missing Value Code: 
+
+
+	Attribute Name:  BattV_Min
+	Attribute Label:  
+	Attribute Definition:  Battery voltage
+	Storage Type:  float
+	Measurement Scale: 
+		Units:  volt
+		Precision:  0.01
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_BattV_Min
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Battery voltage (flagging criteria, where "x" is BattV_Min: x<9="I", x>17="I")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+	Missing Value Code: 
+
+
+	Attribute Name:  PTemp_Max
+	Attribute Label:  
+	Attribute Definition:  Datalogger panel temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  atemp
+	Attribute Label:  
+	Attribute Definition:  Air temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  RHumidity
+	Attribute Label:  
+	Attribute Definition:  Relative humidity
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_RHumidity
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x<10="Q", x>100="I", x<0="I")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  stemp05
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 5cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp05
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature 5cm below mineral soil surface (flagging criteria, where "x" is stemp05: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  stemp20
+	Attribute Label:  
+	Attribute Definition:  soil temperature 20cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp20
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for soil temperature 20cm below mineral soil surface (flagging criteria, where "x" is stemp20: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois30A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  Soil temperature at surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois60A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30A
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp30A
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature 30cm below mineral soil surface (flagging criteria, where "x" is stemp30A: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois30B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceB
+	Attribute Label:  
+	Attribute Definition:  Soil temperature surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp_surfaceB
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature surface of mineral soil (flagging criteria, where "x" is stemp_surfaceB: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois60B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30B
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Site
+	Attribute Label:  
+	Attribute Definition:  Site code
+	Storage Type:  string
+	Measurement Scale: 
+		Site code
+	Missing Value Code: 
+
+
+	Attribute Name:  Date
+	Attribute Label:  
+	Attribute Definition:  Calendar date and time of observation
+	Storage Type:  string
+	Measurement Scale: 
+	Missing Value Code: 
+
+
+	Attribute Name:  BattV_Min
+	Attribute Label:  
+	Attribute Definition:  Battery voltage
+	Storage Type:  float
+	Measurement Scale: 
+		Units:  volt
+		Precision:  0.01
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  PTemp_Max
+	Attribute Label:  
+	Attribute Definition:  Datalogger panel temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  atemp
+	Attribute Label:  
+	Attribute Definition:  Air temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  RHumidity
+	Attribute Label:  
+	Attribute Definition:  Relative humidity
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_RHumidity
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x<10="Q", x>100="I", x<0="I")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  stemp05
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 5cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp20
+	Attribute Label:  
+	Attribute Definition:  soil temperature 20cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp20
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for soil temperature 20cm below mineral soil surface (flagging criteria, where "x" is stemp20: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois30A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  Soil temperature at surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois60A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30A
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  smois30B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceB
+	Attribute Label:  
+	Attribute Definition:  Soil temperature surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  smois60B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30B
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Site
+	Attribute Label:  
+	Attribute Definition:  Site code
+	Storage Type:  string
+	Measurement Scale: 
+		Site code
+	Missing Value Code: 
+
+
+	Attribute Name:  Date
+	Attribute Label:  
+	Attribute Definition:  Calendar date and time of observation
+	Storage Type:  string
+	Measurement Scale: 
+	Missing Value Code: 
+
+
+	Attribute Name:  BattV_Min
+	Attribute Label:  
+	Attribute Definition:  Battery voltage
+	Storage Type:  float
+	Measurement Scale: 
+		Units:  volt
+		Precision:  0.01
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_BattV_Min
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Battery voltage (flagging criteria, where "x" is BattV_Min: x<9="I", x>17="I")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+	Missing Value Code: 
+
+
+	Attribute Name:  PTemp_Max
+	Attribute Label:  
+	Attribute Definition:  Datalogger panel temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  atemp
+	Attribute Label:  
+	Attribute Definition:  Air temperature
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_atemp
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Air temperature (flagging criteria, where "x" is atemp: x<-40="I", x>60="I", x<-30="Q", x>50="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  RHumidity
+	Attribute Label:  
+	Attribute Definition:  Relative humidity
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_RHumidity
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x<10="Q", x>100="I", x<0="I")
+	Storage Type:  string
+	Measurement Scale: 
+		I= invalid value (out of range)
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  stemp05
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 5cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp20
+	Attribute Label:  
+	Attribute Definition:  soil temperature 20cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  smois30A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  Soil temperature at surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp_surfaceA
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois60A
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60A
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30A
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  smois30B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 0-30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC30B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp_surfaceB
+	Attribute Label:  
+	Attribute Definition:  Soil temperature surface of mineral soil
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  Flag_stemp_surfaceB
+	Attribute Label:  
+	Attribute Definition:  QA/QC flags for Soil temperature surface of mineral soil (flagging criteria, where "x" is stemp_surfaceB: x<=-20="I", x>40="I", x<-10="Q", x>30="Q")
+	Storage Type:  string
+	Measurement Scale: 
+		Q= questionable value
+	Missing Value Code: 
+
+
+	Attribute Name:  smois60B
+	Attribute Label:  
+	Attribute Definition:  Decimal percentage soil moisture 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  percentabbr.
+		Precision:0.001		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  EC60B
+	Attribute Label:  
+	Attribute Definition:  Bulk electrical conductivity 30-60cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units:		deciSiemensPerMeter
+		Precision:  0.001
+		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+
+	Attribute Name:  stemp30B
+	Attribute Label:  
+	Attribute Definition:  Soil temperature 30cm below mineral soil surface
+	Storage Type:  float
+	Measurement Scale: 
+		Units  celsius
+		Precision:0.01		Number Type:  real
+	Missing Value Code: NaN  (value not recorded or invalid)
+
+

@@ -1,0 +1,8 @@
+Manifest file for knb-lter-cwt.1305.19-4c9184f37cff01bcdc32dc486ec36961.zip created on Tue Oct 27 17:54:18 MDT 2020
+CWT_107_1_2610.TXT (49865233 bytes)
+CWT_207_1_1305.TXT (50858428 bytes)
+CWT_307_1_1305.TXT (46094771 bytes)
+1305.kml (16230 bytes)
+knb-lter-cwt.1305.19.xml (184508 bytes)
+knb-lter-cwt.1305.19.txt (24106 bytes)
+knb-lter-cwt.1305.19.report.xml (73636 bytes)

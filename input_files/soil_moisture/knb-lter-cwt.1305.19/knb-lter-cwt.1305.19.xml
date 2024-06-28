@@ -1,0 +1,3966 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml packageId="knb-lter-cwt.1305.19"
+  system="https://pasta.edirepository.org"
+  xmlns:ds="eml://ecoinformatics.org/dataset-2.1.0"
+  xmlns:eml="eml://ecoinformatics.org/eml-2.1.0"
+  xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.0 http://gce-lter.marsci.uga.edu/public/files/schemas/eml-210/eml.xsd">
+  <access authSystem="https://pasta.edirepository.org/authentication"
+    order="allowFirst" scope="document" system="https://pasta.edirepository.org">
+    <allow>
+      <principal>uid=CWT,o=lter,dc=ecoinformatics,dc=org</principal>
+      <permission>all</permission>
+    </allow>
+    <allow>
+      <principal>public</principal>
+      <permission>read</permission>
+    </allow>
+  </access>
+  <dataset>
+    <alternateIdentifier>knb-lter-cwt.1305.1.1</alternateIdentifier>
+    <alternateIdentifier system="https://doi.org">doi:10.6073/pasta/ac7ca56c8247cc87c817c50fcf315be5</alternateIdentifier>
+    <title>Continuously measured soil moisture, soil temperature, and air temperature from stations in Watershed 7, Coweeta Hydrologic Laboratory</title>
+    <creator id="CWT-LTER">
+      <organizationName>Coweeta Long Term Ecological Research Program</organizationName>
+      <address>
+        <deliveryPoint>Daniel B. Warnell School of Forestry and Natural Resources</deliveryPoint>
+        <deliveryPoint>University of Georgia</deliveryPoint>
+        <city>Athens</city>
+        <administrativeArea>Georgia</administrativeArea>
+        <postalCode>30602</postalCode>
+        <country>USA</country>
+      </address>
+      <electronicMailAddress>cwtim@uga.edu</electronicMailAddress>
+      <onlineUrl>http://coweeta.uga.edu/</onlineUrl>
+    </creator>
+    <creator>
+      <individualName>
+        <salutation>Dr.</salutation>
+        <givenName>Paul</givenName>
+        <surName>Bolstad</surName>
+      </individualName>
+      <organizationName>University of Minnesota</organizationName>
+      <address>
+        <deliveryPoint>Department of Forest Resources</deliveryPoint>
+        <city>St. Paul</city>
+        <administrativeArea>MN</administrativeArea>
+        <postalCode>55108</postalCode>
+        <country>USA</country>
+      </address>
+      <electronicMailAddress>pbolstad@umn.edu</electronicMailAddress>
+      <onlineUrl>http://www.forestry.umn.edu/people/paul-v-bolstad</onlineUrl>
+    </creator>
+    <metadataProvider>
+      <references>CWT-LTER</references>
+    </metadataProvider>
+    <associatedParty>
+      <individualName>
+        <givenName>Jason</givenName>
+        <surName>Love</surName>
+      </individualName>
+      <organizationName>University of Georgia</organizationName>
+      <electronicMailAddress>jplove@uga.edu</electronicMailAddress>
+      <role>Site Manager</role>
+    </associatedParty>
+    <associatedParty>
+      <individualName>
+        <givenName>Brian</givenName>
+        <givenName>P.</givenName>
+        <surName>Herndon</surName>
+      </individualName>
+      <organizationName>University of Georgia</organizationName>
+      <electronicMailAddress>bherndon@uga.edu</electronicMailAddress>
+      <role>Information Manager</role>
+    </associatedParty>
+    <pubDate>2019</pubDate>
+    <abstract>
+      <para>Long-term soil moisture stations were established within the Coweeta Hydrologic Lab Basin to collect measurements of soil moisture, soil temperature, air temperature, and relative humidity at a range of spatial scales, from ridge to cove and low to high elevations in the southern Appalachians, and across the regional range of rainfall amounts.</para>
+    </abstract>
+    <keywordSet>
+      <keyword keywordType="theme">ecohydrology</keyword>
+      <keyword keywordType="theme">elevation gradients</keyword>
+      <keyword keywordType="theme">southern Appalachian Mountains</keyword>
+      <keyword keywordType="theme">water availability</keyword>
+    </keywordSet>
+    <keywordSet>
+      <keyword keywordType="place">Coweeta Hydrologic Laboratory</keyword>
+      <keyword keywordType="place">North Carolina</keyword>
+      <keyword keywordType="place">USA</keyword>
+      <keyword keywordType="theme">CWT</keyword>
+      <keyword keywordType="theme">LTER</keyword>
+      <keywordThesaurus>GCE-LTER Controlled Vocabulary</keywordThesaurus>
+    </keywordSet>
+    <keywordSet>
+      <keyword keywordType="theme">air temperature</keyword>
+      <keyword keywordType="theme">Coweeta Hydrologic Laboratory</keyword>
+      <keyword keywordType="theme">microclimate</keyword>
+      <keyword keywordType="theme">soil moisture</keyword>
+      <keyword keywordType="theme">soil temperature</keyword>
+      <keyword keywordType="theme">soil water content</keyword>
+      <keyword keywordType="theme">time domain reflectometry</keyword>
+      <keywordThesaurus>LTER Controlled Vocabulary</keywordThesaurus>
+    </keywordSet>
+    <keywordSet>
+      <keyword keywordType="theme">Movement of Inorganic Matter</keyword>
+      <keywordThesaurus>LTER Core Research Areas</keywordThesaurus>
+    </keywordSet>
+    <intellectualRights>
+      <para>publicly available</para>
+    </intellectualRights>
+    <distribution>
+      <online>
+        <url function="information">http://coweeta.uga.edu/dbpublic/dataset_details.asp?accession=1305</url>
+      </online>
+    </distribution>
+    <coverage>
+      <temporalCoverage>
+        <rangeOfDates>
+          <beginDate>
+            <calendarDate>2015-08-04</calendarDate>
+          </beginDate>
+          <endDate>
+            <calendarDate>2019-02-04</calendarDate>
+          </endDate>
+        </rangeOfDates>
+      </temporalCoverage>
+    </coverage>
+    <contact>
+      <positionName>Coweeta LTER Information Manager</positionName>
+      <address>
+        <deliveryPoint>Department of Anthropology</deliveryPoint>
+        <deliveryPoint>University of Georgia</deliveryPoint>
+        <city>Athens</city>
+        <administrativeArea>Georgia</administrativeArea>
+        <postalCode>30602-1619</postalCode>
+        <country>USA</country>
+      </address>
+      <electronicMailAddress>cwtim@uga.edu</electronicMailAddress>
+    </contact>
+    <publisher>
+      <references>CWT-LTER</references>
+    </publisher>
+    <methods>
+      <methodStep>
+        <description>
+          <section>
+            <title>Soil Moisture</title>
+            <para>Soil Moisture: Probes are located at depths of 0-30cm and 30-60cm below the mineral soil surface. For ridge stations, probes are installed along the ridge, appx. 6 meters away from plot center, in opposite directions. For side-slope stations, probes are installed appx. 6 meters upslope and 6 meters downslope of plot center.  For cove stations, probes are installed as close as possible to the long axis of the direction of the cove, both on a line intersecting the plot center and at least 5 meters between probe locations. Regardless of station type, all soil moisture sensors are within the 15 meter radius plot. Probes at different depths are located within 1 meter of each other and probes at any one depth should be at least 5 meters apart within the plot.</para>
+          </section>
+        </description>
+        <instrumentation>Soil moisture probes: Campbell Scientific model CS650</instrumentation>
+      </methodStep>
+      <methodStep>
+        <description>
+          <section>
+            <title>Soil Temperature</title>
+            <para>Soil Temperature: Each soil moisture probe also measures soil temperature from the epoxy head of the sensor. This allows for soil temperature measurements taken at the mineral soil surface, and at 30 cm below mineral soil surface. Additionally,temperature probes are installed horizontally at 5cm and 20cm below mineral soil surface.</para>
+          </section>
+        </description>
+        <instrumentation>Soil temperature probes: Campbell Scientific model CS650, Campbell Scientific model 107</instrumentation>
+      </methodStep>
+      <methodStep>
+        <description>
+          <section>
+            <title>Air Temperature/Relative Humidity</title>
+            <para>Air temperature (&amp; relative humidity if equipped) sensors are installed within gill-plated radiation shields attached to the datalogger enclosure post, between 1-1.7 meters above ground surface.</para>
+          </section>
+        </description>
+        <instrumentation>Air temperture and relative humidity probe: Campbell Scientific model HC2S3</instrumentation>
+      </methodStep>
+      <sampling>
+        <studyExtent>
+          <coverage>
+            <temporalCoverage>
+              <rangeOfDates>
+                <beginDate>
+                  <calendarDate>2015-08-04</calendarDate>
+                </beginDate>
+                <endDate>
+                  <calendarDate>2019-02-04</calendarDate>
+                </endDate>
+              </rangeOfDates>
+            </temporalCoverage>
+          </coverage>
+          <coverage>
+            <geographicCoverage>
+              <geographicDescription>CWT Study Site WS7 -- Watershed 7, Macon County, North Carolina, USA.  Lower portion of watershed grazed by an average of six cattle during annual 5-month periodfrom 1941-1952. Commercially clearcut and cable logged in 1977.</geographicDescription>
+              <boundingCoordinates>
+                <westBoundingCoordinate>-83.447630</westBoundingCoordinate>
+                <eastBoundingCoordinate>-83.437586</eastBoundingCoordinate>
+                <northBoundingCoordinate>35.073819</northBoundingCoordinate>
+                <southBoundingCoordinate>35.063930</southBoundingCoordinate>
+              </boundingCoordinates>
+            </geographicCoverage>
+            <geographicCoverage>
+              <geographicDescription>CWT Study Site CWTBASIN -- Coweeta Basin, Macon County, North Carolina, USA.  The overall boundary for the Coweeta Hydrologic laboratory.</geographicDescription>
+              <boundingCoordinates>
+                <westBoundingCoordinate>-83.478450</westBoundingCoordinate>
+                <eastBoundingCoordinate>-83.421658</eastBoundingCoordinate>
+                <northBoundingCoordinate>35.073819</northBoundingCoordinate>
+                <southBoundingCoordinate>35.027341</southBoundingCoordinate>
+              </boundingCoordinates>
+            </geographicCoverage>
+          </coverage>
+        </studyExtent>
+        <samplingDescription>
+          <section>
+            <title>Watershed 7 Microclimate Measurements</title>
+            <para>The site coordinates listed are for the plot center. The datalogger enclosure is located within 7.5 meters of plot center. The main plot has a 15 meter radius and contains subplots for soil and vegetation measurements.
+107: 35.069255 N, 83.440717 W, elevation: 915.2 meters
+207: 35.068576 N, 83.440269 W, elevation: 867.7 meters
+307: 35.065977 N, 83.441075 W, elevation: 791 meters</para>
+            <para>Long-term soil moisture stations were established within the Coweeta Hydrologic Lab basin and beyond to collect measurements of soil moisture, soil temperature, air temperature, and relative humidity at a range of spatial scales, from ridge to cove and low to high elevations in the southern Appalachians, and across the regional range of rainfall amounts.</para>
+            <para>Measurements are taken and output to the data table at 5 minute intervals using Campbell Scientific Instruments sensors and a CR1000 datalogger. Data is collected remotely through radio telemetry or modem. The data is processed at the Coweeta LTER Information Management Office daily and posted online in the streaming data portal of the Coweeta LTER website.</para>
+          </section>
+        </samplingDescription>
+        <spatialSamplingUnits>
+          <referencedEntityId>1305.kml</referencedEntityId>
+        </spatialSamplingUnits>
+      </sampling>
+    </methods>
+    <project>
+      <title>Coweeta LTER Program V</title>
+      <personnel>
+        <individualName>
+          <givenName>Ted</givenName>
+          <givenName>L</givenName>
+          <surName>Gragson</surName>
+        </individualName>
+        <role>principalInvestigator</role>
+      </personnel>
+      <personnel>
+        <individualName>
+          <givenName>James</givenName>
+          <surName>Vose</surName>
+        </individualName>
+        <role>principalInvestigator</role>
+      </personnel>
+      <personnel>
+        <individualName>
+          <givenName>Brian</givenName>
+          <surName>Kloeppel</surName>
+        </individualName>
+        <role>principalInvestigator</role>
+      </personnel>
+      <personnel>
+        <individualName>
+          <givenName>James</givenName>
+          <givenName>Barrie</givenName>
+          <surName>Collins</surName>
+        </individualName>
+        <role>informationManager</role>
+      </personnel>
+      <abstract>
+        <para>The Coweeta LTER Research Program has evolved since 1980 from a site-based to a site- and region-based project examining the effects of disturbance and environmental gradients on biogeochemical cycling, and the underlying watershed ecosystem processes that regulate and respond to those cycles. The current interdisciplinary research integrates ecological and socioeconomic components across 54,000 km2 of the southern Appalachian Mountains, a biogeophysical and socioeconomic region in which evolutionary and historical processes converge (Whittaker 1956, Markusen 1987, Barnes 1991, Kretzschmar et al. 1993, Bailey 1996). Our research objective in 2002-2008 is to advance scientific understanding of the spatial, temporal, and decision-making components of land use and land-use change in the southern Appalachian Mountains over the last 200 years, and forecast patterns into the future 30 years. Our guiding hypothesis is that the frequency, intensity, and extent of land use represents human decision-making in response to socioeconomic and biogeophysical conditions with consequences that cascade through ecosystems.</para>
+      </abstract>
+      <funding>
+        <para>This material is based upon work supported by the National Science Foundation under grant number OCE-9982133. Any opinions, findings, conclusions, or recommendations expressed in the material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.</para>
+      </funding>
+    </project>
+    <dataTable>
+      <entityName>CWT_107</entityName>
+      <entityDescription>Watershed 7 Ridge Station</entityDescription>
+      <physical>
+        <objectName>CWT_107_1_2610.TXT</objectName>
+        <size unit="rows">0</size>
+        <characterEncoding>ASCII</characterEncoding>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>1</numHeaderLines>
+            <numFooterLines>0</numFooterLines>
+            <recordDelimiter>\r\n</recordDelimiter>
+            <numPhysicalLinesPerRecord>1</numPhysicalLinesPerRecord>
+            <attributeOrientation>column</attributeOrientation>
+            <simpleDelimited>
+              <fieldDelimiter>\t</fieldDelimiter>
+            </simpleDelimited>
+          </textFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/1305/19/dca41b5cfc666e7d8cdd728b076ea505</url>
+          </online>
+          <access
+            authSystem="https://pasta.edirepository.org/authentication"
+            order="allowFirst" scope="document" system="https://pasta.edirepository.org">
+            <allow>
+              <principal>uid=CWT,o=lter,dc=ecoinformatics,dc=org</principal>
+              <permission>all</permission>
+            </allow>
+            <allow>
+              <principal>public</principal>
+              <permission>read</permission>
+            </allow>
+          </access>
+        </distribution>
+      </physical>
+      <methods>
+        <methodStep>
+          <description>
+            <para>Data file post-processing in the CWT-LTER Information Management Office</para>
+          </description>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 355133 rows imported from ASCII data file 'CWT_107.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 355133 rows imported from ASCII data file 'CWT_107.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 355133 rows imported from ASCII data file 'CWT_107.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 355133 rows imported from ASCII data file 'CWT_107.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 355133 rows imported from ASCII data file 'CWT_107.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_107', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_107', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_107', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_107', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_107', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, stemp30A, smois30B and stemp_surfaceB as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, stemp30A, smois30B and stemp_surfaceB as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, stemp30A, smois30B and stemp_surfaceB as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, stemp30A, smois30B and stemp_surfaceB as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, stemp30A, smois30B and stemp_surfaceB as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4576 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4576 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4576 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4576 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4576 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, RHumidity, stemp05, stemp20, stemp_surfaceA, stemp30A and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, RHumidity, stemp05, stemp20, stemp_surfaceA, stemp30A and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, RHumidity, stemp05, stemp20, stemp_surfaceA, stemp30A and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, RHumidity, stemp05, stemp20, stemp_surfaceA, stemp30A and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, RHumidity, stemp05, stemp20, stemp_surfaceA, stemp30A and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+        </methodStep>
+        <qualityControl>
+          <description>
+            <para>Quality control analysis was performed using the GCE Data Toolbox for MATLAB software. Column data types are validated upon importing the table into MATLAB, and qualifier flags are automatically generated for data values based on QA/QC criteria for each data column pre-defined in metadata templates (e.g. value range checks, sanity checks, pattern checks). Qualifier flags are also assigned to values that are imputed or derived, revised, or otherwise differ from values in the original data submission. A column of coded qualifier flags is generated and included in the data table if flags are assigned to any value in a data column.</para>
+          </description>
+        </qualityControl>
+      </methods>
+      <attributeList>
+        <attribute id="att.1">
+          <attributeName>Site</attributeName>
+          <attributeDefinition>Site code</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <textDomain>
+                  <definition>Site code</definition>
+                </textDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.2">
+          <attributeName>Date</attributeName>
+          <attributeDefinition>Calendar date and time of observation</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <dateTime>
+              <formatString>yyyy-mm-dd HH:MM:SS</formatString>
+              <dateTimePrecision>1</dateTimePrecision>
+              <dateTimeDomain/>
+            </dateTime>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.3">
+          <attributeName>BattV_Min</attributeName>
+          <attributeDefinition>Battery voltage</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>volt</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">9</minimum>
+                  <maximum exclusive="false">17</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.4">
+          <attributeName>Flag_BattV_Min</attributeName>
+          <attributeDefinition>QA/QC flags for Battery voltage (flagging criteria, where "x" is BattV_Min: x&lt;9="I", x&gt;17="I")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.5">
+          <attributeName>PTemp_Max</attributeName>
+          <attributeDefinition>Datalogger panel temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">50</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.6">
+          <attributeName>atemp</attributeName>
+          <attributeDefinition>Air temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">-40</minimum>
+                  <maximum exclusive="false">60</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.7">
+          <attributeName>RHumidity</attributeName>
+          <attributeDefinition>Relative humidity</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">100</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.8">
+          <attributeName>Flag_RHumidity</attributeName>
+          <attributeDefinition>QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x&lt;10="Q", x&gt;100="I", x&lt;0="I")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.9">
+          <attributeName>stemp05</attributeName>
+          <attributeDefinition>Soil temperature 5cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.10">
+          <attributeName>Flag_stemp05</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature 5cm below mineral soil surface (flagging criteria, where "x" is stemp05: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.11">
+          <attributeName>stemp20</attributeName>
+          <attributeDefinition>soil temperature 20cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.12">
+          <attributeName>Flag_stemp20</attributeName>
+          <attributeDefinition>QA/QC flags for soil temperature 20cm below mineral soil surface (flagging criteria, where "x" is stemp20: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.13">
+          <attributeName>smois30A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.14">
+          <attributeName>EC30A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.15">
+          <attributeName>stemp_surfaceA</attributeName>
+          <attributeDefinition>Soil temperature at surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.16">
+          <attributeName>Flag_stemp_surfaceA</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.17">
+          <attributeName>smois60A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.18">
+          <attributeName>EC60A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.19">
+          <attributeName>stemp30A</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.20">
+          <attributeName>Flag_stemp30A</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature 30cm below mineral soil surface (flagging criteria, where "x" is stemp30A: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.21">
+          <attributeName>smois30B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.22">
+          <attributeName>EC30B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.23">
+          <attributeName>stemp_surfaceB</attributeName>
+          <attributeDefinition>Soil temperature surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.24">
+          <attributeName>Flag_stemp_surfaceB</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature surface of mineral soil (flagging criteria, where "x" is stemp_surfaceB: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.25">
+          <attributeName>smois60B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.26">
+          <attributeName>EC60B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.27">
+          <attributeName>stemp30B</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+      </attributeList>
+    </dataTable>
+    <dataTable>
+      <entityName>CWT_207</entityName>
+      <entityDescription>Watershed 7 Sideslope Station</entityDescription>
+      <physical>
+        <objectName>CWT_207_1_1305.TXT</objectName>
+        <size unit="rows">0</size>
+        <characterEncoding>ASCII</characterEncoding>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>1</numHeaderLines>
+            <numFooterLines>0</numFooterLines>
+            <recordDelimiter>\r\n</recordDelimiter>
+            <numPhysicalLinesPerRecord>1</numPhysicalLinesPerRecord>
+            <attributeOrientation>column</attributeOrientation>
+            <simpleDelimited>
+              <fieldDelimiter>\t</fieldDelimiter>
+            </simpleDelimited>
+          </textFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/1305/19/ff722e85472e148e4057140580256a66</url>
+          </online>
+          <access
+            authSystem="https://pasta.edirepository.org/authentication"
+            order="allowFirst" scope="document" system="https://pasta.edirepository.org">
+            <allow>
+              <principal>uid=CWT,o=lter,dc=ecoinformatics,dc=org</principal>
+              <permission>all</permission>
+            </allow>
+            <allow>
+              <principal>public</principal>
+              <permission>read</permission>
+            </allow>
+          </access>
+        </distribution>
+      </physical>
+      <methods>
+        <methodStep>
+          <description>
+            <para>Data file post-processing in the CWT-LTER Information Management Office</para>
+          </description>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 372887 rows imported from ASCII data file 'CWT_207.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 372887 rows imported from ASCII data file 'CWT_207.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 372887 rows imported from ASCII data file 'CWT_207.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 372887 rows imported from ASCII data file 'CWT_207.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 372887 rows imported from ASCII data file 'CWT_207.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_207', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_207', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_207', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_207', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_207', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 32 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 32 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 32 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 32 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 32 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns RHumidity, stemp20 and stemp_surfaceA as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns RHumidity, stemp20 and stemp_surfaceA as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns RHumidity, stemp20 and stemp_surfaceA as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns RHumidity, stemp20 and stemp_surfaceA as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns RHumidity, stemp20 and stemp_surfaceA as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4278 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4278 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4278 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4278 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 4278 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns RHumidity, stemp20 and stemp_surfaceA converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns RHumidity, stemp20 and stemp_surfaceA converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns RHumidity, stemp20 and stemp_surfaceA converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns RHumidity, stemp20 and stemp_surfaceA converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns RHumidity, stemp20 and stemp_surfaceA converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+        </methodStep>
+        <qualityControl>
+          <description>
+            <para>Quality control analysis was performed using the GCE Data Toolbox for MATLAB software. Column data types are validated upon importing the table into MATLAB, and qualifier flags are automatically generated for data values based on QA/QC criteria for each data column pre-defined in metadata templates (e.g. value range checks, sanity checks, pattern checks). Qualifier flags are also assigned to values that are imputed or derived, revised, or otherwise differ from values in the original data submission. A column of coded qualifier flags is generated and included in the data table if flags are assigned to any value in a data column.</para>
+          </description>
+        </qualityControl>
+      </methods>
+      <attributeList>
+        <attribute id="att.28">
+          <attributeName>Site</attributeName>
+          <attributeDefinition>Site code</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <textDomain>
+                  <definition>Site code</definition>
+                </textDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.29">
+          <attributeName>Date</attributeName>
+          <attributeDefinition>Calendar date and time of observation</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <dateTime>
+              <formatString>yyyy-mm-dd HH:MM:SS</formatString>
+              <dateTimePrecision>1</dateTimePrecision>
+              <dateTimeDomain/>
+            </dateTime>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.30">
+          <attributeName>BattV_Min</attributeName>
+          <attributeDefinition>Battery voltage</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>volt</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">9</minimum>
+                  <maximum exclusive="false">17</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.31">
+          <attributeName>PTemp_Max</attributeName>
+          <attributeDefinition>Datalogger panel temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">50</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.32">
+          <attributeName>atemp</attributeName>
+          <attributeDefinition>Air temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">-40</minimum>
+                  <maximum exclusive="false">60</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.33">
+          <attributeName>RHumidity</attributeName>
+          <attributeDefinition>Relative humidity</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">100</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.34">
+          <attributeName>Flag_RHumidity</attributeName>
+          <attributeDefinition>QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x&lt;10="Q", x&gt;100="I", x&lt;0="I")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.35">
+          <attributeName>stemp05</attributeName>
+          <attributeDefinition>Soil temperature 5cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.36">
+          <attributeName>stemp20</attributeName>
+          <attributeDefinition>soil temperature 20cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.37">
+          <attributeName>Flag_stemp20</attributeName>
+          <attributeDefinition>QA/QC flags for soil temperature 20cm below mineral soil surface (flagging criteria, where "x" is stemp20: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.38">
+          <attributeName>smois30A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.39">
+          <attributeName>EC30A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.40">
+          <attributeName>stemp_surfaceA</attributeName>
+          <attributeDefinition>Soil temperature at surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.41">
+          <attributeName>Flag_stemp_surfaceA</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.42">
+          <attributeName>smois60A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.43">
+          <attributeName>EC60A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.44">
+          <attributeName>stemp30A</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.45">
+          <attributeName>smois30B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.46">
+          <attributeName>EC30B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.47">
+          <attributeName>stemp_surfaceB</attributeName>
+          <attributeDefinition>Soil temperature surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.48">
+          <attributeName>smois60B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.49">
+          <attributeName>EC60B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.50">
+          <attributeName>stemp30B</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+      </attributeList>
+    </dataTable>
+    <dataTable>
+      <entityName>CWT_307</entityName>
+      <entityDescription>Watershed 7 Cove Station</entityDescription>
+      <physical>
+        <objectName>CWT_307_1_1305.TXT</objectName>
+        <size unit="rows">0</size>
+        <characterEncoding>ASCII</characterEncoding>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>1</numHeaderLines>
+            <numFooterLines>0</numFooterLines>
+            <recordDelimiter>\r\n</recordDelimiter>
+            <numPhysicalLinesPerRecord>1</numPhysicalLinesPerRecord>
+            <attributeOrientation>column</attributeOrientation>
+            <simpleDelimited>
+              <fieldDelimiter>\t</fieldDelimiter>
+            </simpleDelimited>
+          </textFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/1305/19/dd8617be8c48bfab7e4298ac1920005d</url>
+          </online>
+          <access
+            authSystem="https://pasta.edirepository.org/authentication"
+            order="allowFirst" scope="document" system="https://pasta.edirepository.org">
+            <allow>
+              <principal>uid=CWT,o=lter,dc=ecoinformatics,dc=org</principal>
+              <permission>all</permission>
+            </allow>
+            <allow>
+              <principal>public</principal>
+              <permission>read</permission>
+            </allow>
+          </access>
+        </distribution>
+      </physical>
+      <methods>
+        <methodStep>
+          <description>
+            <para>Data file post-processing in the CWT-LTER Information Management Office</para>
+          </description>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: new GCE Data Structure 1.1 created ('newstruct')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned numerical types and precisions for columns Second%%temp, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B; assigned data type of column Second%%temp to 'd' (integer); assigned data types of columns BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B to 'f' (floating-point) ('assign_numtype')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 329728 rows imported from ASCII data file 'CWT_307.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 329728 rows imported from ASCII data file 'CWT_307.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 329728 rows imported from ASCII data file 'CWT_307.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 329728 rows imported from ASCII data file 'CWT_307.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 329728 rows imported from ASCII data file 'CWT_307.dat' ('imp_ascii')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: 4 metadata fields in file header parsed ('parse_header')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: data structure validated ('gce_valid')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: calculated calendar date in MATLAB serial day (base 1/1/0000) format from individual date component columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp, added 'Date' column at position 1 ('add_datecol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated attribute metadata descriptors ('update_attributes'): updated units for column Date from serial day (base 1/1/0000) to serial day (base 1/1/0000) - EST</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: deleted columns Year%%temp, Month%%temp, Day%%temp, Hour%%temp, Minute%%temp and Second%%temp from the structure ('deletecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: automatically assigned study date metadata descriptors based on the range of date values in date/time columns (add_studydates)</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_307', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_307', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_307', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_307', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: imported all documentation metadata from the template 'CWT_307', updating descriptors for columns Date, BattV_Min, PTemp_Max, atemp, RHumidity, stemp05, stemp20, smois30A, EC30A, stemp_surfaceA, smois60A, EC60A, stemp30A, smois30B, EC30B, stemp_surfaceB, smois60B, EC60B and stemp30B ('meta_template')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 33 metadata fields in the Data, Dataset, Project, Site, Status, Study, Supplement sections ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated title ('newtitle')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Q/C flagging criteria applied, 'flags' field updated ('dataflag')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added column 'Site' at position 1 ('addcol')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, atemp, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, smois30B, stemp_surfaceB and smois60B as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, atemp, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, smois30B, stemp_surfaceB and smois60B as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, atemp, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, smois30B, stemp_surfaceB and smois60B as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, atemp, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, smois30B, stemp_surfaceB and smois60B as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: documented flagged and missing values in columns BattV_Min, atemp, RHumidity, stemp05, stemp20, smois30A, stemp_surfaceA, smois60A, smois30B, stemp_surfaceB and smois60B as data set anomalies in the metadata ('add_anomalies')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: added calculated Year, YearDay and Hours columns based on date/time information in the data structure ('add_year_yearday_hours')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Site changed from '' to 'none ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: converted dates in column(s) Date to format yyyy-mm-dd HH:MM:SS</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: manually edited data set metadata ('ui_editmetadata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: Units of column Date changed from 'yyyy-mm-dd HH:MM:SS - EST' to 'yyyy-mm-dd HH:MM:SS';deleted columns Year, YearDay and Hours from data structure ('ui_editor')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: sorted by column Date(ascending) ('sortdata')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 942 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 942 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 942 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 942 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: removed 942 row(s) with duplicate values in the column(s) Date ('cleardupes')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 4 metadata fields ('addmeta')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: updated 15 metadata fields in the Status, Data sections to reflect attribute metadata ('updatecols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, atemp, RHumidity, stemp_surfaceA and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, atemp, RHumidity, stemp_surfaceA and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, atemp, RHumidity, stemp_surfaceA and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, atemp, RHumidity, stemp_surfaceA and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+          <subStep>
+            <description>
+              <para>02/05/2019: flags for columns BattV_Min, atemp, RHumidity, stemp_surfaceA and stemp_surfaceB converted to data columns, flag codes updated in metadata ('flags2cols')</para>
+            </description>
+          </subStep>
+        </methodStep>
+        <qualityControl>
+          <description>
+            <para>Quality control analysis was performed using the GCE Data Toolbox for MATLAB software. Column data types are validated upon importing the table into MATLAB, and qualifier flags are automatically generated for data values based on QA/QC criteria for each data column pre-defined in metadata templates (e.g. value range checks, sanity checks, pattern checks). Qualifier flags are also assigned to values that are imputed or derived, revised, or otherwise differ from values in the original data submission. A column of coded qualifier flags is generated and included in the data table if flags are assigned to any value in a data column.</para>
+          </description>
+        </qualityControl>
+      </methods>
+      <attributeList>
+        <attribute id="att.51">
+          <attributeName>Site</attributeName>
+          <attributeDefinition>Site code</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <textDomain>
+                  <definition>Site code</definition>
+                </textDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.52">
+          <attributeName>Date</attributeName>
+          <attributeDefinition>Calendar date and time of observation</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <dateTime>
+              <formatString>yyyy-mm-dd HH:MM:SS</formatString>
+              <dateTimePrecision>1</dateTimePrecision>
+              <dateTimeDomain/>
+            </dateTime>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.53">
+          <attributeName>BattV_Min</attributeName>
+          <attributeDefinition>Battery voltage</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>volt</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">9</minimum>
+                  <maximum exclusive="false">17</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.54">
+          <attributeName>Flag_BattV_Min</attributeName>
+          <attributeDefinition>QA/QC flags for Battery voltage (flagging criteria, where "x" is BattV_Min: x&lt;9="I", x&gt;17="I")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.55">
+          <attributeName>PTemp_Max</attributeName>
+          <attributeDefinition>Datalogger panel temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">50</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.56">
+          <attributeName>atemp</attributeName>
+          <attributeDefinition>Air temperature</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">-40</minimum>
+                  <maximum exclusive="false">60</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.57">
+          <attributeName>Flag_atemp</attributeName>
+          <attributeDefinition>QA/QC flags for Air temperature (flagging criteria, where "x" is atemp: x&lt;-40="I", x&gt;60="I", x&lt;-30="Q", x&gt;50="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.58">
+          <attributeName>RHumidity</attributeName>
+          <attributeDefinition>Relative humidity</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">100</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.59">
+          <attributeName>Flag_RHumidity</attributeName>
+          <attributeDefinition>QA/QC flags for Relative humidity (flagging criteria, where "x" is RHumidity: x&lt;10="Q", x&gt;100="I", x&lt;0="I")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>I</code>
+                    <definition>invalid value (out of range)</definition>
+                  </codeDefinition>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.60">
+          <attributeName>stemp05</attributeName>
+          <attributeDefinition>Soil temperature 5cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.61">
+          <attributeName>stemp20</attributeName>
+          <attributeDefinition>soil temperature 20cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.62">
+          <attributeName>smois30A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.63">
+          <attributeName>EC30A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.64">
+          <attributeName>stemp_surfaceA</attributeName>
+          <attributeDefinition>Soil temperature at surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.65">
+          <attributeName>Flag_stemp_surfaceA</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature at surface of mineral soil (flagging criteria, where "x" is stemp_surfaceA: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.66">
+          <attributeName>smois60A</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.67">
+          <attributeName>EC60A</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.68">
+          <attributeName>stemp30A</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.69">
+          <attributeName>smois30B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 0-30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.70">
+          <attributeName>EC30B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.71">
+          <attributeName>stemp_surfaceB</attributeName>
+          <attributeDefinition>Soil temperature surface of mineral soil</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.72">
+          <attributeName>Flag_stemp_surfaceB</attributeName>
+          <attributeDefinition>QA/QC flags for Soil temperature surface of mineral soil (flagging criteria, where "x" is stemp_surfaceB: x&lt;=-20="I", x&gt;40="I", x&lt;-10="Q", x&gt;30="Q")</attributeDefinition>
+          <storageType>string</storageType>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain>
+                <enumeratedDomain>
+                  <codeDefinition>
+                    <code>Q</code>
+                    <definition>questionable value</definition>
+                  </codeDefinition>
+                </enumeratedDomain>
+              </nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute id="att.73">
+          <attributeName>smois60B</attributeName>
+          <attributeDefinition>Decimal percentage soil moisture 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <customUnit>percentabbr.</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">1</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.74">
+          <attributeName>EC60B</attributeName>
+          <attributeDefinition>Bulk electrical conductivity 30-60cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <customUnit>deciSiemensPerMeter</customUnit>
+              </unit>
+              <precision>0.001</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <minimum exclusive="false">0</minimum>
+                  <maximum exclusive="false">3</maximum>
+                </bounds>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="att.75">
+          <attributeName>stemp30B</attributeName>
+          <attributeDefinition>Soil temperature 30cm below mineral soil surface</attributeDefinition>
+          <storageType>float</storageType>
+          <measurementScale>
+            <interval>
+              <unit>
+                <standardUnit>celsius</standardUnit>
+              </unit>
+              <precision>0.01</precision>
+              <numericDomain>
+                <numberType>real</numberType>
+                <bounds>
+                  <maximum exclusive="false">40</maximum>
+                </bounds>
+              </numericDomain>
+            </interval>
+          </measurementScale>
+          <missingValueCode>
+            <code>NaN</code>
+            <codeExplanation>value not recorded or invalid</codeExplanation>
+          </missingValueCode>
+        </attribute>
+      </attributeList>
+    </dataTable>
+    <otherEntity id="1305.kml">
+      <entityName>1305.kml</entityName>
+      <entityDescription>Google Earth Keyhole Markup Language file describing the geographic locations sampled in data set knb-lter-cwt.1305.13</entityDescription>
+      <physical>
+        <objectName>1305.kml</objectName>
+        <dataFormat>
+          <externallyDefinedFormat>
+            <formatName>application/vnd.google-earth.kml+xml</formatName>
+          </externallyDefinedFormat>
+        </dataFormat>
+        <distribution>
+          <online>
+            <url function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/1305/19/db04fc2ed34aa179102dd9408d8c7f91</url>
+          </online>
+          <access
+            authSystem="https://pasta.edirepository.org/authentication"
+            order="allowFirst" scope="document" system="https://pasta.edirepository.org">
+            <allow>
+              <principal>uid=CWT,o=lter,dc=ecoinformatics,dc=org</principal>
+              <permission>all</permission>
+            </allow>
+            <allow>
+              <principal>public</principal>
+              <permission>read</permission>
+            </allow>
+          </access>
+        </distribution>
+      </physical>
+      <entityType>KML</entityType>
+    </otherEntity>
+  </dataset>
+  <additionalMetadata>
+    <metadata>
+      <stmml:unitList
+        xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.1" xsi:schemaLocation="http://www.xml-cml.org/schema/stmml-1.1 http://gce-lter.marsci.uga.edu/public/files/schemas/eml-210/stmml.xsd">
+        <!--note that the unitTypes here are taken from the eml-unitDictionary.xml-->
+        <stmml:unit abbreviation="yyyy-mm-dd HH:MM:SS" id="date"
+          name="Date" unitType="time">
+          <stmml:description>Fractional MATLAB serial day (based on 1 = January 1, 0000)</stmml:description>
+        </stmml:unit>
+        <stmml:unit abbreviation="dS/m" id="deciSiemensPerMeter"
+          name="deciSiemensPerMeter" unitType="conductance">
+          <stmml:description>deciSiemensPerMeter</stmml:description>
+        </stmml:unit>
+        <stmml:unit abbreviation="%" id="percentabbr."
+          multiplierToSI="1" name="percent" unitType="dimensionless">
+          <stmml:description>ratio of two quantities as percent composition (1:100)</stmml:description>
+        </stmml:unit>
+      </stmml:unitList>
+    </metadata>
+  </additionalMetadata>
+</eml:eml>

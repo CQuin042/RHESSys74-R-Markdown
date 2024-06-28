@@ -88,8 +88,6 @@ roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Repr
 CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
 CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
 
-CS01 <- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/CS01 OISHI/cs01_hourly_Tair_2011_2023.csv")
-CS01LT<- ("C:/Users/Carlos/Desktop/ORISE/Climate Data/CW/Air Temperature/RDS-2015-0049/Data/cs01_daily_airtemp.csv")
 CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
 CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
 
