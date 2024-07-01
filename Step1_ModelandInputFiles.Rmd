@@ -486,6 +486,13 @@ read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
 read_clim("clim/cwtws32daymet.rain", dates_out=TRUE)
 
 ```
+Plot DAYMET vs Local
+
+```{r}
+
+
+
+```
 
 Download and Prepare DEM 
 Code to download DEM originally prepared by Dylan Beaudette

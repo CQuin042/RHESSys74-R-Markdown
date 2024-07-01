@@ -106,6 +106,7 @@ Patch - Patch
 1 110 149478
 
 
+## note that streamflow output from patch filter is in mm
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
@@ -139,8 +140,8 @@ basinfilter_static = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "static_basin_daily",
                                    spatial_level = "basin",
-                                   spatial_ID = "1",
-                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+                                   spatial_ID = as.integer("1"),
+                                   variables = c("hill.gw.Qout","patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
 
 
 basinfilter_ssurgo = build_output_filter(timestep = "daily",
@@ -148,8 +149,8 @@ basinfilter_ssurgo = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "ssurgo_basin_daily",
                                    spatial_level = "basin",
-                                   spatial_ID = "1",
-                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+                                   spatial_ID = as.integer("1"),
+                                   variables = c("hill.gw.Qout","patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
 
 
 basinfilter_dsm = build_output_filter(timestep = "daily",
@@ -157,8 +158,8 @@ basinfilter_dsm = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "dsm_basin_daily",
                                    spatial_level = "basin",
-                                   spatial_ID = "1",
-                                   variables = c("patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
+                                   spatial_ID = as.integer("1"),
+                                   variables = c("hill.gw.Qout","patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
 
 
 # 
@@ -214,7 +215,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # number of samples for full data space
 fs <- 10000
 # number of samples to calibrate over, 100 samples take approx 40 mins in base R and 1 hour in rmarkdown
-n <- 100
+n <- 5
 # create data frame
 d <- data.frame(
   m = runif(fs, min=0.5, max=5),
@@ -592,6 +593,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
 # Read in RHESSys Calibration runs
+#this is only reading in 1 patch
 
 for(i in 1:n) { static_df <- read.csv(paste0("outputfilter/static_basin_daily_",i,".csv"))
   ssurgo_df <- read.csv(paste0("outputfilter/ssurgo_basin_daily_",i,".csv"))
@@ -601,15 +603,24 @@ for(i in 1:n) { static_df <- read.csv(paste0("outputfilter/static_basin_daily_",
   ssurgo_df$date <- as.Date(paste(ssurgo_df$year, ssurgo_df$month, ssurgo_df$day, sep = "-"), format = "%Y-%m-%d")
   dsm_df$date <- as.Date(paste(dsm_df$year, dsm_df$month, dsm_df$day, sep = "-"), format = "%Y-%m-%d")
   
+  static_df$patchstreamflow<- static_df$streamflow
+  static_df$streamflow<- (static_df$patchstreamflow + static_df$gw.Qout)*1000
+  
+  ssurgo_df$patchstreamflow<- ssurgo_df$streamflow
+  ssurgo_df$streamflow<- (ssurgo_df$patchstreamflow + ssurgo_df$gw.Qout)*1000
+  
+  dsm_df$patchstreamflow<- dsm_df$streamflow
+  dsm_df$streamflow<- (dsm_df$patchstreamflow + dsm_df$gw.Qout)*1000
+  
   assign(paste0("cwws32_static_run",i), static_df)
   assign(paste0("cwws32_ssurgo_run",i), ssurgo_df)
-  assign(paste0("cwws32_dsm_run",i), dsm_df)
-
-  }
+  assign(paste0("cwws32_dsm_run",i), dsm_df) }
 
 #Prepare observed Streamflow data
 
 obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
+
+
 
 obsws32$Date<- as.Date(obsws32$Date)
 
@@ -637,7 +648,7 @@ Calculate calibration performance metrics for STATIC
 
 using 
 
-rootzone.S/rootzone.potential_sat for soil moisture vwc
+rootzone.S/rootzone.field_capacity for soil moisture vwc
 
 
 #must change to *
@@ -667,13 +678,13 @@ for(i in 1:n) {  assign(paste0("lnNSEobs",i), NSE( sim = as.numeric(eval(parse(t
 for(i in 1:n) {  assign(paste0("KGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow"))))))
   KGElist[[i]]<- eval(parse(text = paste0("KGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smNSElist[[i]]<- eval(parse(text = paste0("smNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   smlnNSElist[[i]]<- eval(parse(text = paste0("smlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smKGElist[[i]]<- eval(parse(text = paste0("smKGEobs",i))) }
 
 ## modified for calsubset
@@ -689,13 +700,13 @@ for(i in 1:n) {  assign(paste0("clnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("cKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow"))))))
   calKGElist[[i]]<- eval(parse(text = paste0("cKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmNSElist[[i]]<- eval(parse(text = paste0("csmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   calsmlnNSElist[[i]]<- eval(parse(text = paste0("csmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmKGElist[[i]]<- eval(parse(text = paste0("csmKGEobs",i))) }
 
 ## modified for val subset
@@ -711,13 +722,13 @@ for(i in 1:n) {  assign(paste0("vlnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("vKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow"))))))
   valKGElist[[i]]<- eval(parse(text = paste0("vKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 Reduce(max, NSElist)
@@ -780,13 +791,18 @@ paramtable$valsmKGE<- valsmKGElist
 
 paramtable<- as.data.frame(lapply(paramtable,unlist))
 
+
+plot(paramtable$KGE)
+plot(paramtable$smKGE)
+
+
 write.table(paramtable, file = "out/staticcalibrationoutput.txt")
 ```
 Calculate calibration performance metrics for SSURGO
 
 using 
 
-rootzone.S/rootzone.potential_sat for soil moisture vwc
+rootzone.S/rootzone.field_capacity for soil moisture vwc
 
 ```{r calculate fit values and append them to a list ssurgo, fig.height=9, fig.width=14, paged.print=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
@@ -817,13 +833,13 @@ for(i in 1:n) {  assign(paste0("lnNSEobs",i), NSE( sim = as.numeric(eval(parse(t
 for(i in 1:n) {  assign(paste0("KGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow"))))))
   KGElist[[i]]<- eval(parse(text = paste0("KGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smNSElist[[i]]<- eval(parse(text = paste0("smNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   smlnNSElist[[i]]<- eval(parse(text = paste0("smlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smKGElist[[i]]<- eval(parse(text = paste0("smKGEobs",i))) }
 
 ## modified for calsubset
@@ -839,13 +855,13 @@ for(i in 1:n) {  assign(paste0("clnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("cKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow"))))))
   calKGElist[[i]]<- eval(parse(text = paste0("cKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmNSElist[[i]]<- eval(parse(text = paste0("csmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   calsmlnNSElist[[i]]<- eval(parse(text = paste0("csmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmKGElist[[i]]<- eval(parse(text = paste0("csmKGEobs",i))) }
 
 ## modified for val subset
@@ -861,13 +877,13 @@ for(i in 1:n) {  assign(paste0("vlnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("vKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow"))))))
   valKGElist[[i]]<- eval(parse(text = paste0("vKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 Reduce(max, NSElist)
@@ -937,7 +953,7 @@ Calculate calibration performance metrics for DSM
 
 using 
 
-rootzone.S/rootzone.potential_sat for soil moisture vwc
+rootzone.S/rootzone.field_capacity for soil moisture vwc
 
 ```{r calculate fit values and append them to a list dsm, fig.height=9, fig.width=14, paged.print=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
@@ -968,13 +984,13 @@ for(i in 1:n) {  assign(paste0("lnNSEobs",i), NSE( sim = as.numeric(eval(parse(t
 for(i in 1:n) {  assign(paste0("KGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmerge",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("simmerge",i,"$observedstreamflow"))))))
   KGElist[[i]]<- eval(parse(text = paste0("KGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smNSElist[[i]]<- eval(parse(text = paste0("smNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("smlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   smlnNSElist[[i]]<- eval(parse(text = paste0("smlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("smKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("simmergesm",i,"$rootzone.S","*simmergesm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("simmergesm",i,"$mergedsoilmoisture"))))))
   smKGElist[[i]]<- eval(parse(text = paste0("smKGEobs",i))) }
 
 ## modified for calsubset
@@ -990,13 +1006,13 @@ for(i in 1:n) {  assign(paste0("clnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("cKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("calsubset",i,"$observedstreamflow"))))))
   calKGElist[[i]]<- eval(parse(text = paste0("cKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmNSElist[[i]]<- eval(parse(text = paste0("csmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("csmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   calsmlnNSElist[[i]]<- eval(parse(text = paste0("csmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("csmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$rootzone.S","*calsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("calsubsetsm",i,"$mergedsoilmoisture"))))))
   calsmKGElist[[i]]<- eval(parse(text = paste0("csmKGEobs",i))) }
 
 ## modified for val subset
@@ -1012,13 +1028,13 @@ for(i in 1:n) {  assign(paste0("vlnNSEobs",i), NSE( sim = as.numeric(eval(parse(
 for(i in 1:n) {  assign(paste0("vKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubset",i,"$streamflow")))), obs = as.numeric(eval(parse(text = paste0("valsubset",i,"$observedstreamflow"))))))
   valKGElist[[i]]<- eval(parse(text = paste0("vKGEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmNSElist[[i]]<- eval(parse(text = paste0("vsmNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
+for(i in 1:n) {  assign(paste0("vsmlnNSEobs",i), NSE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture")))), FUN = log, epsilon = "Pushpalatha2012", na.rm=TRUE))
   valsmlnNSElist[[i]]<- eval(parse(text = paste0("vsmlnNSEobs",i))) }
 
-for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.potential_sat")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
+for(i in 1:n) {  assign(paste0("vsmKGEobs",i), KGE(sim = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$rootzone.S","*valsubsetsm",i,"$rootzone.field_capacity")))), obs = as.numeric(eval(parse(text = paste0("valsubsetsm",i,"$mergedsoilmoisture"))))))
   valsmKGElist[[i]]<- eval(parse(text = paste0("vsmKGEobs",i))) }
 
 Reduce(max, NSElist)

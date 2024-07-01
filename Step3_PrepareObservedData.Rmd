@@ -257,6 +257,8 @@ Plot and Filter Observed Streamflow Data
 Original Datasets are recorded as Water Year, We convert to calendar year
 
 ```{r Read and Prepare observed Streamflow data for WS32}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
 ## import daily flow dataset
 obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/daily_flow_ws32.csv"), header = F) 
 
