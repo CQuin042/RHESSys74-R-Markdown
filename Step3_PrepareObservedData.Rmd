@@ -308,7 +308,7 @@ fullset$discharge_mm<- ConvertFlowUnits(cfs = fullset$flow, WA=1, AREAunits = "m
 #{plot(fullset$Date,fullset$flow, type = "l", xlab = "Date", ylab = "Flow", main = "Streamflow WS32")
 #lines(fullset$Date,fullset$discharge_mm, col = 'red')}
 
-plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = "Discharge mm/d", main = "Observed Discharge WS32 All Datasets Merged")
+plot(fullset $Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = "Discharge mm/d", main = "Observed Discharge WS32 All Datasets Merged")
 
 plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = " Log Discharge mm/d", main = "Log of Observed Discharge WS32 All Datasets Merged", log = "y")
 
@@ -404,7 +404,6 @@ par(mfrow=c(1,1))
 plot(singleruntest$bd$date, singleruntest$bd$lai, type = "l", main = "LAI", xlab = "Date")
 plot(singleruntest$bd$date, singleruntest$bd$soilc, type = "l", main = "Soil Carbon", xlab = "Date")
 
-
 ## plot cal/val sets
 
 {plot(singleruntest$data$date,(singleruntest$data$rz_storage/singleruntest$data$rootdepth), type = "l", ylim = c(0,0.35),xlim = c(obsws32smcal$Date[1],obsws32smval$Date[length(obsws32smval$Date)]), xlab = "Date", ylab = "RZ_Storage/Rootdepth", main = "Predicted vs Observed Basin Scale Soil Moisture")
@@ -497,7 +496,6 @@ reclass_static <- matrix(reclass_df, ncol = 3, byrow = TRUE)
 soilstaticmap<- reclassify(soilstatic, reclass_static)
 
 #export soil static map to raster
-
 
 writeRaster(soilstaticmap,"grassexport/cwt_ws32/staticsoil.tif",format = "GTiff", overwrite = TRUE)
 

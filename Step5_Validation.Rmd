@@ -206,13 +206,7 @@ input_rhessys = IOin_rhessys_input(
   end = "2018 11 1 1",
   output_folder = "out",
   output_prefix = "cwws32",
-#  commandline_options = c("-b -g -p"))
- 
  commandline_options = c("-b -g -p"))
-
-#commandline_options = c("-b -g -p 1 110 136557 136557 -p 1 108 141942 141942 -p 1 108 149478 149478"))
-#1 107 141942 136557
-#1 107 149478 136557
 
 ## TEC file dictates model output, begin output a year in to allow model SM to stabilize
 # do not output_state or worldfile may be overwritten as output is created
@@ -575,32 +569,6 @@ ObserveSoilMoisturePatches[3,4]
 displaypatch3<- singlerunvalidation$pd[which(singlerunvalidation$pd$patchID==ObserveSoilMoisturePatches[3,4])]
 
 plot(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #147322', ylim = c(0,.4))
-
-
-# 
-# ##rewrite to take markdown into account, must load in means
-# {plot(smws32_1mean$Group.1,smws32_1mean$smois30A, type = "l", ylim = c(0,.4), col = 'darkorange', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patches",
-#      xlab = "Date", ylab = "Soil Moisture mm")
-# lines(smws32_2mean$Group.1,smws32_2mean$smois30A,type = "l", col = 'darkred')
-# lines(smws32_3mean$Group.1,smws32_3mean$smois30A,type = "l", col = 'blue')
-# lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'red', lty = 2)
-# lines(displaypatch2$date,(displaypatch2$rz_storage/displaypatch2$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'green', lty = 2)
-# lines(displaypatch3$date,(displaypatch3$rz_storage/displaypatch3$root.depth), type = "l", xlab = "Date", ylab = "RZ Storage", col = 'black', lty = 2)
-# 
-# 
-# 
-# # plot(smws32_1mean$smois30A,(displaypatch$rz_storage/displaypatch$root.depth))
-# 
-# legend("bottomleft",inset = .01, legend=c("Observed Patch 1","Predicted Patch 1","Observed Patch 2","Predicted Patch 2","Observed Patch 3","Predicted Patch 3"), col=c("darkorange", "red","darkred","green","blue","black"), lty=c(1,2,1,2,1,2))}
-# 
-# {plot(smws32_2mean$Group.1,smws32_2mean$smois30A, type = "l", ylim = c(0,0.4), col = 'BLUE', xlim=as.Date(c("2016-10-1","2019-10-1")), main = "CW WS32 More Detailed Soil Moisture vs Patch #154914",
-#      xlab = "Date", ylab = "Soil Moisture mm")
-# lines(displaypatch$date,(displaypatch$rz_storage/displaypatch$root.depth), type = "l",lwd = 2, xlab = "Date", ylab = "RZ Storage", main = 'CW WS27 More Detailed RZ Storage Patch #154914', col = 'red')
-# lines(displaypatch$date, ((displaypatch$root_zone.S*displaypatch$potential_rz_store)/displaypatch$root.depth), type = "l", col = "green")
-# legend("bottomleft",inset = .01, legend=c("Observed Soil Moisture","Predicted Soil Moisture"), col=c("blue","red"), lty=1:1)}
-
-
-
 
 head(obsws32cal)
 head(obsws32val)

@@ -68,13 +68,9 @@ library(tidyverse)
 library(viridisLite)
 library(dplyr)
 
-
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
- 
-rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
-
 getwd()
-
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files
@@ -161,8 +157,6 @@ basinfilter_dsm = build_output_filter(timestep = "daily",
                                    spatial_ID = as.integer("1"),
                                    variables = c("hill.gw.Qout","patch.rootzone.S","patch.rootzone.potential_sat","patch.rootzone.field_capacity", "patch.rz_storage","patch.total_water_in", "patch.streamflow", "patch.evaporation" ))
 
-
-# 
 # start_time = Sys.time()
 # start_time
 # run_rhessys_single(input_rhessys = input_rhessys,
@@ -175,9 +169,7 @@ basinfilter_dsm = build_output_filter(timestep = "daily",
 # end_time - start_time
 # end_time
 
-
 ```
-
 
 Setup RHESSys Calibration, CLHS used to reduce amount of samples processed
 
@@ -190,7 +182,6 @@ Mv - Vertical decay of hydraulic conductivity with depth
 Kv - Vertical hydraulic conductivity at the surface
 GW1 - Saturated to Groundwater Coefficient
 GW2 - Groundwater Loss Coefficient
-
 
 Parameter & Typical Range from RHESSys Wiki
 
@@ -215,7 +206,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # number of samples for full data space
 fs <- 10000
 # number of samples to calibrate over, 100 samples take approx 40 mins in base R and 1 hour in rmarkdown
-n <- 5
+n <- 100
 # create data frame
 d <- data.frame(
   m = runif(fs, min=0.5, max=5),
@@ -253,7 +244,7 @@ params[1:5,]
 getwd()
 
 ##UNCOMMENT TO WRITE NEW PARAMS
-  write.table(params, file = "out/cwparamtable.txt")
+ # write.table(params, file = "out/cwparamtable.txt")
 ###
 
 ### writes new params table with todays date to a text file
@@ -386,6 +377,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # prepare RHESSys for run
 params<- as.data.frame(params)
 
+
 input_rhessys_static = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
@@ -412,7 +404,6 @@ input_hdr_static = IOin_hdr(
   basestations = "clim/cwtws32local.base")
 
 
-
 input_rhessys_ssurgo = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
@@ -433,7 +424,6 @@ input_hdr_ssurgo = IOin_hdr(
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
-
 
 
 input_rhessys_dsm = IOin_rhessys_input(
@@ -591,7 +581,6 @@ Calibration is performed using GLUE methodology and Nash-Sutcliffe Model Efficie
  
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
-
 # Read in RHESSys Calibration runs
 #this is only reading in 1 patch
 
@@ -619,8 +608,6 @@ for(i in 1:n) { static_df <- read.csv(paste0("outputfilter/static_basin_daily_",
 #Prepare observed Streamflow data
 
 obsws32<- read.csv(paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/ObservedWS32.csv"))
-
-
 
 obsws32$Date<- as.Date(obsws32$Date)
 
@@ -806,7 +793,6 @@ rootzone.S/rootzone.field_capacity for soil moisture vwc
 
 ```{r calculate fit values and append them to a list ssurgo, fig.height=9, fig.width=14, paged.print=TRUE}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-
 
 ##merge calibration runs with observed so dates match up, instead of subsetting 
 
