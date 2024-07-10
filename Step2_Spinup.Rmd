@@ -68,13 +68,9 @@ library(tidyverse)
 library(viridisLite)
 library(dplyr)
 
-
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
- 
-rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
-
 getwd()
-
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files

@@ -1,0 +1,2 @@
+"NC113"|5|"MPI"|"Mine or quarry"|An open excavation from which soil and underlying material have been removed and in which bedrock is exposed. Also denotes surface openings to underground mines. Typically 0.5 to 5 acres.|"256850"
+"NC113"|5|"WET"|"Wet spot"|A somewhat poorly drained to very poorly drained area that is at least two drainage classes wetter than the named soils in the surrounding map unit. Typically 0.5 to 5 acres.|"256851"

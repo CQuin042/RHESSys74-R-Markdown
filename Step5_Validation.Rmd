@@ -68,13 +68,9 @@ library(tidyverse)
 library(viridisLite)
 library(dplyr)
 
-
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
- 
-rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
-
 getwd()
-
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files
@@ -811,10 +807,27 @@ plot(obsws32smvalclean$Date,obsws32smvalclean$Site3, type = "l", main = "SITE 3 
 
 obsws32smvalclean$Site3
 
-{plot(obsws32smvalclean$Date,obsws32smvalclean$mergedsoilmoisture, type = "l", main = "All site averaged sensor output", lty = 3, lwd = 2, ylim = c(0.10,0.35))
-lines(obsws32smvalclean$Date,obsws32smvalclean$Site1, col = 'BLUE')
-lines(obsws32smvalclean$Date,obsws32smvalclean$Site2, col = 'RED')
-lines(obsws32smvalclean$Date,obsws32smvalclean$Site3, col = 'GREEN')}
+
+plot(obsws32smvalclean$Date, 
+     obsws32smvalclean$mergedsoilmoisture, 
+     type = "l", 
+     main = "All Site Averaged Sensor Output", 
+     lty = 3, 
+     lwd = 2, 
+     ylim = c(0.10, 0.35), 
+     xlab = "Date", 
+     ylab = "Soil Moisture")
+
+lines(obsws32smvalclean$Date, obsws32smvalclean$Site1, col = 'blue', lwd = 1)
+lines(obsws32smvalclean$Date, obsws32smvalclean$Site2, col = 'red', lwd = 1)
+lines(obsws32smvalclean$Date, obsws32smvalclean$Site3, col = 'green', lwd = 1)
+
+legend("topright", 
+       legend = c("Averaged Output", "Site 1", "Site 2", "Site 3"), 
+       col = c("black", "blue", "red", "green"), 
+       lty = c(3, 1, 1, 1), 
+       lwd = 2)
+
 
 ```
 # must modify vwc calculation to use * instead of /
@@ -1548,18 +1561,14 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 threesitevalidation1<- data.frame(cbind(site1=as.numeric(validationsmKGElistsite1),site2=as.numeric(validationsmKGElistsite2),site3=as.numeric(validationsmKGElistsite3)))
 
-
 threesitevalidation<-threesitevalidation1
 
 threesitevalidation$allsites<- rowMeans(threesitevalidation1,na.rm=FALSE)
 
 threesitevalidation
 
-
 boxplot(threesitevalidation1, main = "Boxplot of Patch Specific Root Zone Soil Moisture KGE - SSURGO")
 boxplot(threesitevalidation, main = "Boxplot of Patch Specific Root Zone Soil Moisture KGE - SSURGO")
-
-
 
 plot(validationsmKGElistsite1,validationsmKGElistsite3)
 

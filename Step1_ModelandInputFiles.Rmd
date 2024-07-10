@@ -68,18 +68,9 @@ library(tidyverse)
 library(viridisLite)
 library(dplyr)
 
-#knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
- setwd(system.file("extdata/", package = "RHESSysIOinR"))
- 
-### Downloads most recent version of RHESSYs
-# gert::git_clone(url = "https://github.com/RHESSys/RHESSys", path = "/modelfiles/rhessys", branch = "trunk")
-
-# compile_rhessys(location = "modelfiles/")
-
-rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
-
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
 getwd()
-
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files
@@ -184,7 +175,7 @@ full_dates
 
 combinedcwtclimate<- full_dates %>% left_join(cwtrg12precip, by = c("date"))
 
-cwtrg20_selected <- cwtrg20precip %>% select(date, RRG20)
+cwtrg20_selected <- cwtrg20precip %>% dplyr::select(date, RRG20)
 
 combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtrg20_selected, by = c("date"))
 
@@ -573,18 +564,15 @@ execGRASS("g.gisenv", flag="n")
 execGRASS("g.region", flag=c("p"))
 
 ##Convert DEM to Spatrast and then import DEM to GRASS 
-
 spatrast_dem10 <- rast(resampleddem)
 
 write_RAST(spatrast_dem10, "grass_dem10", overwrite = TRUE)
 
 ## The following code is heavily influenced by Will Burkes "spatial_input_gen.R" script
-
 execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
 
 ## Import shapefiles (Streams, Weirs, Watersheds, Roads)
 ## only roads and Watersheds necessary to Run
-
 streams<- vect(streamshapefile)
 streams<- project(streams,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(streams, "streams")
@@ -602,19 +590,15 @@ roads<- project(roads,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
 write_VECT(roads,"roads")
 
 ## Check all vectors that have been exported to GRASS
-
 execGRASS("g.list", parameters = list(type = "vector"))
 
 ## Generate a depressionless DEM and d-8 flow direction maps from DEM
-
 execGRASS("r.fill.dir", input="grass_dem10", output="dem10f", direction="dir10", flags = c("overwrite") )
 
 ## Generate flow accumulation, drainage, and horizon maps
-
 execGRASS("r.watershed", elevation = "dem10f", accumulation = "acc10", drainage = "drain10")
 
 ## Generate slope, aspect, wetness index, horizon, and road maps
-
 execGRASS("r.slope.aspect", elevation = "grass_dem10", slope = "slope10", aspect = "aspect10")
 
 execGRASS("r.topidx", input = "grass_dem10", output = "topidx10")
@@ -628,14 +612,13 @@ execGRASS("r.mapcalc", expression = "e_horizon_1000 = sin(east_000) * 1000", fla
 execGRASS("r.mapcalc", expression = "w_horizon_1000 = sin(west_180) * 1000", flags = "overwrite")
 
 ## Generate a hillslope and stream map
-
 subbasin_name = paste0("subbasin_th",as.character(threshold))
 stream_name = paste0("stream_th",as.character(threshold))
 hillslope_name = paste0("hillslope_th",as.character(threshold))
 
 execGRASS("r.watershed", elevation = "dem10f", threshold = threshold, basin = subbasin_name, stream = stream_name, half_basin = hillslope_name)
 
-## Delineate watershed boundary
+## Delineate watershed boundary for ws32
 
 weirs[12,]
 
@@ -651,19 +634,31 @@ execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
 
 execGRASS("r.water.outlet", input ="drain10", output="basin_ws32",coordinates = c(easting, northing), flags = "overwrite")
 
+## Delineate watershed boundary for ws7
+
+weirs[3,]
+#easting2 = crds(weirs[3,])[1]
+#northing2 = crds(weirs[3,])[2]
+
+# should snap to stream
+easting2 = 277451
+northing2 = 3882875
+
+execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
+
+execGRASS("r.water.outlet", input ="drain10", output="basin_ws7",coordinates = c(easting2, northing2), flags = "overwrite")
+
 ## Mask Data
 # execGRASS("r.mask", input = "basin_ws32", maskcats = 1)
 
 execGRASS("r.info",map = "basin_ws32")
-
+execGRASS("r.info",map = "basin_ws7")
 execGRASS("r.info",map = "grass_dem10")
 
 ## Generate Patch Maps
-
 execGRASS("r.mapcalc", expression = "patch = row() * 537 + col()", flags = "overwrite")
 
 ## Create Road Maps
-
 execGRASS("v.to.rast", input="roads" ,output="roads", use="cat", label_column="ROADNAME", flags = "overwrite")
 
 execGRASS("r.mapcalc", expression = "roads = roads > 0", flags = "overwrite")
@@ -671,18 +666,16 @@ execGRASS("r.mapcalc", expression = "roads = roads > 0", flags = "overwrite")
 execGRASS("r.null", map = "roads", null= 0)
 
 ## Check all rasters that have been exported to or created in GRASS
-
 execGRASS("g.list", parameters = list(type = "raster"))
 
 ## Export Prepared Maps from GRASS to R
-
 filleddem <- read_RAST("dem10f")
 
 ##Export maps back into R or export directly from GRASS to disk
-
 grass_acc10 <- read_RAST("acc10")
 grass_aspect10 <- read_RAST("aspect10")
 grass_basin_ws32 <- read_RAST("basin_ws32")
+grass_basin_ws7 <- read_RAST("basin_ws7")
 grass_dem10 <- read_RAST("grass_dem10")
 grass_dem10f <- read_RAST("dem10f")
 grass_dir10 <- read_RAST("dir10")
@@ -705,6 +698,7 @@ dir.create("grassexport/cwt")
 execGRASS("r.out.gdal", input = "acc10", output = "grassexport/cwt/acc10.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "aspect10", output = "grassexport/cwt/aspect10.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "basin_ws32", output = "grassexport/cwt/basin_ws32.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "basin_ws7", output = "grassexport/cwt/basin_ws7.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "grass_dem10", output = "grassexport/cwt/grass_dem10.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "dem10f", output = "grassexport/cwt/dem10f.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "dir10", output = "grassexport/cwt/dir10.tif", format = "GTiff", flags = "overwrite")
@@ -722,16 +716,24 @@ execGRASS("r.out.gdal", input = "west_180", output = "grassexport/cwt/west_180.t
 execGRASS("r.out.gdal", input = "subbasin_th1000", output = "grassexport/cwt/subbasin_th1000.tif", format = "GTiff", flags = "overwrite")
 execGRASS("r.out.gdal", input = "roads", output = "grassexport/cwt/roads.tif", format = "GTiff", flags = "overwrite")
 
+
+{plot(grass_basin_ws7, main = "Selected Watersheds")
+plot(grass_basin_ws32, add = T)
+plot(watersheds, add = T)
+plot(streams, add = T)}
 ```
 
 Crop Maps that were prepared in GRASS. Maps are cropped R because MASK command is not functioning properly for GRASS via R.
 Original input maps are been cropped before processing worldfile and flowtable in R, without cropping the RHESSYs worldfile and flowtable preparation in the R environment will not function properly,
+
+#This step may be unecessary
 
 ```{r Crop Maps that were Prepared in GRASS}
 
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 ws32<- raster("grassexport/cwt/basin_ws32.tif")
+ws7<- raster("grassexport/cwt/basin_ws7.tif")
 acc10<- raster("grassexport/cwt/acc10.tif")
 patches<- raster("grassexport/cwt/patch.tif")
 aspect10<- raster("grassexport/cwt/aspect10.tif")
@@ -767,6 +769,26 @@ maskede_horizon_1000 <- crop(mask(e_horizon_1000,ws32polygon),ws32polygon)
 maskedw_horizon_1000 <- crop(mask(w_horizon_1000,ws32polygon),ws32polygon)
 maskedsubbasins<- crop(mask(subbasins,ws32polygon),ws32polygon)
 
+ws7polygon<- rasterToPolygons(ws7, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+maskedws7 <- crop(mask(ws7,ws7polygon),ws7polygon)
+maskedacc10ws7 <- crop(mask(acc10,ws7polygon),ws7polygon)
+maskedpatchesws7 <- crop(mask(patches,ws7polygon),ws7polygon)
+maskedaspect10ws7 <- crop(mask(aspect10,ws7polygon),ws7polygon)
+maskeddem10ws7 <- crop(mask(dem10,ws7polygon),ws7polygon)
+maskeddem10fws7 <- crop(mask(dem10f,ws7polygon),ws7polygon)
+maskeddir10ws7 <- crop(mask(dir10,ws7polygon),ws7polygon)
+maskeddrain10ws7 <- crop(mask(drain10,ws7polygon),ws7polygon)
+maskedhillslopews7 <- crop(mask(hillslope,ws7polygon),ws7polygon)
+maskedroadsws7 <- crop(mask(roads,ws7polygon),ws7polygon)
+maskedslope10ws7 <- crop(mask(slope10,ws7polygon),ws7polygon)
+maskedstreamsws7 <- crop(mask(streams,ws7polygon),ws7polygon)
+maskedtopidx10_100ws7 <- crop(mask(topidx10_100,ws7polygon),ws7polygon)
+maskede_horizon_1000ws7 <- crop(mask(e_horizon_1000,ws7polygon),ws7polygon)
+maskedw_horizon_1000ws7 <- crop(mask(w_horizon_1000,ws7polygon),ws7polygon)
+maskedsubbasinsws7<- crop(mask(subbasins,ws7polygon),ws7polygon)
+
+
 ## Save as tif
 dir.create("grassexport/cwt_ws32")
 
@@ -787,7 +809,27 @@ writeRaster(maskede_horizon_1000,"grassexport/cwt_ws32/e_horizon_1000",format = 
 writeRaster(maskedw_horizon_1000,"grassexport/cwt_ws32/w_horizon_1000",format = "GTiff", overwrite = TRUE)
 writeRaster(maskedsubbasins,"grassexport/cwt_ws32/subbasins",format = "GTiff", overwrite = TRUE)
 
-plot(maskedws32, main ="ws32")
+## Save as tif
+dir.create("grassexport/cwt_ws7")
+
+writeRaster(maskedws7,"grassexport/cwt_ws7/basin_ws7",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedacc10ws7,"grassexport/cwt_ws7/acc10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedpatchesws7,"grassexport/cwt_ws7/patch",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedaspect10ws7,"grassexport/cwt_ws7/aspect10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10ws7,"grassexport/cwt_ws7/dem10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10fws7,"grassexport/cwt_ws7/dem10f",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddir10ws7,"grassexport/cwt_ws7/dir10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddrain10ws7,"grassexport/cwt_ws7/drain10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedhillslopews7,"grassexport/cwt_ws7/hillslope",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedroadsws7,"grassexport/cwt_ws7/roads",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedslope10ws7,"grassexport/cwt_ws7/slope10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedstreamsws7,"grassexport/cwt_ws7/streams",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedtopidx10_100ws7,"grassexport/cwt_ws7/topidx10_100",format = "GTiff", overwrite = TRUE)
+writeRaster(maskede_horizon_1000ws7,"grassexport/cwt_ws7/e_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedw_horizon_1000ws7,"grassexport/cwt_ws7/w_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedsubbasinsws7,"grassexport/cwt_ws7/subbasins",format = "GTiff", overwrite = TRUE)
+
+plot(maskedws32, main ="WS32")
 plot(maskedpatches, main = "patches")
 plot(maskedacc10, main = "acc10")
 plot(maskedaspect10, main = "aspect10")
@@ -804,6 +846,22 @@ plot(maskedtopidx10_100, main = "topidx10_100")
 plot(maskede_horizon_1000, main = "e_horizon_1000")
 plot(maskedw_horizon_1000, main = "w_horizon_1000")
 
+plot(maskedws7, main ="WS7")
+plot(maskedpatchesws7, main = "patches")
+plot(maskedacc10ws7, main = "acc10")
+plot(maskedaspect10ws7, main = "aspect10")
+plot(maskedsubbasinsws7, main = "subbasins")
+plot(maskeddem10ws7, main = "dem10")
+plot(maskeddem10fws7, main = "dem10f")
+plot(maskeddir10ws7, main = "dir10")
+plot(maskeddrain10ws7, main = "drain10")
+plot(maskedhillslopews7, main = "hillslope")
+plot(maskedroadsws7, main = "roads")
+plot(maskedslope10ws7, main = "slope10")
+plot(maskedstreamsws7, main = "streams")
+plot(maskedtopidx10_100ws7, main = "topidx10_100")
+plot(maskede_horizon_1000ws7, main = "e_horizon_1000")
+plot(maskedw_horizon_1000ws7, main = "w_horizon_1000")
 ```
 # This must be properly intergrated into code
 # RSS files from github or folder?
@@ -941,7 +999,7 @@ extent(croppedtexture60)<- extent(ws32)
 {plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Selected Watershed")
 plot(ws32polygon, add = TRUE, col = NA)}
 
-masked60 <- mask(croppedtexture60,ws32polygon)
+masked60 <- raster::mask(croppedtexture60,ws32polygon)
 
 plot(masked60, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Masked Selected Watershed")
 
@@ -981,10 +1039,10 @@ paged_table(mapunittable)
 ```
 
 Code Prepared By Dylan Beaudette and modified
+Prepare RSS Maps, formerly labeled DSM
 
-```{r Prepare DSM Soil Map from local file}
+```{r Prepare RSS Soil Map from local file}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-
 
 ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
 
@@ -1007,6 +1065,9 @@ names(rat) <- tolower(names(rat))
 rss.mu <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'mapunit')
 rss.co <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'component')
 rss.hz <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chorizon')
+#new
+rss.tg<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexturegrp')
+rss.tx<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexture')
 
 ## check for missing symbols
 # none missing from RAT
@@ -1283,7 +1344,7 @@ plot(combined_soilplot)
 
 ```
 
-Download Def Files
+Download RHESSys Def files from github
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 

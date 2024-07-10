@@ -68,13 +68,9 @@ library(tidyverse)
 library(viridisLite)
 library(dplyr)
 
-
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
- 
-rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
-
 getwd()
-
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files
@@ -610,7 +606,7 @@ Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
 
 colorramp<- viridis(1028)
 
-{plot(ws7demcrop, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
+{plot(ws7demcrop, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS7", legend.args=list(text="Elevation(m)", side = 3, line = 2))
 points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
 points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
 legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
@@ -633,15 +629,12 @@ Newsoilmoisturelocations<- st_transform(Newsoilmoisturelocationsnt, crs(dem10))
 colorramp<- viridis(1028)
 
 {plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations")
-points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
-
-}
+points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)}
 
  {plot(dem10, col = colorramp, main = "Coweeta Observed Soil Moisture Locations WS32", legend.args=list(text="Elevation(m)", side = 3, line = 2))
 points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
 points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
-legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
-}
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)}
 
 ObservedSMLocations$Name[3]
 ObservedSMLocations[[3]][[3]]
@@ -665,15 +658,15 @@ par(mfrow=c(1,2),mar=c(2, 3, 2, 5))
  {plot(dem10, col = colorramp, main = "WS32", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
 points(c(ObservedSMLocations[[3]][[3]][1],ObservedSMLocations[[3]][[4]][1],ObservedSMLocations[[3]][[5]][1]), c(ObservedSMLocations[[3]][[3]][2],ObservedSMLocations[[3]][[4]][2],ObservedSMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
 points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
-legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
-}
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)}
 
 {plot(ws7demcrop, col = colorramp, main = "WS7", legend.args=list(text="          Elevation(m)", side = 3, line = 2, cex = 0.8))
 points(c(Observedws7SMLocations[[3]][[3]][1],Observedws7SMLocations[[3]][[4]][1],Observedws7SMLocations[[3]][[5]][1]), c(Observedws7SMLocations[[3]][[3]][2],Observedws7SMLocations[[3]][[4]][2],Observedws7SMLocations[[3]][[5]][2]), pch = 21, col = "black", bg = "red", lwd = 1)
 points(st_coordinates(Newsoilmoisturelocations), pch =21, col = "black", bg = "green", lwd = 1)
-legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)
-}
+legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), cex = 1.2)}
+
 par(mfrow=c(1,1))
+
 ```
 
 Display Observed and Simulated Soil Moisture
@@ -791,8 +784,7 @@ NSE(validationsubset$streamflow,validationsubset$observedstreamflow, FUN=log, ep
 
 nse_value <- NSE(log(validationsubset$streamflow + 1), log(validationsubset$observedstreamflow + 1), na.rm = TRUE)
 
-
- KGE(validationsubset$streamflow,validationsubset$observedstreamflow)
+KGE(validationsubset$streamflow,validationsubset$observedstreamflow)
 
 plot(validationsubset$streamflow~validationsubset$date, type = "l", col = 'red')
 lines(validationsubset$observedstreamflow~validationsubset$date)

@@ -1,0 +1,7 @@
+"Climate Factor Area (USLE)"|"0"|"Climate Factor"|332467|"14802"|"563477"
+"County or Parish"|"NC113"|"Macon"|332467|"14802"|"563478"
+"MLRA"|"130B"|"Southern Blue Ridge"|332467|"14802"|"563479"
+"MLRA Soil Survey Area"|"6-WAY"|"Waynesville, North Carolina"|332467|"14802"|"563480"
+"MLRA Soil Survey Regional Office Area"|"18obsolete"|"Lexington, KY"|332467|"14802"|"563481"
+"Rainfall Factor Area (USLE)"|"270"|"Rainfall Factor"|332467|"14802"|"563482"
+"State or Territory"|"NC"|"North Carolina"|332467|"14802"|"563483"

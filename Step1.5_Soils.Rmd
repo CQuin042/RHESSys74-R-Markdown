@@ -1,0 +1,591 @@
+---
+title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step1.5_Soils"
+author: "Carlos Quintero"
+date: "7/8/2024"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r include=FALSE}
+knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```
+
+Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. 
+
+The following R Markdown script prepares and runs the Regional Hydro-Ecologic Simulation System (RHESSYS) within the R environment. 
+Modified from RHESSysIOinR example scripts created by Will Burke and Ryan Bart. Includes CLHS code snippets and SDA code from Dylan Beaudette.
+
+Windows Subsystem via Linux must be installed before RHESSys will run in a Windows environment.
+GRASS8 must be installed to run the spatial preprocessing portion of the script.
+
+Code has been modified to run RHESSys 7.4 and 5.18. 
+7.4 vegetation processing differs slightly from 5.18.
+Various template differences exist between the two versions of RHESSys and template files must be carefully reviewed if moving between versions.
+This script is currently set up to run RHESSys 7.4
+
+```{r setup, include=TRUE, verbose = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+#install.packages("devtools")
+#devtools::install_github("ropensci/FedData")
+
+library(aqp)
+library(daymetr)
+library(clhs)
+library(EcoHydRology)
+library(elevatr)
+library(ezknitr)
+library(FedData)
+library(foreach)
+library(foreign)
+library(ggplot2)
+library(ggpubr)
+library(hydroGOF)
+library(imputeTS)
+library(knitr)
+library(latticeExtra)
+library(lubridate)
+library(Metrics)
+library(raster)
+library(rasterVis)
+library(readxl)
+library(reshape2)
+library(rgdal)
+library(rgrass)
+library(rmarkdown)
+library(Rmisc)
+library(RHESSysPreprocessing)
+library(RHESSysIOinR)
+library(sf)
+library(soilDB)
+library(sp)
+library(stats)
+library(stringi)
+library(tactile)
+library(terra)
+library(testthat)
+library(tidyverse)
+library(viridisLite)
+library(dplyr)
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+getwd()
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
+rh_path = file.path("modelfiles/rhessys", rh_ver)
+
+## Load in necessary files
+filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
+
+watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
+streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
+weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
+roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Reprojected32617.shp")
+
+CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
+
+newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
+
+```
+
+# This must be properly intergrated into code
+# RSS files from github or folder?
+Prepare SSURGO Soil Maps
+SSURGO-via-SDA 
+Code originally prepared by Dylan Beaudette
+Download SSURGO data and make sure CRS/Extent/Crop are Correct for input into RHESSys
+
+```{r Download and Prepare SSURGO Soil Maps}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+# load BBOX
+x <- read_sf(watershedshapefile)
+# get gSSURGO grid here
+mu <- mukey.wcs(aoi = x, db = 'gssurgo')
+# unique map unit keys
+ll <- levels(mu)[[1]]
+# note SSA boundary
+levelplot(mu, att = 'ID', margin = FALSE, colorkey = FALSE, col.regions = viridis, main = "SSURGO Map Units")
+
+## Note: some of these map units are dominated by non-soil components
+# Dominant Component (Numeric) -> NODATA
+# Weighted Average -> use any available data, but wt. mean are diluted (see source data)
+
+# get thematic data from SDA
+# dominant component
+# depth-weighted average
+# sand, silt, clay, AWC (RV)
+
+p <-  get_SDA_property(property = c("sandtotal_r","silttotal_r","claytotal_r", "awc_r", "ksat_r"),
+                       method = "Weighted Average", 
+                       mukeys = ll$ID,
+                       top_depth = 0,
+                       bottom_depth = 200)
+
+head(p)
+
+# re-create raster attribute table with aggregate soil properties
+rat <- merge(ll, p, by.x = 'ID', by.y = 'mukey', sort = FALSE, all.x = TRUE)
+# re-pack RAT
+levels(mu) <- rat
+# convert raster + RAT --> stack of values
+s <- deratify(mu, att = c("sandtotal_r", "silttotal_r", "claytotal_r", "awc_r", "ksat_r"))
+# graphical check
+levelplot(
+  s[[1:3]], 
+  main = 'Sand, Silt, Clay (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+levelplot(
+  s[[4]], 
+  main = 'AWC (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+levelplot(
+  s[[5]], 
+  main = 'ksat (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+# convert to a representative soil texture class
+txt.lut <- read.csv('http://soilmap2-1.lawr.ucdavis.edu/800m_grids/RAT/texture_2550.csv')
+# make a copy
+texture_060 <- s[[1]]
+# note: soil textures that aren't present are dropped from factor levels
+texture_060[] <- ssc_to_texcl(sand = s$sandtotal_r[], clay = s$claytotal_r[])
+# extract RAT
+rat <- levels(texture_060)[[1]]
+# add colors
+rat <- merge(rat, txt.lut, by.x = 'VALUE', by.y = 'class', all.x = TRUE, sort = FALSE)
+# fix column order
+rat <- rat[, c('ID', 'VALUE', 'hex', 'names')]
+# re-pack
+levels(texture_060) <- rat
+# check: ok
+cols <- levels(texture_060)[[1]]$hex
+levelplot(texture_060, att = 'names', margin = FALSE, col.regions = cols, main = "Soil Textures") 
+
+dir.create("rasters/")
+dir.create("rasters/cwt")
+dir.create("rasters/cwt/ws32")
+
+writeRaster(texture_060, file = 'rasters/cwt/ws32/soiltexture060.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+texture60raster<- raster("rasters/cwt/ws32/soiltexture060.tif")
+
+### this has been modified to use new SSURGO Inputs with deep-shallow depth classes
+
+texture60raster<- raster("rasters/cwt/ws32/ssurgo-soiltype-class.tif")
+
+## reproject to raster mask instead
+
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+
+ newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+reproj60 <- projectRaster(from = texture60raster, crs = proj4string(ws32), method = 'ngb')
+
+plot(texture60raster, zlim = c(1,5), main = "Texture Raster with modified Depth Classes")
+
+{plot(reproj60, zlim = c(1,5), main = "Reprojected Texture Raster with modified Depth Classes and Watersheds")
+plot(st_geometry(x), add = TRUE, col = NA)}
+
+## prepare 10m resolution raster and resample prepared soil data to 10m
+resample10<- raster(resolution=c(10,10), crs = proj4string(reproj60), ext=extent(reproj60))
+
+reproj6010 <- resample(reproj60,resample10, method = 'ngb')
+
+{plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Watersheds")
+plot(st_geometry(x), add = TRUE, col = NA)}
+## Crop prepared raster to extent of watershed of interest
+
+## croppedtexture60 <- crop(reproj6010,extent(x[which(x$WS=='32'),]))
+
+#for now cropping is completed based on delineated watershed extent from raster instead of watershed extent from watershed polygons
+croppedtexture60 <- crop(reproj6010,extent(ws32))
+
+# croppedtexture60 <- projectRaster(from = croppedtexture60, crs = newproj, method = 'ngb')
+
+## Mask prepared raster using watershed polygon
+#masked60 <- mask(croppedtexture60,x[which(x$WS=='32'),])
+
+## for now masking is completed based on delineated watershed extent from raster instead of watershed extent from watershed polygons
+ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+extent(croppedtexture60)<- extent(ws32)
+
+
+{plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Selected Watershed")
+plot(ws32polygon, add = TRUE, col = NA)}
+
+masked60 <- mask(croppedtexture60,ws32polygon)
+
+plot(masked60, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Masked Selected Watershed")
+
+plot(x[which(x$WS=='32'),])
+
+plot(st_geometry(x[which(x$WS=='32'),]))
+
+{plot(reproj60, zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+
+{plot(as.factor(croppedtexture60), zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+{plot(as.factor(masked60), zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+
+{plot(masked60, zlim = c(1,5), main = "Polygon Delineation")
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+{plot(masked60, zlim = c(1,5), main = "Watershed Delineation")
+plot(ws32polygon, add = TRUE, col = NA)}
+```
+
+Prepare textural classes from sand and clay totals
+
+```{r Prepare Soil Def files}
+mapunittable<- levels(mu)[[1]]
+
+paged_table(mapunittable)
+
+mapunittable$textclass<- ssc_to_texcl(sand = mapunittable$sandtotal_r, clay = mapunittable$claytotal_r)
+
+paged_table(mapunittable)
+
+```
+
+Code Prepared By Dylan Beaudette and modified
+
+```{r Prepare DSM Soil Map from local file}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+
+#("grassexport/cwt_ws32/ws32.tif")
+
+# RSS: cell values are map unit keys
+r <- raster('Raster soil survey/Coweeta_Final_raster.tif')
+
+## for now, convert to UTM z17
+r <- projectRaster(r, ws32, method = 'ngb')
+
+# convert to raster + RAT
+r <- ratify(r)
+
+# RAT: raster attribute table
+rat <- read.dbf('Raster soil survey/Coweeta_Final_raster.tif.vat.dbf', as.is = TRUE)
+names(rat) <- tolower(names(rat))
+
+# musym is the national mu symbol
+rss.mu <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'mapunit')
+rss.co <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'component')
+rss.hz <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chorizon')
+#new
+rss.tg<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexturegrp')
+rss.tx<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexture')
+
+chtexgrp = read.table(paste(target,'/chtexgrp.txt',sep=''),sep='|',stringsAsFactors=F) #chkey
+colnames(chtexgrp) = chtexgrpTitle
+
+chtextur = read.table(paste(target,'/chtextur.txt',sep=''),sep='|',stringsAsFactors=F) #chkey
+colnames(chtextur) = chtexturTitle
+
+
+## check for missing symbols
+# none missing from RAT
+setdiff(rat$MUSYM, rss.mu$musym)
+# map unit table contains some extra
+setdiff(rss.mu$musym, rat$MUSYM)
+
+## subset child tables
+rss.mu <- rss.mu[rss.mu$musym %in% rat$musym, ]
+rss.co <- rss.co[rss.co$mukey %in% rss.mu$mukey, ]
+rss.hz <- rss.hz[rss.hz$cokey %in% rss.co$cokey, ]
+
+.dominantCondition <- function(i, v) {
+  
+  i <- i[i$compkind != 'Miscellaneous area', ]
+  if(nrow(i) < 1) {
+    return(NULL)
+  }
+  
+  fm <- as.formula(sprintf("comppct_r ~ %s", v))
+  a <- aggregate(fm, data = i, FUN = sum, na.rm = TRUE)
+  
+  idx <- order(a[['comppct_r']], decreasing = TRUE)[1]
+  
+  res <- data.frame(
+    mukey = i$mukey[1],
+    v = a[[v]][idx]
+  )
+  names(res) <- c('mukey', v)
+  
+  return(res)
+}
+
+.dominantValue <- function(i, v) {
+  
+  i <- i[i$compkind != 'Miscellaneous area', ]
+  if(nrow(i) < 1) {
+    return(NULL)
+  }
+  
+  
+  idx <- order(i[['comppct_r']], decreasing = TRUE)[1]
+  
+  res <- data.frame(
+    mukey = i$mukey[1],
+    v = i[[v]][idx]
+  )
+  
+  names(res) <- c('mukey', v)
+  
+  return(res)
+  
+}
+
+getDominantCondition <- function(x, v) {
+  
+  res <- lapply(
+    split(rss.co, rss.co$mukey), 
+    .dominantCondition, v = v
+  )
+  
+  res <- do.call('rbind', res)
+  
+  return(res)
+}
+
+getDominantValue <- function(x, v) {
+  
+  res <- lapply(
+    split(rss.co.aws050, rss.co.aws050$mukey), 
+    .dominantValue, v = v
+  )
+  
+  res <- do.call('rbind', res)
+  
+  return(res)
+}
+
+co.taxpartsize <- getDominantCondition(rss.co, v = 'taxpartsize')
+
+co.spc <- rss.hz
+depths(co.spc) <- cokey ~ hzdept_r + hzdepb_r
+hzdesgnname(co.spc) <- 'hzname'
+
+# at dZ = 1cm, use awc_r directly
+co.spc$aws <- co.spc$awc_r * 1
+
+a <- slab(co.spc, cokey ~ aws, slab.structure = c(0, 50), slab.fun = sum)
+
+head(a)
+
+rss.co.aws050 <- merge(rss.co, a, by = 'cokey', sort = FALSE)[, c('mukey', 'cokey', 'compkind', 'comppct_r', 'value')]
+
+# no NA allowed in wt. mean / etc.
+rss.co.aws050 <- rss.co.aws050[!is.na(rss.co.aws050$value), ]
+
+co.aws050 <- getDominantValue(rss.co.aws050, v = 'value')
+
+names(co.aws050) <- c('mukey', 'aws050')
+
+
+mu.subset <- rss.mu[, c('mukey', 'musym', 'mukind')]
+
+agg <- merge(mu.subset, co.taxpartsize, by = 'mukey', sort = FALSE)
+
+agg <- merge(agg, co.aws050, by = 'mukey', sort = FALSE)
+
+rat <- merge(rat, agg, by = 'musym', sort = FALSE)
+
+# attempt to split out component / series names
+rat$co.names <- stri_split_fixed(str = rat$muname,  pattern = ',', n = 2, simplify = TRUE)[, 1]
+# this only works because all component names are single-word names
+rat$co.names <- stri_split_fixed(str = rat$co.names,  pattern = ' ', n = 2, simplify = TRUE)[, 1]
+# RAT management
+ll.original <- levels(r)[[1]]
+# merge and pack updated RAT
+ll <- merge(ll.original, rat, by.x = 'ID', by.y = 'value', all.x = TRUE, sort = FALSE)
+levels(r) <- ll
+
+# convert select attributes to new raster objects via RAT + codes
+
+r.taxpartsize <- deratify(r, att = 'taxpartsize')
+
+plot(r.taxpartsize)
+
+###quick and dirty incorporate new DSM map with two depth classes
+
+r.taxpartsizetest<- raster(paste0(filedir,"input_files/soil_maps/rss-soiltype-class.tif"))
+
+r.taxpartsize <- projectRaster(r.taxpartsizetest, ws32, method = 'ngb')
+
+ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+maskeddsm <- mask(r.taxpartsize,ws32polygon)
+
+plot(maskeddsm, main = "Masked DSM")
+
+
+```
+
+Reclassify Soil Maps
+
+Default Texture Values in RHESSys
+1 - Clay
+2 - Silty Clay
+3 - Silty Clay Loam
+4 - Sandy Clay
+5 - Sandy Clay Loam
+6 - Clay Loam
+7 - Silt
+8 - Silty Loam
+9 - Loam
+10 - Sand
+11 - Loamy Sand
+12 - Sandy Loam
+13 - Rock
+14 - Water
+
+Shallow Files Created and added to defs folder
+19 - Shallow Sandy Clay Loam
+23 - Shallow Loam
+26 - Shallow Sandy Loam
+
+Default Texture Values used by SDA
+1 - loamy sand
+2 - sandy loam 
+3 - loam
+4 - sandy clay loam
+5 - clay loam
+
+Default Texture used by DSM and quick and dirty conversions
+1 - loamy         > loam
+2 - fine-loamy    > silty clay loam
+3 - coarse-loamy  > sandy loam
+
+Current Textural Levels for Coweeta
+6 Levels
+1 - deep.sl
+2- shallow.sl
+3- deep.l
+4- shallow.l
+5- deep.scl
+6- shallow.scl
+
+```{r Reclassify Prepared Soil Maps}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# original before depth class substitution
+#reclasssoil<- c(1,11,2,12,3,9,4,5,5,6,6,0,7,0,8,0,9,0,10,0,11,0,12,0,13,0,14,0)
+
+##this has been modified for quick implementation of shallow-deep classes
+reclasssoil<- c(1,12,2,26,3,9,4,23,5,5,6,19)
+
+
+reclasssoilmat<- matrix(reclasssoil, ncol = 2, byrow = TRUE)
+
+reclasssoilmat
+
+reclassreproj<- reclassify(masked60, reclasssoilmat)
+
+
+plot(reclassreproj, main = "SSURGO DC Texture Dual Depth Method", zlim = c(1,24), col = viridis(24))
+
+writeRaster(reclassreproj, file = 'grassexport/cwt_ws32/ssurgosoil.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+#plot(SoilsMap2, main = "SSURGO USACE Texture Method")
+
+##this has been modified for quick implementation of shallow-deep classes
+##original before depth class subsititution
+#reclassdsm<- c(1,9,2,3,3,12,4,0,5,0,6,0,7,0,8,0,9,0,10,0,11,0,12,0,13,0,14,0)
+#new
+ reclassdsm<- c(1,12,2,26,3,9,4,23,5,5,6,19)
+
+
+reclassdsmmat<- matrix(reclassdsm, ncol = 2, byrow = TRUE)
+
+reclassdsmmat
+
+reclassmaskeddsm <- reclassify(maskeddsm, reclassdsmmat)
+
+plot(reclassmaskeddsm, main = "DSM DC Texture Dual Depth Method", zlim = c(1,24), col = viridis(24))
+
+writeRaster(reclassmaskeddsm, file = 'grassexport/cwt_ws32/dsmsoil.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+#plot(maskeddsm)
+
+reclassstatic<- c(1,12,2,12,3,12,4,12,5,12,6,12,7,12,8,12,9,12,10,12,11,12,12,12,13,12,14,12)
+
+reclassstaticmat<- matrix(reclassstatic, ncol = 2, byrow = TRUE)
+
+reclassstaticmat
+
+reclassmaskedstatic <- reclassify(maskeddsm, reclassstaticmat)
+
+plot(reclassmaskedstatic, main = "Static Loam Texture", zlim = c(1,24), col = viridis(24))
+
+```
+
+Combined Soil Plots
+
+```{r}
+library(cowplot)
+
+rssraster<- reclassmaskeddsm
+
+ssurgoraster<- reclassreproj
+
+staticraster<- reclassmaskedstatic
+
+
+rssrasterdf<- as.data.frame(rssraster, xy = TRUE)
+ssurgorasterdf<- as.data.frame(ssurgoraster, xy = TRUE)
+staticrasterdf<- as.data.frame(staticraster, xy = TRUE)
+
+rssrasterdf$rss.soiltype.class<- factor(rssrasterdf$rss.soiltype.class)
+ssurgorasterdf$ssurgo.soiltype.class<- factor(ssurgorasterdf$ssurgo.soiltype.class)
+staticrasterdf$rss.soiltype.class<- factor(staticrasterdf$rss.soiltype.class)
+
+plot3<- ggplot()+
+  geom_raster(data = rssrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+plot2<- ggplot()+
+  geom_raster(data = ssurgorasterdf, aes(x = x, y = y, fill = ssurgo.soiltype.class))+
+  theme_minimal()
+    
+plot1<- ggplot()+
+  geom_raster(data = staticrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+combined_soilplot<- plot_grid(plot1, plot2, plot3, ncol =3)
+
+plot(combined_soilplot)
+
+```
+
+Download RHESSys Def files from github
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+ #gert::git_clone(url = "https://github.com/RHESSys/ParameterLibrary", path = "defs/rhessys", branch = "master")
+
+listofdefs<- list.files("defs/rhessys/", ".def$", recursive = "TRUE")
+
+file.copy(from = paste0("defs/rhessys/",c(listofdefs)), to = "defs/", overwrite = "TRUE")
+
+```

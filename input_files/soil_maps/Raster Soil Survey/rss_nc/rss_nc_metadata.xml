@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+<idinfo>
+<citation>
+<citeinfo>
+<origin>
+U.S. Department of Agriculture (USDA),
+Natural Resources Conservation Service (NRCS)
+</origin>
+<pubdate>2021</pubdate>
+<title>Raster Soil Survey by State</title>
+<pubinfo>
+<pubplace>Fort Worth, Texas</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+<othercit>North Carolina</othercit>
+<onlink>https://nrcs.app.box.com/v/soils</onlink>
+</citeinfo>
+</citation>
+<descript>
+<abstract>
+This georeferenced soil database is a representation of soil survey work
+completed using digital soil mapping methodologies. Where available,
+this data represents the most detailed level of soil geographic data
+developed by the National Cooperative Soil Survey. The associated data
+represents Raster Soil Survey class data, available in the State of North Carolina.
+
+The spatial data rendered in the geodatabase result from Raster Soil Survey -
+Project Mapping. Raster Soil Survey is a reference to products of soil survey
+work completed using digital soil mapping methodologies.
+
+A 10 meter file geodatabase raster layer aligns with the Gridded
+Soil Survey Geographic (gSSURGO) Database. Raster Soil Survey data represents
+the most detailed soil survey information for a given area within the Gridded
+National Soil Geographic Database (gNATSGO) product. Each cell is assigned a
+value corresponding to a single attribute 'MUKEY' in the raster attribute table
+to facilitate joins with soil attribute data. Additional information on methods
+and standards for Digital Soil Mapping and Raster Soil Survey can be found in
+Chapter 5 of the Soil Survey Manual and Part 648 of the National Soil Survey
+Handbook.
+</abstract>
+<purpose>
+The Raster Soil Survey was created for use in resource planning and analysis
+of soils data. The Raster Soil Survey depicts the understanding of soil spatial
+variability and the distribution of soil properties and classes beyond
+traditional constraints of scale and order in SSURGO. The Raster Soil Survey map
+and associated data were prepared by soil scientists as part of the National
+Cooperative Soil Survey.
+</purpose>
+</descript>
+<timeperd>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<current>publication date</current>
+</timeperd>
+<status>
+<progress>Complete</progress>
+<update>As needed</update>
+</status>
+<spdom>
+<bounding>
+<westbc>-84.018296</westbc>
+<eastbc>-82.683686</eastbc>
+<northbc>35.889267</northbc>
+<southbc>34.920600</southbc>
+</bounding>
+</spdom>
+<keywords>
+<theme>
+<themekt>None</themekt>
+<themekey>soil survey</themekey>
+<themekey>soils</themekey>
+<themekey>raster</themekey>
+<themekey>Geospatial Data Gateway</themekey>
+</theme>
+<place>
+<placekt>USGS Geographic Names Information System (GNIS)</placekt>
+<placekey>North Carolina</placekey>
+<placekey>Raster Soil Survey</placekey>
+</place>
+</keywords>
+<accconst>None</accconst>
+<useconst>
+
+The U.S. Department of Agriculture, Natural Resources Conservation
+Service, should be acknowledged as the data source in products
+derived from these data.
+
+This soil survey product does not contain detailed site-specific
+information and is not designed for use as a primary regulatory
+tool in site-specific permitting decisions. Soil Survey Information
+is public information and may be interpreted by organizations, agencies,
+units of government, or others based on their own needs; however,
+users are responsible for the appropriate application of soil survey
+information. NRCS will not accept reassignment of authority for
+decisions made by other Federal, State, or local regulatory bodies.
+NRCS will not make changes to Official Soil Survey Information or of
+any supplemental soil mapping for purposes related solely to State
+or local regulatory programs.
+
+Digital data files are periodically updated and amended. Files are
+dated, and users are responsible for obtaining the latest version
+of the data.
+</useconst>
+<ptcontac>
+<cntinfo>
+<cntorgp>
+<cntorg>USDA/NRCS National Soil Survey Center</cntorg>
+</cntorgp>
+<cntaddr>
+<addrtype>mailing address</addrtype>
+<address>USDA Natural Resources Conservation Service</address>
+<address>100 Centennial Mall North</address>
+<city>Lincoln</city>
+<state>Nebraska</state>
+<postal>68508-3866</postal>
+</cntaddr>
+<cntvoice>402-437-5499</cntvoice>
+<cntfax>402-437-5336</cntfax>
+<cntemail>hotline@lin.usda.gov</cntemail>
+</cntinfo>
+</ptcontac>
+</idinfo>
+<dataqual>
+<attracc>
+<attraccr>
+The attribution is confirmed by display of the map data using
+the geospatial and tabular software, in review selected attributes
+and spatial relationships. All attribute data conform to the attribute
+codes in the Raster Soil Survey Project correlation document.
+</attraccr>
+</attracc>
+<logic>
+Descriptive attributes (tabular information about the raster) were developed
+specifically for the Raster Soil Survey Projects referenced in this Raster
+Soil Survey Area. The classes or Map Units defining the soil survey area
+are distributed seamlessly across natural landforms over a broad
+physiographic area, or provide detailed soil information in areas without
+digital soil survey data in SSURGO as part of progressive soil survey.
+</logic>
+<complete>
+Completeness of maps across the area of interest was assured.
+A Raster Soil Map Unit is spatially represented by a 10 meter cell
+assigned to a class (Soil Map Unit). A Soil Map Unit
+is composed of the entire population of soil components found within.
+</complete>
+<posacc>
+<horizpa>
+<horizpar>
+The accuracy of these digital data is based upon the sourced digital
+environmental data references outlined in the Raster Soil Survey Project
+correlation. Positional accuracy is referenced as spatial tolerance
+for the project accuracy assessment outlined in the Raster Soil Survey
+Project correlation document accessed at the online refences cited in
+the lineage.
+</horizpar>
+</horizpa>
+</posacc>
+<lineage>
+<srcinfo>
+<srccite>
+<citeinfo>
+<origin>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</origin>
+<pubdate>2021</pubdate>
+<title>Published Soil Survey Geographic (SSURGO) databases.</title>
+<geoform>vector digital data</geoform>
+<pubinfo>
+<pubplace>Fort Worth, Texas</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+</citeinfo>
+</srccite>
+<typesrc>online</typesrc>
+<srctime>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<srccurr>publication date</srccurr>
+</srctime>
+<srccitea>NRCS1</srccitea>
+<srccontr>source of project extent</srccontr>
+</srcinfo>
+<srcinfo>
+<srccite>
+<citeinfo>
+<origin>USDA/NRCS National Soil Survey Center</origin>
+<pubdate>2021</pubdate>
+<title>Gridded Soil Survey Geographic (gSSURGO)</title>
+<geoform>raster digital data</geoform>
+<pubinfo>
+<pubplace>Fort Worth, Texas</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+</citeinfo>
+</srccite>
+<typesrc>online</typesrc>
+<srctime>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<srccurr>publication date</srccurr>
+</srctime>
+<srccitea>NRCS2</srccitea>
+<srccontr>source of project extent</srccontr>
+</srcinfo>
+<srcinfo>
+<srccite>
+<citeinfo>
+<origin>USDA/NRCS National Soil Survey Center</origin>
+<pubdate>2021</pubdate>
+<title>Published Raster Soil Surveys</title>
+<geoform>raster digital data</geoform>
+<pubinfo>
+<pubplace>Fort Worth, Texas</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+</citeinfo>
+</srccite>
+<typesrc>online</typesrc>
+<srctime>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<srccurr>publication date</srccurr>
+</srctime>
+<srccitea>NRCS3</srccitea>
+<srccontr>source of project extent</srccontr>
+</srcinfo>
+<srcinfo>
+<srccite>
+<citeinfo>
+<origin>USDA/NRCS National Soil Survey Center</origin>
+<pubdate>2021</pubdate>
+<title>Raster Soil Survey Project correlation document</title>
+<geoform>metadata - prediction and model evaluation</geoform>
+<pubinfo>
+<pubplace>Lincoln, Nebraska</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+</citeinfo>
+</srccite>
+<typesrc>online</typesrc>
+<srctime>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<srccurr>publication date</srccurr>
+</srctime>
+<srccitea>NRCS4</srccitea>
+<srccontr>source of project documentation</srccontr>
+</srcinfo>
+<srcinfo>
+<srccite>
+<citeinfo>
+<origin>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</origin>
+<pubdate>2021</pubdate>
+<title>National Soil Information System (NASIS) data base</title>
+<geoform>tabular digital data</geoform>
+<pubinfo>
+<pubplace>Fort Collins, Colorado</pubplace>
+<publish>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</publish>
+</pubinfo>
+</citeinfo>
+</srccite>
+<typesrc>database</typesrc>
+<srctime>
+<timeinfo>
+<sngdate>
+<caldate>2021</caldate>
+</sngdate>
+</timeinfo>
+<srccurr>publication date</srccurr>
+</srctime>
+<srccitea>NASIS</srccitea>
+<srccontr>attribute (tabular) information</srccontr>
+</srcinfo>
+<procstep>
+<procdesc>
+This dataset consists of georeferenced digital map data
+and computerized attribute data. The National Soil Information
+System (NASIS) database was developed by NRCS soil scientists
+according to national standards. The Raster Soil Survey Map Units
+are linked to attributes in NASIS. A statewide file geodatabase (ESRI)
+was created using ArcGIS software to accommodate the spatial
+and tabular Raster Soil Survey data. Spatial and tabular data is packaged
+in a standard product consistent with the delivery of USDA-NRCS Gridded
+Soil Survey Geographic Database (gSSURGO). All structural
+and attribute metadata for SSURGO also applies
+to Raster Soil Survey data. gSSURGO is similar to
+the standard USDA-NRCS SSURGO Database product but
+in the format of an Environmental Systems Research Institute, Inc.
+(ESRI®) file geodatabase.
+</procdesc>
+<srcused>NRCS1, NRCS2, NRCS3, NASIS</srcused>
+<procdate>2021</procdate>
+</procstep>
+<procstep>
+<procdesc>
+Classification and correlation is documented in the NASIS database
+for specific projects referenced in this dataset. Data development
+aligns with the stages and processes for Digital Soil Mapping projects
+as outlined in Chapter 5 of the Soil Survey Manual. Data development,
+and validation documentation may be cited referencing the 'laoverlap'
+table (Legend Area Overlap) - Legend Area Overlap Type: Raster Soil
+Survey Project. Raster Soil Survey Project correlation document
+contains supporting documentation for referenced projects. Documenation
+can be accessed below cited state under 'DSM Raster Soil Survey (RSS)
+Projects' at the online linkage: https://tinyurl.com/rwbbgj2
+</procdesc>
+<srcused>NASIS, NRCS4</srcused>
+<procdate>2021</procdate>
+</procstep>
+</lineage>
+</dataqual>
+<spdoinfo>
+<direct>Raster</direct>
+<rastinfo>
+<rasttype>Pixel</rasttype>
+</rastinfo>
+</spdoinfo>
+<spref>
+<horizsys>
+<planar>
+<mapproj>
+<mapprojn>NAD_1983_Contiguous_USA_Albers</mapprojn>
+<albers>
+<stdparll>29.50000000</stdparll>
+<stdparll>45.50000000</stdparll>
+<longcm>-96.0000</longcm>
+<latprjo>23.00000000</latprjo>
+<feast>0.0000</feast>
+<fnorth>0.0000</fnorth>
+</albers>
+</mapproj>
+<planci>
+<plance>coordinate pair</plance>
+<coordrep>
+<absres>10.000000</absres>
+<ordres>10.000000</ordres>
+</coordrep>
+<plandu>meters</plandu>
+</planci>
+</planar>
+<geodetic>
+<horizdn>GCS_North_American_1983</horizdn>
+<ellips>Geodetic Reference System 80</ellips>
+<semiaxis>6378137.000000</semiaxis>
+<denflat>298.257222101</denflat>
+</geodetic>
+</horizsys>
+</spref>
+<eainfo>
+<overview>
+<eaover>
+Relevant attributes are the cell soil values. Raster cell locations are
+representative of Map Units developed from soil survey projects completed
+using digital soil mapping methodologies. Field investigations were conducted
+to infer the relationships between observed soil descriptions and spatially
+explicit environmental data. The Map Unit key (MUKEY) is used to link to information
+in the National Soil Information System (NASIS) tables.
+</eaover>
+<eadetcit>Relevant attributes are the cell soil values.</eadetcit>
+<eadetcit>
+Soil Survey Staff, 2014. Keys to Soil Taxonomy, 12th ed. USDA-Natural
+Resources Conservation Service, Washington, DC.
+
+U.S. Department of Agriculture. National soil survey handbook, title 430-VI.
+Soil Survey Staff, Natural Resources Conservation Service.
+
+Soil Survey Staff, 2017. Soil survey manual (Ag. Handbook 18).
+USDA-Natural Resources Conservation Service, Washington, DC.
+
+U.S. Department of Agriculture. (current issue).
+National Soil Survey Handbook, title 430-VI.
+</eadetcit>
+</overview>
+</eainfo>
+<distinfo>
+<distrib>
+<cntinfo>
+<cntorgp>
+<cntorg>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service,
+National Geospatial Center of Excellence
+</cntorg>
+</cntorgp>
+<cntaddr>
+<addrtype>mailing address</addrtype>
+<address>501 West Felix Street</address>
+<city>Fort Worth</city>
+<state>TX</state>
+<postal>76115</postal>
+</cntaddr>
+<cntvoice>800-672-5559</cntvoice>
+<cntfax>817-509-3469</cntfax>
+</cntinfo>
+</distrib>
+<resdesc>Raster Soil Survey Database State of North Carolina</resdesc>
+<distliab>
+Although these data have been processed successfully on a computer
+system at the U.S. Department of Agriculture, no warranty expressed
+or implied is made by the Agency regarding the utility of the data
+on any other system, nor shall the act of distribution constitute
+any such warranty. The U.S. Department of Agriculture will warrant
+the delivery of this product in computer readable format, and will
+offer appropriate adjustment of credit when the product is determined
+unreadable by correctly adjusted computer input peripherals, or
+when the physical medium is delivered in damaged condition. Request
+for adjustment of credit must be made within 90 days from the date
+of this shipment from the ordering site.
+
+The U.S. Department of Agriculture, nor any of its agencies are
+liable for misuse of the data, for damage, for transmission of
+viruses, or for computer contamination through the distribution of
+these datasets.
+
+The U.S. Department of Agriculture (USDA) prohibits discrimination in
+all of its programs and activities on the basis of race, color,
+national origin, age, disability, and where applicable, sex,
+(including gender identity and expression), marital status, familial
+status, parental status, religion, sexual orientation, political
+beliefs, genetic information, reprisal, or because all or part of an
+individual's income is derived from any public assistance program.
+(Not all prohibited bases apply to all programs.) Persons with
+disabilities who require alternative means for communication of
+program information (Braille, large print, audiotape, etc.) should
+contact USDA's TARGET Center at (202) 720-2600 (voice and TDD).
+
+To file a complaint of discrimination, write to USDA, Assistant
+Secretary for Civil Rights, Office of the Assistant Secretary for
+Civil Rights, 1400 Independence Avenue, S.W., Stop 9410,
+Washington, DC 20250-9410, or call toll-free at (866) 632-9992
+(English) or (800) 877-8339 (TDD) or (866) 377-8642
+(English Federal-relay) or (800) 845-6136 (Spanish Federal-relay).
+USDA is an equal opportunity provider and employer.
+</distliab>
+<stdorder>
+<digform>
+<digtinfo>
+<formname>ESRI File Geodatabase</formname>
+<formcont>spatial</formcont>
+<transize>65 MB</transize>
+</digtinfo>
+<digtopt>
+<onlinopt>
+<computer>
+<networka>
+<networkr>https://nrcs.app.box.com/v/soils</networkr>
+</networka>
+</computer>
+</onlinopt>
+</digtopt>
+</digform>
+<fees>
+There is currently no direct charge for requesting data or for
+retrieval via FTP.
+</fees>
+<ordering>Call or write to organizations listed under Distributor.</ordering>
+</stdorder>
+</distinfo>
+<metainfo>
+<metd>20211101</metd>
+<metc>
+<cntinfo>
+<cntorgp>
+<cntorg>
+U.S. Department of Agriculture,
+Natural Resources Conservation Service
+</cntorg>
+</cntorgp>
+<cntaddr>
+<addrtype>mailing address</addrtype>
+<address>National Soil Survey Center</address>
+<address>100 Centennial Mall North</address>
+<city>Lincoln</city>
+<state>Nebraska</state>
+<postal>68508-3866</postal>
+</cntaddr>
+<cntvoice>402-437-5499</cntvoice>
+<cntfax>402-437-5336</cntfax>
+<cntemail>hotline@lin.usda.gov</cntemail>
+</cntinfo>
+</metc>
+<metstdn>Content Standard for Digital Geospatial Metadata</metstdn>
+<metstdv>FGDC-STD-001-1998</metstdv>
+</metainfo>
+</metadata>
