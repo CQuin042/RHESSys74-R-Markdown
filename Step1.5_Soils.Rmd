@@ -296,11 +296,6 @@ rss.hz <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chorizon')
 rss.tg<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexturegrp')
 rss.tx<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexture')
 
-chtexgrp = read.table(paste(target,'/chtexgrp.txt',sep=''),sep='|',stringsAsFactors=F) #chkey
-colnames(chtexgrp) = chtexgrpTitle
-
-chtextur = read.table(paste(target,'/chtextur.txt',sep=''),sep='|',stringsAsFactors=F) #chkey
-colnames(chtextur) = chtexturTitle
 
 
 ## check for missing symbols
