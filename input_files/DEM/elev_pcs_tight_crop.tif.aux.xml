@@ -1,0 +1,12 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <Description>elev</Description>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">1590.2352294922</MDI>
+      <MDI key="STATISTICS_MEAN">1013.8581859897</MDI>
+      <MDI key="STATISTICS_MINIMUM">673.35815429688</MDI>
+      <MDI key="STATISTICS_STDDEV">181.5009193004</MDI>
+      <MDI key="STATISTICS_VALID_PERCENT">62.01</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>

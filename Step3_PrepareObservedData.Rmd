@@ -91,7 +91,7 @@ newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNR
 
 ```
 
-Plot and Filter Observed Soil Moisture
+Plot and Filter Observed Soil Moisture for WS32
 
 This data has not been pre-prepared and must be cleaned
 
@@ -99,7 +99,7 @@ This data has not been pre-prepared and must be cleaned
 
 Coweeta Long Term Ecological Research Program and P. Bolstad. 2019. Continuously measured soil moisture, soil temperature, and air temperature from stations in Watershed 32, Coweeta Hydrologic Laboratory ver 19. Environmental Data Initiative. https://doi.org/10.6073/pasta/e47b36d4a18b8009b2a786acebeb9cba (Accessed 2024-06-17).
 
-```{r Read, Filter and Plot Observed Soil Moisture}
+```{r Read, Filter and Plot Observed Soil Moisture for WS32}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 
@@ -219,6 +219,7 @@ plot(mergedsm$Date, mergedsm$mergedsoilmoisture, type = "l", main = "Average WS3
 
 plot(mergedsm)
 
+
 ## Calculate Calibration/Validation Split based on SM data
 
 daysofsmdata<- as.numeric(range(mergedsm$Date)[2] - range(mergedsm$Date)[1])
@@ -248,7 +249,172 @@ write.csv(mergedsm,"outputfilter/mergedsm.csv")
 
 ```
 
-Plot and Filter Observed Streamflow Data
+
+Plot and Filter Observed Soil Moisture for WS7
+
+This data has not been pre-prepared and must be cleaned
+
+"Legacy" Soil moisture datasets
+
+Coweeta Long Term Ecological Research Program and P. Bolstad. 2019. Continuously measured soil moisture, soil temperature, and air temperature from stations in Watershed 7, Coweeta Hydrologic Laboratory ver 19. Environmental Data Initiative. https://doi.org/10.6073/pasta/ac7ca56c8247cc87c817c50fcf315be5 (Accessed 2024-08-01).
+
+```{r Read, Filter and Plot Observed Soil Moisture for WS7}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+
+smws7_1<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1305.19/CWT_107_1_2610.txt"), header = T, na.string = "NaN")
+smws7_2<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1305.19/CWT_207_1_1305.txt"), header = T, na.string = "NaN")
+smws7_3<- read.delim(paste0(filedir,"input_files/soil_moisture/knb-lter-cwt.1305.19/CWT_307_1_1305.txt"), header = T, na.string = "NaN")
+
+smws7_1<- na.omit(smws7_1)
+smws7_2<- na.omit(smws7_2)
+smws7_3<- na.omit(smws7_3)
+
+smws7_1$Date<- as.Date(smws7_1$Date)
+smws7_2$Date<- as.Date(smws7_2$Date)
+smws7_3$Date<- as.Date(smws7_3$Date)
+
+smws7_1 <- smws7_1[,!sapply(smws7_1,is.character)]
+smws7_2 <- smws7_2[,!sapply(smws7_2,is.character)]
+smws7_3 <- smws7_3[,!sapply(smws7_3,is.character)]
+
+range(smws7_3$smois30A)
+
+smws7_1mean<- aggregate(smws7_1, by = list(smws7_1$Date), FUN = function(x) mean(x, na.rm = TRUE))
+smws7_2mean<- aggregate(smws7_2, by = list(smws7_2$Date), FUN = function(x) mean(x, na.rm = TRUE))
+smws7_3mean<- aggregate(smws7_3, by = list(smws7_3$Date), FUN = function(x) mean(x, na.rm = TRUE))
+
+smws7_1mean <- smws7_1mean[order(smws7_1mean$Date),]
+smws7_2mean <- smws7_2mean[order(smws7_2mean$Date),]
+smws7_3mean <- smws7_3mean[order(smws7_3mean$Date),]
+
+#Filter Soil Moisture Datasets
+
+smws7_1mean <- smws7_1mean[smws7_1mean$smois30A >= 0.05, ]
+range(smws7_1mean$smois30A)
+smws7_1mean <- smws7_1mean[smws7_1mean$smois60A >= 0.05, ]
+range(smws7_1mean$smois60A)
+
+# smws7_3mean  <- smws7_3mean[smws7_3mean$smois30A<='0.45',]
+# smws7_3mean  <- smws7_3mean[smws7_3mean$Date<='2018-05-15',]
+
+
+plot(smws7_1mean$Group.1,smws7_1mean$smois30A, type = "l", main = "Soil Moisture 30cm Site 1", xlab = "Date", ylab = "Soil Moisture 30A")
+plot(smws7_2mean$Group.1,smws7_2mean$smois30A, type = "l", col = "blue", main = "Soil Moisture 30cm Site 2", xlab = "Date", ylab = "Soil Moisture 30A")
+plot(smws7_3mean$Group.1,smws7_3mean$smois30A, type = "l", col = "red", main = "Soil Moisture 30cm Site 3", xlab = "Date", ylab = "Soil Moisture 30A")
+
+
+{plot(smws7_1mean$Group.1,smws7_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Observed Soil Moisture WS32 30cm")
+lines(smws7_2mean$Group.1,smws7_2mean$smois30A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_3mean$Group.1,smws7_3mean$smois30A, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+smws7_1mean  <- smws7_1mean[smws7_1mean$Date>='2017-01-01',]
+smws7_2mean  <- smws7_2mean[smws7_2mean$Date>='2017-01-01',]
+smws7_3mean  <- smws7_3mean[smws7_3mean$Date>='2017-01-01',]
+
+smws7_1mean  <- smws7_1mean[smws7_1mean$Date<='2018-05-15',]
+smws7_2mean  <- smws7_2mean[smws7_2mean$Date<='2018-05-15',]
+smws7_3mean  <- smws7_3mean[smws7_3mean$Date<='2018-05-15',]
+
+{plot(smws7_1mean$Group.1,smws7_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 30cm")
+lines(smws7_2mean$Group.1,smws7_2mean$smois30A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_3mean$Group.1,smws7_3mean$smois30A, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+{plot(density(smws7_1mean$smois30A), ylim = c(0,14), xlim = c(0,0.35), col = 'red', main = "Density of Observed Soil Moisture WS32 30cm")
+lines(density(smws7_2mean$smois30A), col = 'blue')
+lines(density(smws7_3mean$smois30A), col = 'black')
+legend("topright",inset = 0.05, legend=c("SM1","SM2","SM3"), col=c("red","blue","black"), lty=1)}
+
+
+{plot(smws7_1mean$Group.1,smws7_1mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 1")
+lines(smws7_1mean$Group.1,smws7_1mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws7_1mean$Group.1,smws7_1mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_1mean$Group.1,smws7_1mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM1-30A","SM1-30B","SM1-60A","SM1-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+
+{plot(density(smws7_1mean$smois30A), ylim = c(0,14), xlim = c(0,0.45), col = 'red', main = "Density of Observed Soil Moisture WS32 Station 1")
+lines(density(smws7_1mean$smois30B), col = 'orange')
+lines(density(smws7_1mean$smois60A), col = 'blue')
+lines(density(smws7_1mean$smois60B), col = 'black')
+legend("topright",inset = 0.05, legend=c("SM1-30A","SM1-30B","SM1-60A","SM1-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+
+{plot(smws7_2mean$Group.1,smws7_2mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 2")
+lines(smws7_2mean$Group.1,smws7_2mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws7_2mean$Group.1,smws7_2mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_2mean$Group.1,smws7_2mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM2-30A","SM2-30B","SM2-60A","SM2-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+
+{plot(smws7_2mean$Group.1,smws7_2mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 2 Filtered")
+lines(smws7_2mean$Group.1,smws7_2mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws7_2mean$Group.1,smws7_2mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_2mean$Group.1,smws7_2mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM2-30A","SM2-30B","SM2-60A","SM2-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+{plot(smws7_3mean$Group.1,smws7_3mean$smois30A, type = "l", col = "red", ylim = c(0,0.4), xlab = "Date", ylab = "Soil Moisture", main = "Truncated Observed Soil Moisture WS32 Station 3")
+lines(smws7_3mean$Group.1,smws7_3mean$smois30B, type = "l", col = "orange", ylim = c(0,0.4))
+lines(smws7_3mean$Group.1,smws7_3mean$smois60A, type = "l", col = "blue", ylim = c(0,0.4))
+lines(smws7_3mean$Group.1,smws7_3mean$smois60B, type = "l", col = "black", ylim = c(0,0.4))
+legend("topright",inset = 0.05, legend=c("SM3-30A","SM3-30B","SM3-60A","SM3-60B"), col=c("red","orange","blue","black"), lty=1)}
+
+soilmoisture30a<- data.frame(smws7_1mean$Date,smws7_1mean$smois30A, smws7_1mean$smois30B,smws7_1mean$smois60A,smws7_1mean$smois60B)
+soilmoisture30b<- data.frame(smws7_2mean$Date,smws7_2mean$smois30A, smws7_2mean$smois30B,smws7_2mean$smois60A,smws7_2mean$smois60B)
+soilmoisture30c<- data.frame(smws7_3mean$Date,smws7_3mean$smois30A,smws7_3mean$smois30B,smws7_3mean$smois60A,smws7_3mean$smois60B)
+
+
+merged30a<- merge(soilmoisture30a,soilmoisture30b, by.x = "smws7_1mean.Date", by.y = "smws7_2mean.Date", all = FALSE)
+
+merged30b<- merge(merged30a,soilmoisture30c, by.x = "smws7_1mean.Date", by.y = "smws7_3mean.Date", all = TRUE)
+
+merged30c<- as.data.frame(rowMeans((merged30b[-1]), na.rm= TRUE))
+
+
+mergedsm<- cbind(merged30b,merged30c)
+
+colnames(mergedsm)<- c("Date","smois30site1a","smois30site1b","smois60site1a","smois60site1b","smois30site2a","smois30site2b","smois60site2a","smois60site2b","smois30site3a","smois30site3b","smois60site3a","smois60site3b","mergedsoilmoisture")
+
+plot(mergedsm$Date, mergedsm$mergedsoilmoisture, type = "l", main = "Average WS7 Soil Moisture", xlab = "Date", ylab = "Merged Soil Moisture All Data")
+
+plot(mergedsm)
+
+
+## Calculate Calibration/Validation Split based on SM data
+
+daysofsmdata<- as.numeric(range(mergedsm$Date)[2] - range(mergedsm$Date)[1])
+
+#70/30 split
+
+Caldays<- round(0.7*daysofsmdata)
+Valdays<- daysofsmdata-Caldays
+
+Caldates<- as.Date(1)
+
+Caldates[1]<- range(mergedsm$Date)[1]
+
+Caldates[2]<- range(mergedsm$Date)[1]+Caldays
+
+Valdates<- as.Date(1)
+
+Valdates[1]<-  range(Caldates)[2]+1
+
+Valdates[2]<- range(mergedsm$Date)[2]
+
+
+write.csv(Caldates, "outputfilter/caldatesws7.csv")
+write.csv(Valdates, "outputfilter/valdatesws7.csv")
+
+write.csv(mergedsm,"outputfilter/mergedsmws7.csv")
+
+```
+
+
+Plot and Filter Observed Streamflow Data for WS32
 
 Original Datasets are recorded as Water Year, We convert to calendar year
 
@@ -345,7 +511,96 @@ singleruntest$bd<- merge(singleruntest$bd,obsws32, by.x = "date", by.y = "Date",
 singleruntest$data <-merge(singleruntest$bd,obsws32sm, by.x = "date", by.y = "Date", all = TRUE)
 ```
 
-Plot Observed and Simulated Data, Plot RHESSys Outputs
+Plot and Filter Observed Streamflow Data for WS7
+
+Original Datasets are recorded as Water Year, We convert to calendar year
+
+```{r Read and Prepare observed Streamflow data for WS7}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+## import daily flow dataset
+obsws7<- read.csv(paste0(filedir,"input_files/streamflow/RDS-2016-0025-2/Data/Coweeta_WS07_DailyFlow.csv"), header = F) 
+
+# dataset is recorded as water year, here we convert from water year and note that the water year for this landscape begins in November
+## calendar year seems to be correct
+
+obsws7$WYR <- as.numeric(obsws7$V1)
+obsws7$Month <- as.numeric(obsws7$V2)
+obsws7$Day <- as.numeric(obsws7$V3)
+obsws7$flow <- as.numeric(obsws7$V5)
+
+obsws7$CalendarYear<- ifelse((obsws7$Month=="12"|obsws7$Month=="11"),obsws7$WYR-1,obsws7$WYR)
+
+obsws7$CalendarDate <- as.Date(with(obsws7,paste(CalendarYear,Month,Day,sep="-")),"%Y-%m-%d") 
+
+##this removal of 0s may be reason for lag, 0s may be purposefully included in dataset
+# instead create timeseries of date from start to end of timeseries and then merge
+#obsws7<- obsws7[!(obsws7$flow=="0"),]
+
+obsws7 <- drop_na(obsws7)
+
+plot(obsws7$CalendarDate, obsws7$flow, type = "l", ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Discharge ws7 Older Dataset")
+
+
+
+dataset1   <- data.frame(Date=obsws7$CalendarDate,flow=obsws7$flow)
+
+
+fullset<- rbind(dataset1)
+
+### Streamflow at Coweeta logged as CSM
+### conversion from EcohydRology project
+## because we are converting from CSM we set watershed area to 1
+
+fullset$discharge_mm<- ConvertFlowUnits(cfs = fullset$flow, WA=1, AREAunits = "mi2")
+
+#{plot(fullset$Date,fullset$flow, type = "l", xlab = "Date", ylab = "Flow", main = "Streamflow ws7")
+#lines(fullset$Date,fullset$discharge_mm, col = 'red')}
+
+plot(fullset $Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = "Discharge mm/d", main = "Observed Discharge ws7 All Datasets Merged")
+
+plot(fullset$Date,fullset$discharge_mm, type = "l", xlab = "Date", ylab = " Log Discharge mm/d", main = "Log of Observed Discharge ws7 All Datasets Merged", log = "y")
+
+fullset$observedstreamflow<- fullset$discharge_mm
+
+write.csv(fullset,paste0(filedir,"input_files/streamflow/Daily Streamflow Watershed 32/Daily Streamflow Watershed 32/Observedws7.csv"))
+
+obsws7<- fullset
+
+obsws7sm<- merge(obsws7,mergedsm, by = "Date")
+
+write.csv(obsws7sm, paste0("outputfilter/obsws7sm.csv"))
+#Caldates
+#Valdates
+
+obsws7cal <- obsws7[obsws7$Date >= Caldates[1] & obsws7$Date <= Caldates[2], ]
+  
+obsws7val <- obsws7[obsws7$Date >= Valdates[1] & obsws7$Date <= Valdates[2], ]
+  
+obsws7smcal <- obsws7sm[obsws7sm$Date >= Caldates[1] & obsws7sm$Date <= Caldates[2], ]
+
+obsws7smval <- obsws7sm[obsws7sm$Date >= Valdates[1] & obsws7sm$Date <= Valdates[2], ]
+
+```
+
+Merge Observed and Simulated Data for WS7
+
+
+```{r Merge Observed and Simulated Datasets}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+getwd()
+
+singleruntest2<- readin_rhessys_output("out/cwws7_runsingle")
+
+## merge values instead of subsetting to match up with simulated dates
+singleruntest2$bd<- merge(singleruntest2$bd,obsws7, by.x = "date", by.y = "Date", all = FALSE)
+
+## merge soil moisture values but include all data
+singleruntest2$data <-merge(singleruntest2$bd,obsws7sm, by.x = "date", by.y = "Date", all = TRUE)
+```
+
+
+Plot Observed and Simulated Data, Plot RHESSys Outputs WS32
 
 ```{r Plot Observed and Simulated Datasets}
 ## Plot Hydrograph comparing modeled and observed streamflow
@@ -614,7 +869,7 @@ legend("topright", legend = c("Legacy","New"), pch = 20, col= c("red","green"), 
 
 ```
 
-Show Observed Soil Moisture Locations
+Show Observed Soil Moisture Locations for WS7 and WS32
 
 ```{r Map of Locations of Observed Soil Moisture, fig.height=10, fig.width=10}
 

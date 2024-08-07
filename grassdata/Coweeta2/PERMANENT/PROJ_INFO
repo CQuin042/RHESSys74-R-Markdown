@@ -1,0 +1,6 @@
+name: unknown
+datum: wgs84
+ellps: wgs84
+proj: utm
+zone: 17
+no_defs: defined

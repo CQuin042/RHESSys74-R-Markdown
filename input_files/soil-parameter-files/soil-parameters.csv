@@ -1,0 +1,59 @@
+Variable Name,Description,Units,Default Value
+active_zone_z,Active zone for potential exfiltration calculations - a large number will cause saturation deficit to be used,metres,5
+albedo,Soil albedo,range (0 - 1),0.28
+bats_b,,,2
+bats_r3,,,0.3
+cap_rise_max,,,0.8
+clay,"Fraction of the soil that is clay, where sand + clay + silt must equal 1",range (0 - 1),0.1
+deltaZ,Soil depth over which soil heat flux is computed - use 0 to ignore heat flux model,metres,1
+detention_store_size,Surface detention storage capacity,metres of water,0
+DOC_adsorption_rate,,,0.000023
+DOM_decay_rate,decay of dissolved organic matter with soil depth (distribution of total with depth),,0.05
+DON_adsorption_rate,,,0.000001
+DON_production_rate,DON production as a function of mineralization rate,,0.03
+fixed_t_mult,,,-999
+fixed_w_mult,,,-999
+fs_percolation,,,1
+fs_spill,,,1
+fs_threshold,,,0.2
+gl_c,,,0.0062
+gsurf_intercept,intercept of soil moisture vs soil moisture conductance (to evaporation) curve,,0.001
+gsurf_slope,slope of soil moisture vs soil moisture conductance (to evaporation) curve,,0.01
+interval_size,,,INTERVAL_SIZE
+Ksat_0,Saturated hydraulic conductivity at surface,metres/day,3
+Ksat_0_v,,,3
+m,Decay of saturated hydraulic conductivity with saturation deficit,1/ (metre of water),0.12
+m_v,,,0.12
+m_z,Decay of saturated conductivity with actual soil depth. If porosity does not scale with depth then m_z should be m/porosity_0,1/metres,m/porosity_0
+max_heat_capacity,Maximum soil heat capacity - 0 will ignore heat flux model,J/m3/º K,0
+maximum_snow_energy_deficit,Maximum degree day energy deficit accumulation for snowpack,º C days,-10
+min_heat_capacity,Minimum soil heat capacity - 0 will ignore heat flux model,J/m3/º K,0
+mz_v,,,m_v/porosity_0
+N_decay,The decay rate of nitrogen throughout the profile,kg N/m,0.12
+N_decay_rate,,,
+N03_adsorption_rate,Maximum nitrate absorbed per kilogram of soil_The proportion of available N that can be leached i.e. % nitrate N that is temorary and should be replaced_,range (0 - 1),0
+NH4_adsorption_rate,,,0.000005
+nitrif_parm_smax,,,0.68
+overstory_height_thresh,,,6
+P3,Van.G. parameter - should be renamed - only used if theta_psi_curve is 2;,dimensionless,0
+p4,,,-1.5
+patch_default_ID,Identifier used by patch objects to indicate their patch default files,unique value for each default file,3
+pore_size_index,Soil pore size index,dimensionless,0.204
+porosity_0,Porosity at soil surface,range (0 - 1),0.435
+porosity_decay,Porosity scaling parameter with depth - porosity decays as,1/metre,4000
+psi_air_entry,Soil air entry pressure,metres of water,0.218
+psi_max,"Maximum soil water tension, psi, >psi_air_entry",metres of water,0.001
+recompute_gamma_flag,,,1
+sand,"Fraction of the soil that is sand, where sand + clay + silt must equal 1",range (0 - 1),0.7
+sat_to_gw_coeff,the amount of water moving from the saturated store to the groundwater store; bypasses roots,%,1
+silt,"Fraction of the soil that is silt, where sand + clay + silt must equal 1",range (0 - 1),0.2
+snow_albedo_flag,,,age
+snow_light_ext_coef,Radiation extinction coefficient through the snowpack - a high value will assume complete radiation absorption by snowpack,dimensionless,10000
+snow_melt_Tcoef,Temperature melt coefficient,metres of water / º C,0.05
+snow_water_capacity,Snowpack water holding capacity,metres of water,0
+soil_depth,Maximum soil depth,metres,200
+soil_water_cap,,,formula
+theta_mean_std_p1,relationship between mean soil moisture and its variance (),,0
+theta_mean_std_p2,relationship between mean soil moisture and its variance (),,0
+theta_psi_curve,Choice of theta-psi curve,1 or 2,1
+understory_height_thresh,,,4

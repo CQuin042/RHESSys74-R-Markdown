@@ -1,0 +1,2932 @@
+---
+title: "RHESSysIOinR_Coweeta_WS32_74 Multi Site Validation Field Data_Step1"
+author: "Carlos Quintero"
+date: "6/12/2024"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r include=FALSE}
+knitr::opts_knit$set(root.dir = system.file("extdata/", package = "RHESSysIOinR"))
+ setwd(system.file("extdata/", package = "RHESSysIOinR"))
+```
+
+Coweeta Hydrologic Laboratory Watershed 32 using Static, SSURGO, and RSS soil inputs. 
+
+The following R Markdown script prepares and runs the Regional Hydro-Ecologic Simulation System (RHESSYS) within the R environment. 
+Modified from RHESSysIOinR example scripts created by Will Burke and Ryan Bart. Includes CLHS code snippets and SDA code from Dylan Beaudette.
+
+Windows Subsystem via Linux must be installed before RHESSys will run in a Windows environment.
+GRASS8 must be installed to run the spatial preprocessing portion of the script.
+
+Code has been modified to run RHESSys 7.4 and 5.18. 
+7.4 vegetation processing differs slightly from 5.18.
+Various template differences exist between the two versions of RHESSys and template files must be carefully reviewed if moving between versions.
+This script is currently set up to run RHESSys 7.4
+
+```{r setup, include=TRUE, verbose = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+#install.packages("devtools")
+#devtools::install_github("ropensci/FedData")
+
+library(aqp)
+library(daymetr)
+library(clhs)
+library(EcoHydRology)
+library(elevatr)
+library(ezknitr)
+library(FedData)
+library(foreach)
+library(foreign)
+library(ggplot2)
+library(ggpubr)
+library(hydroGOF)
+library(imputeTS)
+library(knitr)
+library(latticeExtra)
+library(lubridate)
+library(Metrics)
+library(raster)
+library(rasterVis)
+library(readxl)
+library(reshape2)
+library(rgdal)
+library(rgrass)
+library(rmarkdown)
+library(Rmisc)
+library(RHESSysPreprocessing)
+library(RHESSysIOinR)
+library(sf)
+library(soilDB)
+library(sp)
+library(stats)
+library(stringi)
+library(tactile)
+library(terra)
+library(testthat)
+library(tidyverse)
+library(viridisLite)
+library(dplyr)
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+getwd()
+rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = F)
+rh_path = file.path("modelfiles/rhessys", rh_ver)
+
+## Load in necessary files
+filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
+
+watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
+streamshapefile<- paste0(filedir,"input_files/shapefiles/streams/StreamsCaldwellClipped.shp")
+weirshapefile<- paste0(filedir,"input_files/shapefiles/weirs/Subbasinoutlets.shp")
+roadshapefile <- paste0(filedir, "input_files/shapefiles/roads/UpdatedRoads4Reprojected32617.shp")
+
+CWRG12 <- paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG12_daily_1942_2021.csv")
+CWRG20 <-paste0(filedir,"input_files/precipitation/RDS-2017-0031/Data/RG20_daily_1962_2021.csv")
+
+CS21<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs21_daily.csv")
+CS28<- paste0(filedir,"input_files/temperature/RDS-2015-0042/Data/cs28_daily.csv")
+
+newsmlocations<-  paste0(filedir,"input_files/shapefiles/soil_moisture/CoweetaNRCSsmKML.kml")
+
+```
+
+Create Local Base File if one is not available
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+localbasefiletext<- "101  base_station_id
+275535 x_coordinate
+3879165 y_coordinate
+1064 z_coordinate
+3.5  effective_lai
+5.0 screen_height
+clim/cwt_annual	annual_climate_prefix
+0			number_non_critical_annual_sequences
+clim/cwt_monthly 	monthly_climate_prefix
+0			number_non_critical_monthly_sequences
+clim/cwtws32local daily_climate_prefix
+0			number_non_critical_daily_sequences
+clim/cwt_hourly 	hourly_climate_prefix
+0			number_non_critical_hourly_sequences
+clim/cwt	trigger_of_dated_input
+0	num_non_critical_sequences
+"
+
+write(localbasefiletext,file = "clim/cwtws32local.base")
+
+```
+
+Download or find Local Climate for Watershed of Interest. 
+Precipitation and Temperature
+
+https://www.fs.usda.gov/rds/archive/Catalog/RDS-2017-0031
+
+RGO6-WS32 & RG12-WS32 - Using RG12
+RG20-WS7
+Precipitation is in inches
+
+CS21-WS7
+CS28-WS32
+Temperature is in celsius
+
+RHESSys can use
+Rain (Meters),Tmin (C),Tmax (C),Tavg (C),RHmin (0-1),RHmax (0-1),RHavg (0-1),Wind (Meters/Sec),Wind Dir (Degrees)
+
+only using Rain, Tmin and Tmax for now
+
+"One of the most intense arctic outbreaks of the 20th century occurred January 18-22, 1985.  Extremely cold temperatures affected every state east of the Rockies with three new state record lows established: -34° at Mt. Mitchell, North Carolina, -19° at Caesar's Head, South Carolina; and -30° at Mountain Lake, Virginia. " Taken from weather.gov
+
+lowest temp -34, all TMIN values less than -34 will be removed as erroneous values
+
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+cwtrg12precip<- read.table(file=CWRG12, header = TRUE, sep = ",")
+cwtrg20precip<- read.table(file=CWRG20, header = TRUE, sep = ",")
+
+cwtrg12precip$date <- as.Date(paste(cwtrg12precip$YEAR,cwtrg12precip$MONTH,cwtrg12precip$DAY, sep = "-"), "%Y-%m-%d")
+cwtrg20precip$date <- as.Date(paste(cwtrg20precip$YEAR,cwtrg20precip$MONTH,cwtrg20precip$DAY, sep = "-"), "%Y-%m-%d")
+
+plot(cwtrg12precip$date,cwtrg12precip$RRG12, type = "h", main = "Coweeta Rain Gauge 12 Precipitation", col = "BLUE")
+plot(cwtrg20precip$date,cwtrg20precip$RRG20, type = "h", main = "Coweeta Rain Gauge 20 Precipitation", col = 4)
+
+cwtcs21<-  read.table(file=CS21, header = TRUE, sep = ",")
+cwtcs28<- read.table(file=CS28, header = TRUE, sep = ",")
+
+cwtcs21$date<- as.Date(paste(cwtcs21$YEAR,cwtcs21$MONTH,cwtcs21$DAY, sep = "-"), "%Y-%m-%d")
+cwtcs28$date<- as.Date(paste(cwtcs28$YEAR,cwtcs28$MONTH,cwtcs28$DAY, sep = "-"), "%Y-%m-%d")
+
+cwtcs21 <- as_tibble(cwtcs21)
+cwtcs28 <- as_tibble(cwtcs28)
+
+##filtering low temp in climate station files
+cwtcs21<- cwtcs21 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
+cwtcs28<- cwtcs28 %>% mutate(TMIN= ifelse(TMIN < -34, NA,TMIN))
+
+#Combine Rain Gauge and Climate Station datasets
+cwtrg12precip<- as_tibble(cwtrg12precip)
+cwtrg20precip<- as_tibble(cwtrg20precip)
+
+###make sure to create full date time series before left join
+full_dates<- tibble(date = seq.Date(from = min(cwtrg12precip$date), to = max(cwtrg12precip$date), by = "day"))
+
+full_dates
+
+combinedcwtclimate<- full_dates %>% left_join(cwtrg12precip, by = c("date"))
+
+cwtrg20_selected <- cwtrg20precip %>% dplyr::select(date, RRG20)
+
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtrg20_selected, by = c("date"))
+
+#convert precip from inces to meters
+combinedcwtclimate$RRG12 <- combinedcwtclimate$RRG12* 0.0254
+combinedcwtclimate$RRG20 <- combinedcwtclimate$RRG20* 0.0254
+
+##precip converted from inches to meters
+## RH converted to 0-1 range
+
+cwtcs21_selected <- cwtcs21 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs21=TMIN, TMAXcs21=TMAX, TAVGcs21=TAVG, RHMINcs21=RHMIN, RHMAXcs21=RHMAX, RHcs21=RHAVG, WINDcs21=WIND, WDIRcs21=W_DIR)
+cwtcs28_selected <- cwtcs28 %>% mutate(RHMIN = RHMIN/100, RHMAX = RHMAX/100, RHAVG = RHAVG/100) %>% select(date, TMINcs28=TMIN, TMAXcs28=TMAX, TAVGcs28=TAVG, RHMINcs28=RHMIN, RHMAXcs28=RHMAX, RHcs28=RHAVG, WINDcs28=WIND, WDIRcs28=W_DIR)
+
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs21_selected, by = c("date"))
+combinedcwtclimate <- combinedcwtclimate %>% left_join(cwtcs28_selected, by = c("date"))
+
+combinedcwtclimate
+
+first_valid_index<- combinedcwtclimate %>%  dplyr::mutate(row_num = row_number()) %>% filter(!is.na(RRG12)& !is.na(RRG20)& !is.na(TMINcs21)& !is.na(TMINcs28) ) %>% slice(1) %>% pull(row_num)
+
+last_valid_index<- combinedcwtclimate %>%  dplyr::mutate(row_num = row_number()) %>% filter(!is.na(RRG12)& !is.na(RRG20)& !is.na(TMINcs21)& !is.na(TMINcs28) ) %>% slice(n()) %>% pull(row_num)
+
+first_valid_index
+
+trimmed_cwtclimate <- combinedcwtclimate %>% slice(first_valid_index:last_valid_index)
+
+trimmed_cwtclimate
+
+trimmedstartdaterhessys<- paste(year(ymd(trimmed_cwtclimate$date[1])), month(ymd(trimmed_cwtclimate$date[1])), day(ymd(trimmed_cwtclimate$date[1])),"1")
+  
+trimmedstartdaterhessys
+
+trimmed_cwtclimate <- trimmed_cwtclimate %>% select(-YEAR,-MONTH,-DAY)
+
+# Replace NA values according to the specified rules
+##NA APPROX is used, zoo package, interpolation
+
+trimmed_cwtclimate <- trimmed_cwtclimate %>%
+  mutate(
+    RRG12 = ifelse(is.na(RRG12), 0, RRG12),
+    RRG20 = ifelse(is.na(RRG20), 0, RRG20),
+    TMINcs21 = ifelse(is.na(TMINcs21),TAVGcs21,TMINcs21),
+    TMINcs28 = ifelse(is.na(TMINcs28),TAVGcs28,TMINcs28),
+    TMINcs21 = na.approx(TMINcs21),
+    TMAXcs21 = na.approx(TMAXcs21),
+    TMINcs28 = na.approx(TMINcs28),
+    TMAXcs28 = na.approx(TMAXcs28),
+    TAVGcs21 = na.approx(TAVGcs21),
+    TAVGcs28 = na.approx(TAVGcs28),
+    TAVGcs21 = ifelse(TAVGcs21>TMINcs21 & TAVGcs21<TMAXcs21,TAVGcs21,(TMAXcs21+TMINcs21/2)),
+    TAVGcs28 = ifelse(TAVGcs28>TMINcs28 & TAVGcs28<TMAXcs28,TAVGcs28,(TMAXcs28+TMINcs28/2)),
+    RHMINcs21= na.approx(RHMINcs21),
+    RHMINcs28= na.approx(RHMINcs28),
+    RHMAXcs21= na.approx(RHMAXcs21),
+    RHMAXcs28= na.approx(RHMAXcs28),
+    RHcs21 = na.approx(RHcs21),
+    RHcs28 = na.approx(RHcs28),
+    WINDcs21 = na.approx(WINDcs21),
+    WINDcs28 = na.approx(WINDcs28),
+    WDIRcs21 = na.approx(WDIRcs21),
+    WDIRcs28 = na.approx(WDIRcs28)
+)
+
+# View the resulting dataframe
+print(trimmed_cwtclimate)
+
+rows_with_na <- trimmed_cwtclimate %>%
+  filter_all(any_vars(is.na(.)))
+
+print(rows_with_na)
+
+##make sure units are correct
+
+cwtws32localrain<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RRG12)))
+cwtws32localtmin<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMINcs28)))
+cwtws32localtmax<- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TMAXcs28)))
+cwtws32localtavg <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$TAVGcs28)))
+cwtws32localrhmin <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHMINcs28)))
+cwtws32localrhmax <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHMAXcs28)))
+cwtws32localrhavg <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$RHcs28)))
+cwtws32localwind <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$WINDcs28)))
+cwtws32localwdir <- data.frame(rbind(trimmedstartdaterhessys, as.data.frame(trimmed_cwtclimate$WDIRcs28)))
+
+
+write.table(cwtws32localrain, file = "clim/cwtws32local.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localtmin, file = "clim/cwtws32local.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localtmax, file = "clim/cwtws32local.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+write.table(cwtws32localtavg, file = "clim/cwtws32local.tavg", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhmin, file = "clim/cwtws32local.relative_humidity_min", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhmax, file = "clim/cwtws32local.relative_humidity_max", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localrhavg, file = "clim/cwtws32local.relativehumidity", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localwind, file = "clim/cwtws32local.wind", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtws32localwdir, file = "clim/cwtws32local.wind_direction", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+```
+
+Extend Local Datasets
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+precip <- read.csv('clim/cwtws32local.rain', header = FALSE)
+tmin <- read.csv('clim/cwtws32local.tmin', header = FALSE)
+tmax <- read.csv('clim/cwtws32local.tmax', header = FALSE)
+
+head(precip)
+nrow(precip)-1
+
+substr(precip[1,1],1,nchar(precip[1,1])-2)
+
+dt <- as.Date(substr(precip[1,1],1,nchar(precip[1,1])-2), "%Y %m %d")
+
+dt.new<- dt - as.difftime((nrow(precip)-1)*8, units="days")
+
+#remove first value and repeats dataset 9 times
+
+longcwtraindata<- do.call("rbind",replicate(9,as.list((precip[-1,]))))
+longcwttmindata<- do.call("rbind",replicate(9,as.list((tmin[-1,]))))
+longcwttmaxdata<- do.call("rbind",replicate(9,as.list((tmax[-1,]))))
+
+longcwstartdate<- paste(year(ymd(dt.new)),month(ymd(dt.new)),day(ymd(dt.new)),"1")
+
+longcwtrain<- rbind(longcwstartdate,longcwtraindata)
+longcwttmin<- rbind(longcwstartdate,longcwttmindata)
+longcwttmax<- rbind(longcwstartdate,longcwttmaxdata)
+
+longcwtrain<- data.frame(longcwtrain)
+longcwttmin<- data.frame(longcwttmin)
+longcwtmax<- data.frame(longcwttmax)
+
+write.table(longcwtrain, file = "clim/cwtws32extended.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmin, file = "clim/cwtws32extended.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmax, file = "clim/cwtws32extended.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
+read_clim("clim/cwtws32local.rain", dates_out=TRUE)
+
+```
+
+Create DAYMET Base File
+```{r Create Daymet Base File}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+##Quick way to create base file necessary for climate processing 
+
+{daymetbasefiletext<- "101  base_station_id
+275535 x_coordinate
+3879165 y_coordinate
+1064 z_coordinate
+3.5  effective_lai
+5.0 screen_height
+clim/cwt_annual	annual_climate_prefix
+0			number_non_critical_annual_sequences
+clim/cwt_monthly 	monthly_climate_prefix
+0			number_non_critical_monthly_sequences
+clim/cwtws32daymet daily_climate_prefix
+0			number_non_critical_daily_sequences
+clim/cwt_hourly 	hourly_climate_prefix
+0			number_non_critical_hourly_sequences
+clim/cwt	trigger_of_dated_input
+0	num_non_critical_sequences
+"}
+
+write(daymetbasefiletext,file = "clim/cwtws32daymet.base")
+
+```
+
+Download Daymet Data for Watershed of Interest using daymetr package
+Currently only creates precip, tmin and tmax files.
+
+```{r Create Daymet Datasets, eval=FALSE, include=FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+daymet_data <- download_daymet("Coweeta_WS32",
+                               lat = 35.04867,
+                               lon = -83.4601,
+                               start = 1980,
+                               end = 2021,
+                               internal = TRUE)
+
+daymetstartdate<- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), "%Y-%j")[1]
+
+daymetstartdaterhessys<- paste(year(ymd(daymetstartdate)),month(ymd(daymetstartdate)),day(ymd(daymetstartdate)),"1")
+
+daymetstartdate
+
+daymetenddate<- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), "%Y-%j")[length(daymet_data$data$year)]
+
+daymetenddate
+
+
+## calculate dates for daymet data from year and yday data
+
+daymet_data$data$date <- as.Date(paste(daymet_data$data$year,daymet_data$data$yday, sep = "-"), "%Y-%j")
+
+##create time series and append values
+
+
+date_vector <- seq.Date(daymetstartdate, daymetenddate, by = "day")
+
+length(date_vector)
+
+length(daymet_data$data$prcp..mm.day.)
+
+date_precip<- as.data.frame(c(date_vector))
+
+names(date_precip) <- "Dates"
+
+date_precip
+
+
+fulldaymetprecip<- merge(date_precip,daymet_data$data, by.x="Dates", by.y="date", all.x=TRUE)
+
+dim(date_precip)
+
+dim(fulldaymetprecip)
+
+dim(daymet_data$data)
+
+fulldaymetprecip
+
+## for simplicity replace NA values with 0, may cause issues with temp but should be ok for precip
+
+fulldaymetprecip<- na_replace(fulldaymetprecip,0)
+
+#convert precipitation to Meters
+cwtdaymetrain<- rbind(daymetstartdaterhessys,as.data.frame(fulldaymetprecip$prcp..mm.day./1000))
+cwtdaymettmin<- rbind(daymetstartdaterhessys,as.data.frame(fulldaymetprecip$tmin..deg.c.))
+cwtdaymettmax<- rbind(daymetstartdaterhessys,as.data.frame(fulldaymetprecip$tmax..deg.c.))
+
+cwtdaymetrain<- data.frame(cwtdaymetrain)
+cwtdaymettmin<- data.frame(cwtdaymettmin)
+cwtdaymettmax<- data.frame(cwtdaymettmax)
+
+write.table(cwtdaymetrain, file = "clim/cwtws32daymet.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtdaymettmin, file = "clim/cwtws32daymet.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(cwtdaymettmax, file = "clim/cwtws32daymet.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+```
+
+Extend DAYMET datasets to allow for longer spinup period
+Read Daymet Datasets and Replicate 5x times to create a longer period of record for spin up
+Create base File manually for now
+
+```{r Extend Daymet Datasets}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+getwd()
+
+precip <- read.csv('clim/cwtws32daymet.rain', header = FALSE)
+tmin <- read.csv('clim/cwtws32daymet.tmin', header = FALSE)
+tmax <- read.csv('clim/cwtws32daymet.tmax', header = FALSE)
+#tavg <- read.csv('clim/cwtws32daymet.tavg', header = FALSE)
+#rh <- read.csv('clim/cwtws32daymet.relative_humidity', header = FALSE)
+#wind <- read.csv('clim/cwtws32daymet.wind', header = FALSE)
+
+head(precip)
+nrow(precip)-1
+
+substr(precip[1,1],1,nchar(precip[1,1])-2)
+
+dt <- as.Date(substr(precip[1,1],1,nchar(precip[1,1])-2), "%Y %m %d")
+
+dt.new<- dt - as.difftime((nrow(precip)-1)*5, units="days")
+
+#remove first value and repeats dataset 6 times
+
+longcwtraindata<- do.call("rbind",replicate(6,as.list((precip[-1,]))))
+longcwttmindata<- do.call("rbind",replicate(6,as.list((tmin[-1,]))))
+longcwttmaxdata<- do.call("rbind",replicate(6,as.list((tmax[-1,]))))
+#longcwttavgdata<- do.call("rbind",replicate(6,as.list((tavg[-1,]))))
+#longcwtrhdata<- do.call("rbind",replicate(6,as.list((rh[-1,]))))
+#longcwtwinddata<- do.call("rbind",replicate(6,as.list((wind[-1,]))))
+
+longcwstartdate<- paste(year(ymd(dt.new)),month(ymd(dt.new)),day(ymd(dt.new)),"1")
+
+longcwtrain<- rbind(longcwstartdate,longcwtraindata)
+longcwttmin<- rbind(longcwstartdate,longcwttmindata)
+longcwttmax<- rbind(longcwstartdate,longcwttmaxdata)
+#longcwttavg<- rbind(longcwstartdate,longcwttavgdata)
+#longcwtrh<- rbind(longcwstartdate,longcwtrhdata)
+#longcwtwind<- rbind(longcwstartdate,longcwtwinddata)
+
+longcwtrain<- data.frame(longcwtrain)
+longcwttmin<- data.frame(longcwttmin)
+longcwtmax<- data.frame(longcwttmax)
+#longcwttavg<- data.frame(longcwttavg)
+#longcwtrh<- data.frame(longcwtrh)
+#longcwtwind<- data.frame(longcwtwind)
+
+write.table(longcwtrain, file = "clim/cwtws32daymetextended.rain", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmin, file = "clim/cwtws32daymetextended.tmin", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(longcwttmax, file = "clim/cwtws32daymetextended.tmax", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#write.table(longcwttavg, file = "clim/cwtws32extended.tavg", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#write.table(longcwtrh, file = "clim/cwtws32extended.relative_humidity", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#write.table(longcwtwind, file = "clim/cwtws32extended.wind", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
+read_clim("clim/cwtws32daymet.rain", dates_out=TRUE)
+
+```
+Plot DAYMET vs Local
+
+```{r}
+
+
+
+```
+
+Download and Prepare DEM 
+Code to download DEM originally prepared by Dylan Beaudette
+
+```{r Download and Prepare DEM}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# use watershed polygons for BBOX to request elevation data
+x <- read_sf(watershedshapefile)
+# buffer to ensure that there are no truncated watersheds
+x.buff <- st_as_sf(st_buffer(st_as_sfc(st_bbox(x)), dist = 1000))
+# convert to GCS WGS84 -> no transformation / warp will be applied to DEM
+x.gcs <- st_transform(x, 4326)
+x.buff.gcs <- st_transform(x.buff, 4326)
+# requires sf collection (geometry + attributes)
+# get DEM in GCS WGS84 and use z = 14 for best available data
+elevationraster <- get_elev_raster(locations = x.buff.gcs, z = 14, clip = 'bbox')
+
+res(elevationraster)
+
+# check: OK
+{plot(elevationraster, main = "DEM, Watershed Outline and Buffer" )
+  plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)}
+
+{plot(elevationraster, main = "DEM and selected Watershed")
+  plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+cropped_dem<- crop(elevationraster,st_bbox(x.gcs))
+
+plot(cropped_dem, main = "DEM cropped to Buffer")
+plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)
+
+
+newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+
+reproje<- projectRaster(from = cropped_dem, crs = newproj, method = 'bilinear')
+
+plot(reproje, main = "Reprojected cropped DEM")
+
+dummydata<- reproje
+
+res(dummydata) <- 10
+
+resampleddem <- resample(reproje, dummydata, method = 'bilinear')
+
+plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+
+{plot(resampleddem, main = "DEM reprojected to 10m Resolution")
+  plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)}
+
+```
+
+Start Spatial Processing in GRASS8
+Code to prepare spatial input files for RHESSYs takes cues from Will Burkes "spatial_input_gen.R" script but is prepared for GRASS8 instead of GRASS7
+
+```{r Prepare Spatial Input in GRASS8}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+#gisbase_grass <- ifelse(.Platform$OS.type == "windows", link2GI::paramGRASSw()$gisbase_GRASS[1], link2GI::paramGRASSx()$gisbase_GRASS[1])
+
+## set easting and northing as coordinates of lowest point within boundary basin, set threshold for basin delineation
+threshold = 1000
+easting = NULL
+northing = NULL
+ 
+dir.create("grassdata")
+
+initGRASS(gisBase = "C:/Program Files/GRASS GIS 8.2",
+          gisDbase = "grassdata",
+          location = "Coweeta1", 
+          mapset = "PERMANENT", 
+          override = TRUE)
+
+execGRASS("g.proj", proj4="+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs", flag = "c" )
+execGRASS("g.gisenv", flag="n")
+execGRASS("g.region", flag=c("p"))
+
+##Convert DEM to Spatrast and then import DEM to GRASS 
+spatrast_dem10 <- rast(resampleddem)
+
+write_RAST(spatrast_dem10, "grass_dem10", overwrite = TRUE)
+
+## The following code is heavily influenced by Will Burkes "spatial_input_gen.R" script
+execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
+
+## Import shapefiles (Streams, Weirs, Watersheds, Roads)
+## only roads and Watersheds necessary to Run
+streams<- vect(streamshapefile)
+streams<- project(streams,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+write_VECT(streams, "streams")
+
+weirs<- vect(weirshapefile)
+weirs<- project(weirs,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+write_VECT(weirs, "weirs")
+
+watersheds<- vect(watershedshapefile)
+wgs84watersheds<- project(watersheds,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+write_VECT(wgs84watersheds, "watersheds")
+
+roads <- vect(roadshapefile)
+roads<- project(roads,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+write_VECT(roads,"roads")
+
+## Check all vectors that have been exported to GRASS
+execGRASS("g.list", parameters = list(type = "vector"))
+
+## Generate a depressionless DEM and d-8 flow direction maps from DEM
+execGRASS("r.fill.dir", input="grass_dem10", output="dem10f", direction="dir10", flags = c("overwrite") )
+
+## Generate flow accumulation, drainage, and horizon maps
+execGRASS("r.watershed", elevation = "dem10f", accumulation = "acc10", drainage = "drain10")
+
+## Generate slope, aspect, wetness index, horizon, and road maps
+execGRASS("r.slope.aspect", elevation = "grass_dem10", slope = "slope10", aspect = "aspect10")
+
+execGRASS("r.topidx", input = "grass_dem10", output = "topidx10")
+
+execGRASS("r.mapcalc", expression = "topidx10_100 = topidx10 * 100", flags = "overwrite")
+
+execGRASS("r.horizon", flags = "d", elevation = "grass_dem10", direction = 0, output = "east")
+execGRASS("r.horizon", flags = "d", elevation = "grass_dem10", direction = 180, output = "west")
+
+execGRASS("r.mapcalc", expression = "e_horizon_1000 = sin(east_000) * 1000", flags = "overwrite")
+execGRASS("r.mapcalc", expression = "w_horizon_1000 = sin(west_180) * 1000", flags = "overwrite")
+
+## Generate a hillslope and stream map
+subbasin_name = paste0("subbasin_th",as.character(threshold))
+stream_name = paste0("stream_th",as.character(threshold))
+hillslope_name = paste0("hillslope_th",as.character(threshold))
+
+execGRASS("r.watershed", elevation = "dem10f", threshold = threshold, basin = subbasin_name, stream = stream_name, half_basin = hillslope_name)
+
+## Delineate watershed boundary for ws32
+
+weirs[12,]
+
+#easting = crds(weirs[12,])[1]
+#northing = crds(weirs[12,])[2]
+
+# should snap to stream
+
+easting = 276111
+northing = 3881335
+
+execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
+
+execGRASS("r.water.outlet", input ="drain10", output="basin_ws32",coordinates = c(easting, northing), flags = "overwrite")
+
+## Delineate watershed boundary for ws7
+
+weirs[3,]
+#easting2 = crds(weirs[3,])[1]
+#northing2 = crds(weirs[3,])[2]
+
+# should snap to stream
+easting2 = 277451
+northing2 = 3882875
+
+execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
+
+execGRASS("r.water.outlet", input ="drain10", output="basin_ws7",coordinates = c(easting2, northing2), flags = "overwrite")
+
+## Mask Data
+# execGRASS("r.mask", input = "basin_ws32", maskcats = 1)
+
+execGRASS("r.info",map = "basin_ws32")
+execGRASS("r.info",map = "basin_ws7")
+execGRASS("r.info",map = "grass_dem10")
+
+## Generate Patch Maps
+execGRASS("r.mapcalc", expression = "patch = row() * 537 + col()", flags = "overwrite")
+
+## Create Road Maps
+execGRASS("v.to.rast", input="roads" ,output="roads", use="cat", label_column="ROADNAME", flags = "overwrite")
+
+execGRASS("r.mapcalc", expression = "roads = roads > 0", flags = "overwrite")
+
+execGRASS("r.null", map = "roads", null= 0)
+
+## Check all rasters that have been exported to or created in GRASS
+execGRASS("g.list", parameters = list(type = "raster"))
+
+## Export Prepared Maps from GRASS to R
+filleddem <- read_RAST("dem10f")
+
+##Export maps back into R or export directly from GRASS to disk
+grass_acc10 <- read_RAST("acc10")
+grass_aspect10 <- read_RAST("aspect10")
+grass_basin_ws32 <- read_RAST("basin_ws32")
+grass_basin_ws7 <- read_RAST("basin_ws7")
+grass_dem10 <- read_RAST("grass_dem10")
+grass_dem10f <- read_RAST("dem10f")
+grass_dir10 <- read_RAST("dir10")
+grass_drain10 <- read_RAST("drain10")
+grass_e_horizon_1000 <- read_RAST("e_horizon_1000")
+grass_hillslope_th1000 <- read_RAST("hillslope_th1000")
+#grass_patch <- read_RAST("patch")
+grass_slope10 <- read_RAST("slope10")
+grass_stream_th1000 <- read_RAST("stream_th1000")
+grass_topidx10 <- read_RAST("topidx10")
+grass_topidx10_100 <- read_RAST("topidx10_100")
+grass_w_horizon_1000 <- read_RAST("w_horizon_1000")
+grass_east_000 <- read_RAST("east_000")
+grass_west_180 <- read_RAST("west_180")
+grass_subbasin_th1000 <- read_RAST("subbasin_th1000")
+
+dir.create("grassexport")
+dir.create("grassexport/cwt")
+
+execGRASS("r.out.gdal", input = "acc10", output = "grassexport/cwt/acc10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "aspect10", output = "grassexport/cwt/aspect10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "basin_ws32", output = "grassexport/cwt/basin_ws32.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "basin_ws7", output = "grassexport/cwt/basin_ws7.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "grass_dem10", output = "grassexport/cwt/grass_dem10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "dem10f", output = "grassexport/cwt/dem10f.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "dir10", output = "grassexport/cwt/dir10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "drain10", output = "grassexport/cwt/drain10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "e_horizon_1000", output = "grassexport/cwt/e_horizon_1000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "hillslope_th1000", output = "grassexport/cwt/hillslope_th1000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "patch", output = "grassexport/cwt/patch.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "slope10", output = "grassexport/cwt/slope10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "stream_th1000", output = "grassexport/cwt/stream_th1000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "topidx10", output = "grassexport/cwt/topidx10.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "topidx10_100", output = "grassexport/cwt/topidx10_100.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "w_horizon_1000", output = "grassexport/cwt/w_horizon_1000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "east_000", output = "grassexport/cwt/east_000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "west_180", output = "grassexport/cwt/west_180.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "subbasin_th1000", output = "grassexport/cwt/subbasin_th1000.tif", format = "GTiff", flags = "overwrite")
+execGRASS("r.out.gdal", input = "roads", output = "grassexport/cwt/roads.tif", format = "GTiff", flags = "overwrite")
+
+
+{plot(grass_basin_ws7, main = "Selected Watersheds")
+plot(grass_basin_ws32, add = T)
+plot(watersheds, add = T)
+plot(streams, add = T)}
+```
+
+Crop Maps that were prepared in GRASS. Maps are cropped R because MASK command is not functioning properly for GRASS via R.
+Original input maps are been cropped before processing worldfile and flowtable in R, without cropping the RHESSYs worldfile and flowtable preparation in the R environment will not function properly,
+
+#This step may be unecessary
+
+```{r Crop Maps that were Prepared in GRASS}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+ws32<- raster("grassexport/cwt/basin_ws32.tif")
+ws7<- raster("grassexport/cwt/basin_ws7.tif")
+acc10<- raster("grassexport/cwt/acc10.tif")
+patches<- raster("grassexport/cwt/patch.tif")
+aspect10<- raster("grassexport/cwt/aspect10.tif")
+dem10<- raster("grassexport/cwt/grass_dem10.tif")
+dem10f<- raster("grassexport/cwt/dem10f.tif")
+dir10<- raster("grassexport/cwt/dir10.tif")
+drain10<- raster("grassexport/cwt/drain10.tif")
+hillslope<- raster("grassexport/cwt/hillslope_th1000.tif")
+roads<- brick("grassexport/cwt/roads.tif")
+slope10<- raster("grassexport/cwt/slope10.tif")
+streams<- raster("grassexport/cwt/stream_th1000.tif")
+topidx10_100<- raster("grassexport/cwt/topidx10_100.tif")
+e_horizon_1000 <- raster("grassexport/cwt/e_horizon_1000.tif")
+w_horizon_1000 <- raster("grassexport/cwt/w_horizon_1000.tif")
+subbasins<- raster("grassexport/cwt/subbasin_th1000.tif")
+
+ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+maskedws32 <- crop(mask(ws32,ws32polygon),ws32polygon)
+maskedacc10 <- crop(mask(acc10,ws32polygon),ws32polygon)
+maskedpatches <- crop(mask(patches,ws32polygon),ws32polygon)
+maskedaspect10 <- crop(mask(aspect10,ws32polygon),ws32polygon)
+maskeddem10 <- crop(mask(dem10,ws32polygon),ws32polygon)
+maskeddem10f <- crop(mask(dem10f,ws32polygon),ws32polygon)
+maskeddir10 <- crop(mask(dir10,ws32polygon),ws32polygon)
+maskeddrain10 <- crop(mask(drain10,ws32polygon),ws32polygon)
+maskedhillslope <- crop(mask(hillslope,ws32polygon),ws32polygon)
+maskedroads <- crop(mask(roads,ws32polygon),ws32polygon)
+maskedslope10 <- crop(mask(slope10,ws32polygon),ws32polygon)
+maskedstreams <- crop(mask(streams,ws32polygon),ws32polygon)
+maskedtopidx10_100 <- crop(mask(topidx10_100,ws32polygon),ws32polygon)
+maskede_horizon_1000 <- crop(mask(e_horizon_1000,ws32polygon),ws32polygon)
+maskedw_horizon_1000 <- crop(mask(w_horizon_1000,ws32polygon),ws32polygon)
+maskedsubbasins<- crop(mask(subbasins,ws32polygon),ws32polygon)
+
+ws7polygon<- rasterToPolygons(ws7, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+maskedws7 <- crop(mask(ws7,ws7polygon),ws7polygon)
+maskedacc10ws7 <- crop(mask(acc10,ws7polygon),ws7polygon)
+maskedpatchesws7 <- crop(mask(patches,ws7polygon),ws7polygon)
+maskedaspect10ws7 <- crop(mask(aspect10,ws7polygon),ws7polygon)
+maskeddem10ws7 <- crop(mask(dem10,ws7polygon),ws7polygon)
+maskeddem10fws7 <- crop(mask(dem10f,ws7polygon),ws7polygon)
+maskeddir10ws7 <- crop(mask(dir10,ws7polygon),ws7polygon)
+maskeddrain10ws7 <- crop(mask(drain10,ws7polygon),ws7polygon)
+maskedhillslopews7 <- crop(mask(hillslope,ws7polygon),ws7polygon)
+maskedroadsws7 <- crop(mask(roads,ws7polygon),ws7polygon)
+maskedslope10ws7 <- crop(mask(slope10,ws7polygon),ws7polygon)
+maskedstreamsws7 <- crop(mask(streams,ws7polygon),ws7polygon)
+maskedtopidx10_100ws7 <- crop(mask(topidx10_100,ws7polygon),ws7polygon)
+maskede_horizon_1000ws7 <- crop(mask(e_horizon_1000,ws7polygon),ws7polygon)
+maskedw_horizon_1000ws7 <- crop(mask(w_horizon_1000,ws7polygon),ws7polygon)
+maskedsubbasinsws7<- crop(mask(subbasins,ws7polygon),ws7polygon)
+
+
+## Save as tif
+dir.create("grassexport/cwt_ws32")
+
+writeRaster(maskedws32,"grassexport/cwt_ws32/basin_ws32",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedacc10,"grassexport/cwt_ws32/acc10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedpatches,"grassexport/cwt_ws32/patch",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedaspect10,"grassexport/cwt_ws32/aspect10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10,"grassexport/cwt_ws32/dem10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10f,"grassexport/cwt_ws32/dem10f",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddir10,"grassexport/cwt_ws32/dir10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddrain10,"grassexport/cwt_ws32/drain10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedhillslope,"grassexport/cwt_ws32/hillslope",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedroads,"grassexport/cwt_ws32/roads",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedslope10,"grassexport/cwt_ws32/slope10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedstreams,"grassexport/cwt_ws32/streams",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedtopidx10_100,"grassexport/cwt_ws32/topidx10_100",format = "GTiff", overwrite = TRUE)
+writeRaster(maskede_horizon_1000,"grassexport/cwt_ws32/e_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedw_horizon_1000,"grassexport/cwt_ws32/w_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedsubbasins,"grassexport/cwt_ws32/subbasins",format = "GTiff", overwrite = TRUE)
+
+## Save as tif
+dir.create("grassexport/cwt_ws7")
+
+writeRaster(maskedws7,"grassexport/cwt_ws7/basin_ws7",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedacc10ws7,"grassexport/cwt_ws7/acc10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedpatchesws7,"grassexport/cwt_ws7/patch",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedaspect10ws7,"grassexport/cwt_ws7/aspect10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10ws7,"grassexport/cwt_ws7/dem10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddem10fws7,"grassexport/cwt_ws7/dem10f",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddir10ws7,"grassexport/cwt_ws7/dir10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskeddrain10ws7,"grassexport/cwt_ws7/drain10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedhillslopews7,"grassexport/cwt_ws7/hillslope",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedroadsws7,"grassexport/cwt_ws7/roads",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedslope10ws7,"grassexport/cwt_ws7/slope10",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedstreamsws7,"grassexport/cwt_ws7/streams",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedtopidx10_100ws7,"grassexport/cwt_ws7/topidx10_100",format = "GTiff", overwrite = TRUE)
+writeRaster(maskede_horizon_1000ws7,"grassexport/cwt_ws7/e_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedw_horizon_1000ws7,"grassexport/cwt_ws7/w_horizon_1000",format = "GTiff", overwrite = TRUE)
+writeRaster(maskedsubbasinsws7,"grassexport/cwt_ws7/subbasins",format = "GTiff", overwrite = TRUE)
+
+plot(maskedws32, main ="WS32")
+plot(maskedpatches, main = "patches")
+plot(maskedacc10, main = "acc10")
+plot(maskedaspect10, main = "aspect10")
+plot(maskedsubbasins, main = "subbasins")
+plot(maskeddem10, main = "dem10")
+plot(maskeddem10f, main = "dem10f")
+plot(maskeddir10, main = "dir10")
+plot(maskeddrain10, main = "drain10")
+plot(maskedhillslope, main = "hillslope")
+plot(maskedroads, main = "roads")
+plot(maskedslope10, main = "slope10")
+plot(maskedstreams, main = "streams")
+plot(maskedtopidx10_100, main = "topidx10_100")
+plot(maskede_horizon_1000, main = "e_horizon_1000")
+plot(maskedw_horizon_1000, main = "w_horizon_1000")
+
+plot(maskedws7, main ="WS7")
+plot(maskedpatchesws7, main = "patches")
+plot(maskedacc10ws7, main = "acc10")
+plot(maskedaspect10ws7, main = "aspect10")
+plot(maskedsubbasinsws7, main = "subbasins")
+plot(maskeddem10ws7, main = "dem10")
+plot(maskeddem10fws7, main = "dem10f")
+plot(maskeddir10ws7, main = "dir10")
+plot(maskeddrain10ws7, main = "drain10")
+plot(maskedhillslopews7, main = "hillslope")
+plot(maskedroadsws7, main = "roads")
+plot(maskedslope10ws7, main = "slope10")
+plot(maskedstreamsws7, main = "streams")
+plot(maskedtopidx10_100ws7, main = "topidx10_100")
+plot(maskede_horizon_1000ws7, main = "e_horizon_1000")
+plot(maskedw_horizon_1000ws7, main = "w_horizon_1000")
+```
+# This must be properly intergrated into code
+# RSS files from github or folder?
+Prepare SSURGO Soil Maps
+SSURGO-via-SDA 
+Code originally prepared by Dylan Beaudette
+Download SSURGO data and make sure CRS/Extent/Crop are Correct for input into RHESSys
+
+```{r Download and Prepare SSURGO Soil Maps}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+# load BBOX
+x <- read_sf(watershedshapefile)
+# get gSSURGO grid here
+mu <- mukey.wcs(aoi = x, db = 'gssurgo')
+# unique map unit keys
+ll <- levels(mu)[[1]]
+# note SSA boundary
+levelplot(mu, att = 'ID', margin = FALSE, colorkey = FALSE, col.regions = viridis, main = "SSURGO Map Units")
+
+## Note: some of these map units are dominated by non-soil components
+# Dominant Component (Numeric) -> NODATA
+# Weighted Average -> use any available data, but wt. mean are diluted (see source data)
+
+# get thematic data from SDA
+# dominant component
+# depth-weighted average
+# sand, silt, clay, AWC (RV)
+
+p <-  get_SDA_property(property = c("sandtotal_r","silttotal_r","claytotal_r", "awc_r", "ksat_r"),
+                       method = "Weighted Average", 
+                       mukeys = ll$ID,
+                       top_depth = 0,
+                       bottom_depth = 200)
+
+head(p)
+
+# re-create raster attribute table with aggregate soil properties
+rat <- merge(ll, p, by.x = 'ID', by.y = 'mukey', sort = FALSE, all.x = TRUE)
+# re-pack RAT
+levels(mu) <- rat
+# convert raster + RAT --> stack of values
+s <- deratify(mu, att = c("sandtotal_r", "silttotal_r", "claytotal_r", "awc_r", "ksat_r"))
+# graphical check
+levelplot(
+  s[[1:3]], 
+  main = 'Sand, Silt, Clay (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+levelplot(
+  s[[4]], 
+  main = 'AWC (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+levelplot(
+  s[[5]], 
+  main = 'ksat (RV) 0-200cm\nWeighted Average',
+  margin = FALSE, 
+  scales = list(draw = FALSE), 
+  col.regions = viridis
+)
+
+# convert to a representative soil texture class
+txt.lut <- read.csv('http://soilmap2-1.lawr.ucdavis.edu/800m_grids/RAT/texture_2550.csv')
+# make a copy
+texture_060 <- s[[1]]
+# note: soil textures that aren't present are dropped from factor levels
+texture_060[] <- ssc_to_texcl(sand = s$sandtotal_r[], clay = s$claytotal_r[])
+# extract RAT
+rat <- levels(texture_060)[[1]]
+# add colors
+rat <- merge(rat, txt.lut, by.x = 'VALUE', by.y = 'class', all.x = TRUE, sort = FALSE)
+# fix column order
+rat <- rat[, c('ID', 'VALUE', 'hex', 'names')]
+# re-pack
+levels(texture_060) <- rat
+# check: ok
+cols <- levels(texture_060)[[1]]$hex
+levelplot(texture_060, att = 'names', margin = FALSE, col.regions = cols, main = "Soil Textures") 
+
+dir.create("rasters/")
+dir.create("rasters/cwt")
+dir.create("rasters/cwt/ws32")
+
+writeRaster(texture_060, file = 'rasters/cwt/ws32/soiltexture060.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+texture60raster<- raster("rasters/cwt/ws32/soiltexture060.tif")
+
+### this has been modified to use new SSURGO Inputs with deep-shallow depth classes
+
+texture60raster<- raster("rasters/cwt/ws32/ssurgo-soiltype-class.tif")
+
+## reproject to raster mask instead
+
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+
+ newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+reproj60 <- projectRaster(from = texture60raster, crs = proj4string(ws32), method = 'ngb')
+
+plot(texture60raster, zlim = c(1,5), main = "Texture Raster with modified Depth Classes")
+
+{plot(reproj60, zlim = c(1,5), main = "Reprojected Texture Raster with modified Depth Classes and Watersheds")
+plot(st_geometry(x), add = TRUE, col = NA)}
+
+## prepare 10m resolution raster and resample prepared soil data to 10m
+resample10<- raster(resolution=c(10,10), crs = proj4string(reproj60), ext=extent(reproj60))
+
+reproj6010 <- resample(reproj60,resample10, method = 'ngb')
+
+{plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Watersheds")
+plot(st_geometry(x), add = TRUE, col = NA)}
+## Crop prepared raster to extent of watershed of interest
+
+## croppedtexture60 <- crop(reproj6010,extent(x[which(x$WS=='32'),]))
+
+#for now cropping is completed based on delineated watershed extent from raster instead of watershed extent from watershed polygons
+croppedtexture60 <- crop(reproj6010,extent(ws32))
+
+# croppedtexture60 <- projectRaster(from = croppedtexture60, crs = newproj, method = 'ngb')
+
+## Mask prepared raster using watershed polygon
+#masked60 <- mask(croppedtexture60,x[which(x$WS=='32'),])
+
+## for now masking is completed based on delineated watershed extent from raster instead of watershed extent from watershed polygons
+ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+extent(croppedtexture60)<- extent(ws32)
+
+
+{plot(reproj6010, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Selected Watershed")
+plot(ws32polygon, add = TRUE, col = NA)}
+
+masked60 <- raster::mask(croppedtexture60,ws32polygon)
+
+plot(masked60, zlim = c(1,5), main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Masked Selected Watershed")
+
+plot(x[which(x$WS=='32'),])
+
+plot(st_geometry(x[which(x$WS=='32'),]))
+
+{plot(reproj60, zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+
+{plot(as.factor(croppedtexture60), zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+{plot(as.factor(masked60), zlim = c(1,5))
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+
+{plot(masked60, zlim = c(1,5), main = "Polygon Delineation")
+plot(st_geometry(x[which(x$WS=='32'),]), add = TRUE, col = NA)}
+
+{plot(masked60, zlim = c(1,5), main = "Watershed Delineation")
+plot(ws32polygon, add = TRUE, col = NA)}
+```
+
+Prepare textural classes from sand and clay totals
+
+```{r Prepare Soil Def files}
+mapunittable<- levels(mu)[[1]]
+
+paged_table(mapunittable)
+
+mapunittable$textclass<- ssc_to_texcl(sand = mapunittable$sandtotal_r, clay = mapunittable$claytotal_r)
+
+paged_table(mapunittable)
+
+```
+
+Code Prepared By Dylan Beaudette and modified
+Prepare RSS Maps, formerly labeled DSM
+
+```{r Prepare RSS Soil Map from local file}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
+
+#("grassexport/cwt_ws32/ws32.tif")
+
+# RSS: cell values are map unit keys
+r <- raster('Raster soil survey/Coweeta_Final_raster.tif')
+
+## for now, convert to UTM z17
+r <- projectRaster(r, ws32, method = 'ngb')
+
+# convert to raster + RAT
+r <- ratify(r)
+
+# RAT: raster attribute table
+rat <- read.dbf('Raster soil survey/Coweeta_Final_raster.tif.vat.dbf', as.is = TRUE)
+names(rat) <- tolower(names(rat))
+
+# musym is the national mu symbol
+rss.mu <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'mapunit')
+rss.co <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'component')
+rss.hz <- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chorizon')
+#new
+rss.tg<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexturegrp')
+rss.tx<- st_read('Raster soil survey/rss_nc/rss_nc.gdb', layer = 'chtexture')
+
+## check for missing symbols
+# none missing from RAT
+setdiff(rat$MUSYM, rss.mu$musym)
+# map unit table contains some extra
+setdiff(rss.mu$musym, rat$MUSYM)
+
+## subset child tables
+rss.mu <- rss.mu[rss.mu$musym %in% rat$musym, ]
+rss.co <- rss.co[rss.co$mukey %in% rss.mu$mukey, ]
+rss.hz <- rss.hz[rss.hz$cokey %in% rss.co$cokey, ]
+
+.dominantCondition <- function(i, v) {
+  
+  i <- i[i$compkind != 'Miscellaneous area', ]
+  if(nrow(i) < 1) {
+    return(NULL)
+  }
+  
+  fm <- as.formula(sprintf("comppct_r ~ %s", v))
+  a <- aggregate(fm, data = i, FUN = sum, na.rm = TRUE)
+  
+  idx <- order(a[['comppct_r']], decreasing = TRUE)[1]
+  
+  res <- data.frame(
+    mukey = i$mukey[1],
+    v = a[[v]][idx]
+  )
+  names(res) <- c('mukey', v)
+  
+  return(res)
+}
+
+.dominantValue <- function(i, v) {
+  
+  i <- i[i$compkind != 'Miscellaneous area', ]
+  if(nrow(i) < 1) {
+    return(NULL)
+  }
+  
+  
+  idx <- order(i[['comppct_r']], decreasing = TRUE)[1]
+  
+  res <- data.frame(
+    mukey = i$mukey[1],
+    v = i[[v]][idx]
+  )
+  
+  names(res) <- c('mukey', v)
+  
+  return(res)
+  
+}
+
+getDominantCondition <- function(x, v) {
+  
+  res <- lapply(
+    split(rss.co, rss.co$mukey), 
+    .dominantCondition, v = v
+  )
+  
+  res <- do.call('rbind', res)
+  
+  return(res)
+}
+
+getDominantValue <- function(x, v) {
+  
+  res <- lapply(
+    split(rss.co.aws050, rss.co.aws050$mukey), 
+    .dominantValue, v = v
+  )
+  
+  res <- do.call('rbind', res)
+  
+  return(res)
+}
+
+co.taxpartsize <- getDominantCondition(rss.co, v = 'taxpartsize')
+
+co.spc <- rss.hz
+depths(co.spc) <- cokey ~ hzdept_r + hzdepb_r
+hzdesgnname(co.spc) <- 'hzname'
+
+# at dZ = 1cm, use awc_r directly
+co.spc$aws <- co.spc$awc_r * 1
+
+a <- slab(co.spc, cokey ~ aws, slab.structure = c(0, 50), slab.fun = sum)
+
+head(a)
+
+rss.co.aws050 <- merge(rss.co, a, by = 'cokey', sort = FALSE)[, c('mukey', 'cokey', 'compkind', 'comppct_r', 'value')]
+
+# no NA allowed in wt. mean / etc.
+rss.co.aws050 <- rss.co.aws050[!is.na(rss.co.aws050$value), ]
+
+co.aws050 <- getDominantValue(rss.co.aws050, v = 'value')
+
+names(co.aws050) <- c('mukey', 'aws050')
+
+
+mu.subset <- rss.mu[, c('mukey', 'musym', 'mukind')]
+
+agg <- merge(mu.subset, co.taxpartsize, by = 'mukey', sort = FALSE)
+
+agg <- merge(agg, co.aws050, by = 'mukey', sort = FALSE)
+
+rat <- merge(rat, agg, by = 'musym', sort = FALSE)
+
+# attempt to split out component / series names
+rat$co.names <- stri_split_fixed(str = rat$muname,  pattern = ',', n = 2, simplify = TRUE)[, 1]
+# this only works because all component names are single-word names
+rat$co.names <- stri_split_fixed(str = rat$co.names,  pattern = ' ', n = 2, simplify = TRUE)[, 1]
+# RAT management
+ll.original <- levels(r)[[1]]
+# merge and pack updated RAT
+ll <- merge(ll.original, rat, by.x = 'ID', by.y = 'value', all.x = TRUE, sort = FALSE)
+levels(r) <- ll
+
+# convert select attributes to new raster objects via RAT + codes
+
+r.taxpartsize <- deratify(r, att = 'taxpartsize')
+
+plot(r.taxpartsize)
+
+###quick and dirty incorporate new DSM map with two depth classes
+
+r.taxpartsizetest<- raster(paste0(filedir,"input_files/soil_maps/rss-soiltype-class.tif"))
+
+r.taxpartsize <- projectRaster(r.taxpartsizetest, ws32, method = 'ngb')
+
+ws32polygon<- rasterToPolygons(ws32, fun = function(x){x==1}, dissolve = TRUE, digits = 12)
+
+maskeddsm <- mask(r.taxpartsize,ws32polygon)
+
+plot(maskeddsm, main = "Masked DSM")
+
+
+```
+
+Reclassify Soil Maps
+
+Default Texture Values in RHESSys
+1 - Clay
+2 - Silty Clay
+3 - Silty Clay Loam
+4 - Sandy Clay
+5 - Sandy Clay Loam
+6 - Clay Loam
+7 - Silt
+8 - Silty Loam
+9 - Loam
+10 - Sand
+11 - Loamy Sand
+12 - Sandy Loam
+13 - Rock
+14 - Water
+
+Shallow Files Created and added to defs folder
+19 - Shallow Sandy Clay Loam
+23 - Shallow Loam
+26 - Shallow Sandy Loam
+
+Default Texture Values used by SDA
+1 - loamy sand
+2 - sandy loam 
+3 - loam
+4 - sandy clay loam
+5 - clay loam
+
+Default Texture used by DSM and quick and dirty conversions
+1 - loamy         > loam
+2 - fine-loamy    > silty clay loam
+3 - coarse-loamy  > sandy loam
+
+Current Textural Levels for Coweeta
+6 Levels
+1 - deep.sl
+2- shallow.sl
+3- deep.l
+4- shallow.l
+5- deep.scl
+6- shallow.scl
+
+```{r Reclassify Prepared Soil Maps}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# original before depth class substitution
+#reclasssoil<- c(1,11,2,12,3,9,4,5,5,6,6,0,7,0,8,0,9,0,10,0,11,0,12,0,13,0,14,0)
+
+##this has been modified for quick implementation of shallow-deep classes
+reclasssoil<- c(1,12,2,26,3,9,4,23,5,5,6,19)
+
+
+reclasssoilmat<- matrix(reclasssoil, ncol = 2, byrow = TRUE)
+
+reclasssoilmat
+
+reclassreproj<- reclassify(masked60, reclasssoilmat)
+
+
+plot(reclassreproj, main = "SSURGO DC Texture Dual Depth Method", zlim = c(1,24), col = viridis(24))
+
+writeRaster(reclassreproj, file = 'grassexport/cwt_ws32/ssurgosoil.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+#plot(SoilsMap2, main = "SSURGO USACE Texture Method")
+
+##this has been modified for quick implementation of shallow-deep classes
+##original before depth class subsititution
+#reclassdsm<- c(1,9,2,3,3,12,4,0,5,0,6,0,7,0,8,0,9,0,10,0,11,0,12,0,13,0,14,0)
+#new
+ reclassdsm<- c(1,12,2,26,3,9,4,23,5,5,6,19)
+
+
+reclassdsmmat<- matrix(reclassdsm, ncol = 2, byrow = TRUE)
+
+reclassdsmmat
+
+reclassmaskeddsm <- reclassify(maskeddsm, reclassdsmmat)
+
+plot(reclassmaskeddsm, main = "DSM DC Texture Dual Depth Method", zlim = c(1,24), col = viridis(24))
+
+writeRaster(reclassmaskeddsm, file = 'grassexport/cwt_ws32/dsmsoil.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+#plot(maskeddsm)
+
+reclassstatic<- c(1,12,2,12,3,12,4,12,5,12,6,12,7,12,8,12,9,12,10,12,11,12,12,12,13,12,14,12)
+
+reclassstaticmat<- matrix(reclassstatic, ncol = 2, byrow = TRUE)
+
+reclassstaticmat
+
+reclassmaskedstatic <- reclassify(maskeddsm, reclassstaticmat)
+
+plot(reclassmaskedstatic, main = "Static Loam Texture", zlim = c(1,24), col = viridis(24))
+
+```
+
+Combined Soil Plots
+
+```{r}
+library(cowplot)
+
+rssraster<- reclassmaskeddsm
+
+ssurgoraster<- reclassreproj
+
+staticraster<- reclassmaskedstatic
+
+
+rssrasterdf<- as.data.frame(rssraster, xy = TRUE)
+ssurgorasterdf<- as.data.frame(ssurgoraster, xy = TRUE)
+staticrasterdf<- as.data.frame(staticraster, xy = TRUE)
+
+rssrasterdf$rss.soiltype.class<- factor(rssrasterdf$rss.soiltype.class)
+ssurgorasterdf$ssurgo.soiltype.class<- factor(ssurgorasterdf$ssurgo.soiltype.class)
+staticrasterdf$rss.soiltype.class<- factor(staticrasterdf$rss.soiltype.class)
+
+plot3<- ggplot()+
+  geom_raster(data = rssrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+plot2<- ggplot()+
+  geom_raster(data = ssurgorasterdf, aes(x = x, y = y, fill = ssurgo.soiltype.class))+
+  theme_minimal()
+    
+plot1<- ggplot()+
+  geom_raster(data = staticrasterdf, aes(x = x, y = y, fill = rss.soiltype.class))+
+  theme_minimal()
+
+combined_soilplot<- plot_grid(plot1, plot2, plot3, ncol =3)
+
+plot(combined_soilplot)
+
+```
+
+Download RHESSys Def files from github
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+ #gert::git_clone(url = "https://github.com/RHESSys/ParameterLibrary", path = "defs/rhessys", branch = "master")
+
+listofdefs<- list.files("defs/rhessys/", ".def$", recursive = "TRUE")
+
+file.copy(from = paste0("defs/rhessys/",c(listofdefs)), to = "defs/", overwrite = "TRUE")
+
+```
+
+NLCD Land Cover Classification Legend
+
+11 Open Water
+12 Perennial Ice/ Snow
+21 Developed, Open Space
+22 Developed, Low Intensity 
+23 Developed, Medium Intensity
+24 Developed, High Intensity
+31 Barren Land (Rock/Sand/Clay)
+41 Deciduous Forest
+42 Evergreen Forest
+43 Mixed Forest
+51 Dwarf Scrub*
+52 Shrub/Scrub
+71 Grassland/Herbaceous
+72 Sedge/Herbaceous*
+73 Lichens*
+74 Moss*
+81 Pasture/Hay
+82 Cultivated Crops
+90 Woody Wetlands
+95 Emergent Herbaceous Wetlands
+
+* Alaska only
+
+Because default RHESSys definition files are being used we will reclassify some of this land cover classification for our landscape
+
+41 Deciduous Forest <- 3 veg_deciduous
+42 Evergreen Forest <- 4 veg_evergreen
+43 Mixed Forest <- 4 veg_evergreen
+
+```{r Vegetation inputs from NLCD}
+
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+LANDCOVER<- get_nlcd(template = x.buff.gcs, label = 'coweeta', dataset = "landcover")
+#CANOPY<- get_nlcd(template = x.buff.gcs, label = 'coweeta', year = 2016, dataset = "canopy")
+IMPERVIOUS<- get_nlcd(template = x.buff.gcs, label = 'coweeta', dataset = "impervious")
+
+plot(LANDCOVER, main = "NLCD Landcover")
+#plot(CANOPY)
+plot(IMPERVIOUS, main = "NLCD Impervious")
+
+LANDCOVERREPROJ <-  projectRaster(from = LANDCOVER, crs = proj4string(ws32polygon), method = 'ngb')
+#CANOPYREPROJ <-  projectRaster(from = CANOPY, crs = proj4string(ws32polygon), method = 'ngb')
+IMPERVIOUSREPROJ <-  projectRaster(from = IMPERVIOUS, crs = proj4string(ws32polygon), method = 'ngb')
+
+## prepare 10m resolution raster and resample prepared soil data to 10m
+resample10<- raster(resolution=c(10,10), crs = proj4string(ws32polygon), ext=extent(ws32polygon))
+
+LANDCOVERREPROJRES <- resample(LANDCOVERREPROJ,resample10, method = 'ngb')
+
+{plot(LANDCOVERREPROJRES, main = "Reprojected and Resampled Texture Raster with modified Depth Classes and Watersheds")
+plot(st_geometry(x), add = TRUE, col = NA)}
+
+landcovercrop <- crop(LANDCOVERREPROJRES,ws32polygon)
+#canopycrop <- crop(CANOPYREPROJ,ws32polygon)
+imperviouscrop <- crop(IMPERVIOUSREPROJ,ws32polygon)
+
+maskedlandcover <- mask(landcovercrop,ws32polygon)
+#maskedcanopy <- mask(canopycrop,ws32polygon)
+maskedimpervious <- mask(imperviouscrop,ws32polygon)
+
+plot(maskedlandcover, main = "Masked Landcover")
+#plot(maskedcanopy)
+plot(maskedimpervious, main = "Masked Impervious")
+
+{plot(maskedlandcover, main = "Masked Landcover with WS Polygon")
+plot(ws32polygon, add = TRUE, col = NA)}
+
+{plot(maskedimpervious, main = "Masked Impervious with WS Polygon")
+plot(ws32polygon, add = TRUE, col = NA, border = "white")}
+
+extent(LANDCOVER)
+extent(LANDCOVERREPROJ)
+extent(maskedlandcover)
+extent(ws32polygon)
+
+reclassveg<- c(11,3,12,3,21,3,22,3,23,3,24,3,31,3,41,3,42,4,43,4,51,3,52,3,71,3,72,3,73,3,74,3,81,3,82,3,90,3,95,3)
+
+reclassvegmat<- matrix(reclassveg, ncol = 2, byrow = TRUE)
+
+reclassvegmat
+
+reclassmaskedveg <- reclassify(maskedlandcover, reclassvegmat)
+
+plot(reclassmaskedveg, main = "Reclassified WS32 Vegetation", zlim = c(1,4), col = viridis(14))
+
+writeRaster(reclassmaskedveg, file = 'grassexport/cwt_ws32/nlcdveg.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+
+
+resample10ws7<- raster(resolution=c(10,10), crs = proj4string(ws7polygon), ext=extent(ws7polygon))
+
+LANDCOVERREPROJRESws7 <- resample(LANDCOVERREPROJ,resample10ws7, method = 'ngb')
+
+
+maskedws7landcover <- reclassify(mask(crop(LANDCOVERREPROJRESws7,ws7polygon),ws7polygon),reclassvegmat)
+
+plot(maskedws7landcover, main = "Reclassified WS7 Vegetation", zlim = c(1,4), col = viridis(14))
+
+writeRaster(maskedws7landcover, file = 'grassexport/cwt_ws7/nlcdveg.tif', overwrite = TRUE, options=c("COMPRESS=LZW"))
+
+
+
+
+```
+
+Prescribe vegetation rooting depth
+
+```{r Additional rooting depth information}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+##max root depth seems to be in meters, not clearly defined but inferred from 2021 publication
+
+maxrootdepth = 1
+
+maxrootdepth<- as.data.frame(maxrootdepth)
+
+colnames(maxrootdepth)<-"epc.max_root_depth"
+
+change_def_file("defs/veg_deciduous.def", maxrootdepth, file_name_ext = NULL)
+change_def_file("defs/veg_evergreen.def", maxrootdepth, file_name_ext = NULL)
+
+```
+
+LAI data from MODIS
+modified from https://cran.r-project.org/web/packages/MODISTools/vignettes/modistools-vignette.html
+## This is not necessary if not using LAI based spinup
+
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+library(MODISTools)
+
+bands <- mt_bands(product = "MOD15A2H")
+
+head(bands)
+
+dates <- mt_dates(product = "MOD15A2H", lat = 35 , lon = -83 )
+
+paged_table(dates)
+
+coweeta_lai <- mt_subset (product = "MOD15A2H", lat = 35.06, lon = -83.43,
+                          band = "Lai_500m", start = "2017-01-01", end = "2018-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+coweeta_lc <- mt_subset (product = "MCD12Q1", lat = 35.06, lon = -83.43,
+                          band = "LC_Type1", start = "2017-01-01", end = "2018-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+head(coweeta_lai)
+
+
+coweetamodis <- coweeta_lc %>%
+  rename("lc" = "value") %>%
+  select("lc","pixel") %>%
+  right_join(coweeta_lai, by = "pixel")
+
+coweetamodis <- coweetamodis %>%
+  filter(value <= 100,
+         lc %in% c("1","5")) %>% 
+  mutate(lc = ifelse(lc == 1, "ENF","DBF")) %>%
+  group_by(lc, calendar_date) %>% 
+  summarize(doy = as.numeric(format(as.Date(calendar_date)[1],"%j")),
+            lai_mean = median(value * as.double(scale)))
+
+ggplot(coweetamodis, aes(x = doy, y = lai_mean)) +
+  geom_point() +
+  geom_smooth(span = 0.3, method = "loess") +
+  labs(x = "day of year (DOY)",
+       y = "leaf area index (LAI)") +
+  theme_minimal() +
+  facet_wrap(~ lc)
+
+
+
+coweeta_lai <- mt_subset (product = "MOD15A2H", lat = 35.06, lon = -83.43,
+                          band = "Lai_500m", start = "2017-05-20", end = "2017-06-01",
+                          km_lr = 20, km_ab = 20, site_name="coweeta",
+                          internal = TRUE, progress = FALSE)
+
+
+
+LAI_raster <- mt_to_raster(df=coweeta_lai, reproject = TRUE)
+
+
+
+x <- read_sf(watershedshapefile)
+x.buff <- st_as_sf(st_buffer(st_as_sfc(st_bbox(x)), dist = 1000))
+x.gcs <- st_transform(x, 4326)
+x.buff.gcs <- st_transform(x.buff, 4326)
+
+{plot(LAI_raster)
+   plot(st_geometry(x.buff.gcs), add = TRUE, col = NA, lwd = 2)
+  plot(st_geometry(x.gcs), add = TRUE, col = NA)
+  }
+
+```
+
+Create Templates for RHESSYs WS32
+
+```{r Template}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# template_read(template)
+# would be useful to modify or read RHESSys template in R, currently template_read does not display nicely
+
+# Create Templates for each Treatment
+
+dir.create("templates")
+
+{templatetext<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+9
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+../defs/veg_deciduous_BES.def
+../defs/veg_eucalypt.def
+../defs/veg_grass.def
+../defs/veg_lawn_2cm.def
+../defs/veg_lawn_5cm.def
+../defs/veg_lawn_10cm.def
+../defs/veg_nonveg.def
+1
+../clim/cwtws32extended.base
+_world basin_ws32.tif 1
+ _basin basin_ws32.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode ssurgosoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+
+write(templatetext,file = "templates/RHESSYSinR_Coweeta_WS32_Spinup.template")
+
+#Static
+{templatestatic<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+2
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws32extended.base
+_world basin_ws32.tif 1
+ _basin basin_ws32.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        dvalue 9	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+#SSURGO
+{templatessurgo<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+2
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws32extended.base
+_world basin_ws32.tif 1
+ _basin basin_ws32.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode ssurgosoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+#DSM
+{templatedsm<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+1
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws32extended.base
+_world basin_ws32.tif 1
+ _basin basin_ws32.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode dsmsoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+
+write(templatestatic,file = "templates/RHESSYSinR_Coweeta_WS32_static.template")
+write(templatetext,file = "templates/RHESSYSinR_Coweeta_WS32_ssurgo.template")
+write(templatedsm,file = "templates/RHESSYSinR_Coweeta_WS32_dsm.template")
+
+```
+
+Create Templates for RHESSYs WS7
+
+```{r Template}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# template_read(template)
+# would be useful to modify or read RHESSys template in R, currently template_read does not display nicely
+
+# Create Templates for each Treatment
+
+dir.create("templates")
+
+{templatetext<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+9
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+../defs/veg_deciduous_BES.def
+../defs/veg_eucalypt.def
+../defs/veg_grass.def
+../defs/veg_lawn_2cm.def
+../defs/veg_lawn_5cm.def
+../defs/veg_lawn_10cm.def
+../defs/veg_nonveg.def
+1
+../clim/cwtWS7extended.base
+_world basin_ws7.tif 1
+ _basin basin_ws7.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode ssurgosoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+
+write(templatetext,file = "templates/RHESSYSinR_Coweeta_WS7_Spinup.template")
+
+#Static
+{templatestatic<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+2
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws7extended.base
+_world basin_ws7.tif 1
+ _basin basin_ws7.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        dvalue 9	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+#SSURGO
+{templatessurgo<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+2
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws7extended.base
+_world basin_ws7.tif 1
+ _basin basin_ws7.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode ssurgosoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+#DSM
+{templatedsm<- "1
+../defs/basin.def
+1
+../defs/hillslope.def
+1
+../defs/zone.def
+14
+../defs/soil_clay.def
+../defs/soil_clayloam.def
+../defs/soil_loam.def
+../defs/soil_loamysand.def
+../defs/soil_rock.def
+../defs/soil_sand.def
+../defs/soil_sandyclay.def
+../defs/soil_sandyclayloam.def
+../defs/soil_sandyloam.def
+../defs/soil_silt.def
+../defs/soil_siltyclay.def
+../defs/soil_siltyclayloam.def
+../defs/soil_siltyloam.def
+../defs/soil_water.def
+../defs/soil_shallowloam.def
+../defs/soil_shallowsandyclayloam
+../defs/soil_shallowsandyloam
+1
+../defs/lu_undev.def
+1
+../defs/veg_deciduous/veg_deciduous.def
+../defs/veg_evergreen/veg_evergreen.def
+1
+../clim/cwtws7extended.base
+_world basin_ws7.tif 1
+ _basin basin_ws7.tif 1
+	x		value 0.0
+	y		value 0.0
+	z		aver dem10.tif
+	basin_parm_ID	dvalue 1
+	latitude	value 35.04 
+	basin_n_basestations 	dvalue 0	
+  	_hillslope subbasins.tif 1
+		x		value 0.0
+		y		value 0.0
+		z		aver dem10.tif
+		hill_parm_ID	dvalue 1	
+		gw.storage	value 0.0
+		gw.NO3		value 0.0
+		hillslope_n_basestations	dvalue 0 	
+		_zone patch.tif 1 
+			x		  value 0.0
+			y		  value 0.0
+			z		  aver dem10.tif 
+			zone_parm_ID  	  dvalue 1  
+			area		  area	
+			slope		  aver slope10.tif	
+			aspect		  spavg aspect10.tif slope10.tif	
+			precip_lapse_rate value 1.0
+			e_horizon	  eqn 0.001 0 e_horizon_1000.tif 	
+			w_horizon	  eqn 0.001 0 w_horizon_1000.tif	
+			zone_n_basestations	  dvalue 1	
+			zone_basestation_ID	  dvalue 101	
+			 _patch patch.tif 1
+				x			value 0.0
+				y			value 0.0
+				z			aver  dem10.tif
+				soil_parm_ID	        mode dsmsoil.tif	
+				landuse_parm_ID		dvalue 1
+				fire_parm_ID		value 1.0
+				area			area	
+				slope			aver  slope10.tif			
+				lna 			eqn 0.001 0 topidx10_100.tif	
+				Ksat_vertical   	value 1.0 
+				mpar	        	value 0.12	
+				rz_storage		value 0.0
+				unsat_storage		value 0.0
+				sat_deficit 		value 0.0
+				snowpack.water_equivalent_depth value 0.28 
+				snowpack.water_depth 	value 0.0
+				snowpack.T 		value -10.0
+				snowpack.surface_age 	value 0.0
+				snowpack.energy_deficit value -0.5 
+				litter.cover_fraction	value 1.0
+				litter.rain_stored	value 0.00001544
+				litter_cs.litr1c 	value 0.00158273
+				litter_ns.litr1n 	value 0.00007521
+				litter_cs.litr2c 	value 0.01056238
+				litter_cs.litr3c 	value 0.00094835
+				litter_cs.litr4c 	value 0.00641051
+				soil_cs.soil1c 		value 0.00428524
+				soil_ns.sminn		value 0.00002811
+				soil_ns.nitrate		value 0.00003044
+				soil_cs.soil2c		value 0.00304513
+				soil_cs.soil3c  	value 0.05220800
+				soil_cs.soil4c		value 0.37839627
+				patch_n_basestations		dvalue 0
+				_canopy_strata patch.tif 1 	
+					veg_parm_ID		mode nlcdveg.tif	
+            				cover_fraction		value 1.0
+					gap_fraction		value 0.0 
+					rootzone.depth		value 1.0 
+					snow_stored		value 0.0 
+					rain_stored		value 0.0 
+					cs.pool			value 0.0 
+					cs.leafc		value 0.0 
+					cs.dead_leafc		value 0.0 
+					cs.leafc_store		value 0.0 
+					cs.leafc_transfer	value 0.0 
+					cs.live_stemc		value 0.0 
+					cs.livestemc_store	value 0.0 
+					cs.live.stemc_transfer	value 0.0 
+					cs.dead_stem		value 0.0 
+					cs.deadstemc_store	value 0.0 
+					cs.deadstemc_transfer	value 0.0 
+					cs.live_crootc		value 0.0 
+					cs.livecrootc_store	value 0.0 
+					cs.livecrootc_transfer	value 0.0 
+					cs.dead_crootc		value 2.0 
+					cs.deadcrootc_store	value 0.0 
+					cs.deadcrootc_transfer	value 0.0 
+					cs.frootc		value 0.0 
+					cs.frootc_store		value 0.0 
+					cs.frootc_transfer	value 0.0 
+					cs_cwdc			value 0.0 
+					epv.prev_leafcalloc	value 0.0 
+					ns.pool			value 0.0 
+					ns.leafn		value 0.0 
+					ns.dead_leafn		value 0.0 
+					ns.leafn_store		value 0.0 
+					ns.leafn_transfer	value 0.0 
+					ns.live_stemn		value 0.0 
+					ns.livestemn_store	value 0.0 
+					ns.livestemn_transfer	value 0.0 
+					ns.dead_stem		value 0.0 
+					ns.deadstemn_store	value 0.0 
+					ns.deadstemn_transfer	value 0.0 
+					ns.live_crootn		value 0.0 
+					ns.livecrootn_store	value 0.0 
+					ns.livecrootn_transfer	value 0.0 
+					ns.dead_crootn		value 0.0 
+					ns.deadcrootn_store	value 0.0 
+					ns.deadcrootn_transfer	value 0.0 
+					ns.frootn		value 0.0 
+					ns.frootn_store		value 0.0 
+					ns.frootn_transfer	value 0.0 
+					ns.cwdn			value 0.0 
+					ns.retransn		value 0.0 
+					epv.wstress_days      	dvalue 0  
+					epv.min_fparabs		value 0.0 
+					epv.min_vwc		value 0.0 
+					canopy_strata_n_basestations dvalue 0 
+
+
+"}
+
+write(templatestatic,file = "templates/RHESSYSinR_Coweeta_WS7_static.template")
+write(templatetext,file = "templates/RHESSYSinR_Coweeta_WS7_ssurgo.template")
+write(templatedsm,file = "templates/RHESSYSinR_Coweeta_WS7_dsm.template")
+
+```
+
+Create Tec File
+
+```{r}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+{tecfiletext<-
+"2015 11 1 1 print_daily_on
+2015 11 1 2 print_daily_growth_on
+"
+
+write(tecfiletext,file = "tecfiles/tec_daily")}
+
+```
+
+Locate RHESSys Spatial Inputs and Specify Template to be used
+
+Create RHESSys Worldfile and Flowtable for 7.4 based on Spatial Inputs and Template
+
+Raster files and template information are used to setup RHESSys worldfile.
+Flowtable created by "RHESSysPreprocess" must be converted to work. Unsure why.
+Preprocessing is controlled by template file.
+
+Template file 'CWWS32_STATIC.template' is used to run model normally
+template file 'CWWS32_STATICspinup.template' is used to spin up model. Only difference is artificially extended climate dataset. 
+
+```{r RHESSys PreProcess and Flowtable Conversion, verbose = FALSE}
+setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+# Optional Flowtable Spatial Data
+roads = "roads.tif"
+# impervious = "impervious_map"
+# roofs = "roofs_map"
+
+# With certain configurations roads does not work. Returns message: road width cannot be 0 during preprocessing
+
+ 
+# RHESSysPreprocess(
+#   template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
+#   name = "CWWS32",
+#   map_dir = "grassexport/cwt_ws32",
+#   streams = "streams.tif",
+#   overwrite = TRUE,
+#   header = TRUE,
+#   parallel = FALSE,
+#   make_stream = TRUE)
+
+## Make sure to have parallel turned off  when preprocessing, convert flowtables after creation for compatibility
+#convert_flowtable("CWWS32.flow","CWWS321.flow",make_stream=TRUE)
+
+
+#Try alternate method
+# 
+world_gen(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
+  worldfile = "CWWS32",
+  map_dir = "grassexport/cwt_ws32",
+  overwrite = TRUE,
+  header = TRUE)
+
+create_flownet(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
+  flownet_name = "CWWS32",
+  map_dir = "grassexport/cwt_ws32",
+  streams = "streams.tif",
+  overwrite = TRUE,
+  parallel = TRUE,
+  make_stream = TRUE)
+
+
+
+
+
+RHESSysPreprocess(
+  template = "templates/RHESSYSinR_Coweeta_WS32_static.template",
+  name = "CWWS32static",
+  map_dir = "grassexport/cwt_ws32",
+  streams = "streams.tif",
+  overwrite = TRUE,
+  header = TRUE,
+  parallel = TRUE,
+  make_stream = TRUE)
+
+
+RHESSysPreprocess(
+  template = "templates/RHESSYSinR_Coweeta_WS32_ssurgo.template",
+  name = "CWWS32ssurgo",
+  map_dir = "grassexport/cwt_ws32",
+  streams = "streams.tif",
+  overwrite = TRUE,
+  header = TRUE,
+  parallel = TRUE,
+  make_stream = TRUE)
+
+```

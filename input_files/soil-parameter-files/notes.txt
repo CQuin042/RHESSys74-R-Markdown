@@ -1,0 +1,13 @@
+https://github.com/RHESSys/RHESSys/wiki/Parameter-Definition-Files#soil-definition-file-parameters
+
+
+There are quite a few soil properties that are taken into account with the RHESSys model and the parameterization can get quite granular, pardon the pun. With regards to soils the landscape is broken up into dominant soil type, currently divided up by dominant texture, and then each of those textures has a definition file associated with it. Quite a few variables are present within the soil parameterization but the ones that I believe to be most relevant at the moment are saturated hydraulic conductivity at the surface, saturated hydraulic conductivity at depth, decay of saturated conductivity with depth, pore size index, percentage sand, percentage silt, percentage clay, average soil depth, and porosity. I am currently using the default parameter definition database provided by the developers, 
+https://github.com/RHESSys/ParameterLibrary
+
+
+Here is a link to the wiki which shows a list of the parameters taken into account with soils. 
+https://github.com/RHESSys/RHESSys/wiki/Parameter-Definition-Files#soil-definition-file-parameters
+
+I believe that there is an opportunity to divide the landscape into the map units directly provided by SSURGO for better predictions but my current focus is on getting the model to an equilibrium state regarding vegetation variables and seeing the effect that the various methods of LAI incorporation have on model performance. After I complete the testing with the incorporation of LAI/Growth I want to focus on getting the DHSVM flow routing to work properly.
+
+Of course various tasks are being completed in parallel but I don't expect to modify the definition files within the coming two weeks or so. 
