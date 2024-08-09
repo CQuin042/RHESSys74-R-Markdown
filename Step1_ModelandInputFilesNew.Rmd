@@ -150,27 +150,39 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 cwtrg12precip<- read.table(file=CWRG12, header = TRUE, sep = ",")
 cwtrg20precip<- read.table(file=CWRG20, header = TRUE, sep = ",")
-#cwtrgappendprecip<- read.table(file=CWRGAPPEND, header = TRUE, sep = ",")
+cwtrgappendprecip<- read.table(file=CWRGAPPEND, header = TRUE, sep = ",")
 
 
 cwtrg12precip$date <- as.Date(paste(cwtrg12precip$YEAR,cwtrg12precip$MONTH,cwtrg12precip$DAY, sep = "-"), "%Y-%m-%d")
 cwtrg20precip$date <- as.Date(paste(cwtrg20precip$YEAR,cwtrg20precip$MONTH,cwtrg20precip$DAY, sep = "-"), "%Y-%m-%d")
-#cwtrgappendprecip$date <- as.Date(paste(cwrgappendprecip$Year,cwrgappendprecip$Day.of.year, sep = "-"), "%Y-%j")
+cwtrgappendprecip$date <- as.Date(paste(cwtrgappendprecip$Year,cwtrgappendprecip$Day.of.year, sep = "-"), "%Y-%j")
 
-#group by day
+
+#not working
+# #group by day
 # daily_cwtrgappendprecip <- cwtrgappendprecip %>%
 #   group_by(date) %>%
-#   summarise(
+#   summarize(
 #     RRG12 = sum(RRG12..inches., na.rm = TRUE),
 #     RRG20 = sum(RRG20..inches., na.rm = TRUE)
 #   )
 
+library(data.table)
 
-cwtrg12precip<- cwtrg12precip[,-1:-3]
-cwtrg20precip<- cwtrg20precip[,-1:-3]
+daily_cwtrgappendprecip <- aggregate(cbind(RRG12..inches., RRG20..inches.) ~ date, data = cwtrgappendprecip, sum, na.rm = TRUE)
 
-# newcwtrg12precip <- daily_cwtrgappendprecip[,c("RRG12","date")]
-# newcwtrg20precip <- daily_cwtrgappendprecip[,c("RRG20","date")]
+# Renaming columns for clarity
+names(daily_cwtrgappendprecip) <- c("date", "RRG12", "RRG20")
+
+# Print the grouped data frame
+print(daily_cwtrgappendprecip)
+
+
+#cwtrg12precip<- cwtrg12precip[,-1:-3]
+#cwtrg20precip<- cwtrg20precip[,-1:-3]
+
+ newcwtrg12precip <- daily_cwtrgappendprecip[,c("RRG12","date")]
+ newcwtrg20precip <- daily_cwtrgappendprecip[,c("RRG20","date")]
 
 
 ## append new precip data 
@@ -596,11 +608,11 @@ Code to download DEM originally prepared by Dylan Beaudette
  x <- read_sf(watershedshapefile)
 # # buffer to ensure that there are no truncated watersheds
  x.buff <- st_as_sf(st_buffer(st_as_sfc(st_bbox(x)), dist = 1000))
-# # convert to GCS WGS84 -> no transformation / warp will be applied to DEM
- x.gcs <- st_transform(x, 4326)
- x.buff.gcs <- st_transform(x.buff, 4326)
+# # convert to GCS NAD83 -> no transformation / warp will be applied to DEM
+ x.gcs <- st_transform(x, 26917)
+ x.buff.gcs <- st_transform(x.buff, 26917)
 # # requires sf collection (geometry + attributes)
-# # get DEM in GCS WGS84 and use z = 14 for best available data
+# # get DEM in GCS NAD83 and use z = 14 for best available data
 # elevationraster <- get_elev_raster(locations = x.buff.gcs, z = 14, clip = 'bbox')
 # 
 # 
@@ -622,7 +634,7 @@ Code to download DEM originally prepared by Dylan Beaudette
 # plot(st_geometry(x.gcs[which(x$WS=='32'),]), add = TRUE, col = NA)
 # 
 # 
-# newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+# newproj<- "+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs"
 # 
 # reproje<- projectRaster(from = cropped_dem, crs = newproj, method = 'bilinear')
 # 
@@ -651,7 +663,7 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 elevationraster<- raster(DEM)
 
-newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+newproj<- "+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs"
 
 reproje<- projectRaster(from = elevationraster, crs = newproj, method = 'bilinear')
 
@@ -684,11 +696,11 @@ dir.create("grassdata")
 
 initGRASS(gisBase = "C:/Program Files/GRASS GIS 8.2",
           gisDbase = "grassdata",
-          location = "Coweeta2", 
+          location = "Coweeta3", 
           mapset = "PERMANENT", 
           override = TRUE)
 
-execGRASS("g.proj", proj4="+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs", flag = "c" )
+execGRASS("g.proj", proj4="+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs", flag = "c" )
 execGRASS("g.gisenv", flag="n")
 execGRASS("g.region", flag=c("p"))
 
@@ -703,19 +715,19 @@ execGRASS("g.region", raster = "grass_dem10", flag=c("p"))
 ## Import shapefiles (Streams, Weirs, Watersheds, Roads)
 ## only roads and Watersheds necessary to Run
 streams<- vect(streamshapefile)
-streams<- project(streams,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+streams<- project(streams,"+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs")
 write_VECT(streams, "streams")
 
 weirs<- vect(weirshapefile)
-weirs<- project(weirs,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+weirs<- project(weirs,"+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs")
 write_VECT(weirs, "weirs")
 
 watersheds<- vect(watershedshapefile)
-wgs84watersheds<- project(watersheds,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
-write_VECT(wgs84watersheds, "watersheds")
+NAD83watersheds<- project(watersheds,"+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs")
+write_VECT(NAD83watersheds, "watersheds")
 
 roads <- vect(roadshapefile)
-roads<- project(roads,"+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs")
+roads<- project(roads,"+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs")
 write_VECT(roads,"roads")
 
 ## Check all vectors that have been exported to GRASS
@@ -1012,7 +1024,7 @@ ssurgomu<- raster(paste0(filedir,"input_files/soil_maps/ssurgo_utm.tif"))
 
 ws32<- raster("grassexport/cwt_ws32/basin_ws32.tif")
 
- newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+ newproj<- "+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs"
 reprojmu <- projectRaster(from = ssurgomu, crs = proj4string(ws32), method = 'ngb')
 
 plot(ssurgomu, main = "SSURGO Map Unit Raster")
@@ -1094,7 +1106,7 @@ ssurgomu<- raster(paste0(filedir,"input_files/soil_maps/ssurgo_utm.tif"))
 
 ws7<- raster("grassexport/cwt_ws7/basin_ws7.tif")
 
- newproj<- "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs"
+ newproj<- "+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs"
 reprojmu <- projectRaster(from = ssurgomu, crs = proj4string(ws7), method = 'ngb')
 
 plot(ssurgomu, main = "SSURGO Map Unit Raster")

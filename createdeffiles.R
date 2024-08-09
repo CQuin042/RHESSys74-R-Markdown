@@ -72,3 +72,4 @@ print(result_df)
 ## pull ksat, m_z, pore size index, porosity, psi air entry, sand, silt, clay, soil_depth, take other values from nearest texture
 plot(result_df$patch_default_ID,result_df$Ksat_0)
 
+
