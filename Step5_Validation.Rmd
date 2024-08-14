@@ -35,7 +35,7 @@ library(clhs)
 library(EcoHydRology)
 library(elevatr)
 library(ezknitr)
-library(FedData)
+#library(FedData)
 library(foreach)
 library(foreign)
 library(ggplot2)
@@ -133,7 +133,7 @@ patchfilterpatch1 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "valws32patch1",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:112:136557:136557",
+                                   spatial_ID = "1:70:144625:144625",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 patchfilterpatch2 = build_output_filter(timestep = "daily",
@@ -141,7 +141,7 @@ patchfilterpatch2 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "valws32patch2",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:110:141942:141942",
+                                   spatial_ID = "1:70:149472:149472",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 patchfilterpatch3 = build_output_filter(timestep = "daily",
@@ -149,7 +149,7 @@ patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "valws32patch3",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:110:149478:149478",
+                                   spatial_ID = "1:70:157009:157009",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 
@@ -192,12 +192,14 @@ patches listed top to bottom
 ```{r Configure RHESSys Inputs for Validation}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -214,7 +216,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -714,16 +716,19 @@ RSS - prepare to run model n times for patch 1 - only for validation time series
 
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 getwd()
+
 
 validationruns <- 100
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2015 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -738,7 +743,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -1123,6 +1128,8 @@ run model n times for patch 1 - only for validation time series
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
@@ -1143,7 +1150,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -1353,6 +1360,8 @@ run model 20 times for patch 1 - only for validation time series
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
@@ -1373,7 +1382,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")

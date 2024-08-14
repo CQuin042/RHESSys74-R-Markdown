@@ -35,7 +35,7 @@ library(clhs)
 library(EcoHydRology)
 library(elevatr)
 library(ezknitr)
-library(FedData)
+#library(FedData)
 library(foreach)
 library(foreign)
 library(ggplot2)
@@ -264,9 +264,9 @@ params<- as.data.frame(params)
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -299,7 +299,7 @@ start_time = Sys.time()
 
 for(i in 1:n) {
  
-stdpars<- IOin_std_pars(
+stdpars<- IOin_cmd_pars(
   m = params[i,]$m,
   k = params[i,]$k,
   soil_dep= params[i,]$soil_dep,
@@ -316,7 +316,7 @@ stdpars<- IOin_std_pars(
 run_rhessys_single(input_rhessys = input_rhessys,
                    hdr_files = input_hdr,
                    tec_data = input_tec_data,
-                   std_pars = stdpars,
+                   cmd_pars = stdpars,
                    runID = i)} 
 
 end_time = Sys.time()
@@ -375,8 +375,15 @@ Prepare Static, SSURGO, and DSM Inputs
 ```{r Static SSURGO DSM }
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # prepare RHESSys for run
+
+
+params <- read.table(file = "out/cwparamtable.txt")
+
 params<- as.data.frame(params)
 
+n <- nrow(params)
+
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
 
 input_rhessys_static = IOin_rhessys_input(
   version = rh_path,
@@ -398,7 +405,7 @@ input_hdr_static = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -420,7 +427,7 @@ input_hdr_ssurgo = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -429,9 +436,9 @@ input_hdr_ssurgo = IOin_hdr(
 input_rhessys_dsm = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2013 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -442,7 +449,7 @@ input_hdr_dsm = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = c("defs/lu_undev.def","defs/lu_agriculture.def","defs/lu_raingarden.def","defs/lu_urban.def"),
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -520,7 +527,7 @@ start_time = Sys.time()
                             vgseng3 = params[i,]$vgseng3)
     
     run_rhessys_single(input_rhessys = input_rhessys_ssurgo,
-                       hdr_files = input_hdr,
+                       hdr_files = input_hdr_ssurgo,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
                        output_filter = basinfilter_ssurgo,
@@ -562,7 +569,7 @@ start_time = Sys.time()
                             vgseng3 = params[i,]$vgseng3)
     
     run_rhessys_single(input_rhessys = input_rhessys_dsm,
-                       hdr_files = input_hdr,
+                       hdr_files = input_hdr_dsm,
                        tec_data = input_tec_data,
                        cmd_pars = stdpars,
                        output_filter = basinfilter_dsm,
@@ -622,7 +629,7 @@ obsws32sm<- read.table("outputfilter/obsws32sm.csv", header = T, sep = ",")
 obsws32sm$Date<- as.Date(obsws32sm$Date,"%Y-%m-%d")
 
 ## plot observed data for period of record and calibration/validation periods as defined by SM data
-{plot(obsws32$Date,obsws32$discharge_mm, type = 'l', xlim=c(as.Date(input_rhessys$start_date, "%Y%m%d"),as.Date(input_rhessys$end_date, "%Y%m%d")),ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Streamflow Discharge for period of time model is run")
+{plot(obsws32$Date,obsws32$discharge_mm, type = 'l', xlim=c(as.Date(input_rhessys_static$start_date, "%Y%m%d"),as.Date(input_rhessys_static$end_date, "%Y%m%d")),ylab = "Observed Discharge mm/d", xlab = "Date", main = "Observed Streamflow Discharge for period of time model is run")
 abline(v=as.Date(Caldates[1]), col = 'red', lwd = 2, lty = 2)
 abline(v=as.Date(Caldates[2]), col = 'red', lwd = 2, lty = 2)
 abline(v=as.Date(Valdates[1]), col = 'blue', lwd = 2, lty = 5)

@@ -102,6 +102,8 @@ Climate files have been modified to original DAYMET timeseries.
 
 ```{r RHESsys Spinup Configuration static}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
 ## Read climate file to see length available climate data
 read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
 read_clim("clim/cwtws32local.rain", dates_out=TRUE)
@@ -126,7 +128,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32extended.base")
@@ -224,6 +226,9 @@ abline(soilntrend , col = 'green')}
 
 ```{r RHESsys Spinup Configuration ssurgo}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 ## Read climate file to see length available climate data
 read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
 read_clim("clim/cwtws32local.rain", dates_out=TRUE)
@@ -248,7 +253,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32extended.base")
@@ -345,6 +350,9 @@ abline(soilntrend , col = 'green')}
 
 ```{r RHESsys Spinup Configuration dsm}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 ## Read climate file to see length available climate data
 read_clim("clim/cwtws32extended.rain", dates_out=TRUE)
 read_clim("clim/cwtws32local.rain", dates_out=TRUE)
@@ -353,8 +361,8 @@ input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
   world_file = "CWWS32dsm.world",
-  world_hdr_prefix = "cwws32dsm",
-  flowtable = "cwws32dsm.flow",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
   output_folder = "out",
@@ -369,7 +377,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32extended.base")
@@ -410,9 +418,9 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "cwws32dsm.world.Y2018M11D1H1.state",
-  world_hdr_prefix = "cwws32dsm",
-  flowtable = "cwws32dsm.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "1775 11 1 1",
   end = "2018 11 2 1",
   output_folder = "out",
@@ -478,14 +486,17 @@ Use World Statefile created during spin-up. To run model one time at patch scale
 
 ```{r Configure RHESSys Inputs using Created Worldfile}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
+
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 read_clim("clim/cwtws32daymet.rain", dates_out = TRUE)
 
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2014 11 1 1",
   end = "2018 11 2 1",
   output_folder = "out",
@@ -503,7 +514,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
@@ -551,12 +562,14 @@ Run RHESSys once with output filter
 ```{r}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
+soildefs <- list.files("defs/", pattern = "soil_", full.names = TRUE)
+
 input_rhessys = IOin_rhessys_input(
   version = rh_path,
   tec_file = "tecfiles/tec_daily",
-  world_file = "CWWS32.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
-  world_hdr_prefix = "CWWS32",
-  flowtable = "CWWS32.flow",
+  world_file = "CWWS32dsm.world.Y2018M11D1H1.state.Y2018M11D1H1.state",
+  world_hdr_prefix = "CWWS32dsm",
+  flowtable = "CWWS32dsm.flow",
   start = "2014 11 1 1",
   end = "2018 11 1 1",
   output_folder = "out",
@@ -571,7 +584,7 @@ input_hdr = IOin_hdr(
   basin = "defs/basin.def",
   hillslope = "defs/hillslope.def",
   zone = "defs/zone.def",
-  soil = c("defs/soil_clay.def","defs/soil_clayloam.def","defs/soil_loam.def","defs/soil_loamysand.def","defs/soil_rock.def","defs/soil_sand.def","defs/soil_sandyclay.def","defs/soil_sandyclayloam.def","defs/soil_sandyloam.def","defs/soil_silt.def","defs/soil_siltyclay.def","defs/soil_siltyclayloam.def","defs/soil_siltyloam.def","defs/soil_water.def", "defs/soil_shallowloam.def", "defs/soil_shallowsandyclayloam.def", "defs/soil_shallowsandyloam.def"),
+  soil = soildefs,
   landuse = "defs/lu_undev.def",
   stratum = c("defs/veg_deciduous/veg_deciduous.def","defs/veg_evergreen/veg_evergreen.def","defs/veg_deciduous_BES.def","defs/veg_eucalypt.def","defs/veg_grass.def","defs/veg_lawn_2cm.def","defs/veg_lawn_5cm.def","defs/veg_lawn_10cm.def","defs/veg_nonveg.def"),
   basestations = "clim/cwtws32local.base")
