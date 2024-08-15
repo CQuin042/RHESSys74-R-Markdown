@@ -2902,13 +2902,13 @@ roads = "roads.tif"
 #Try alternate method
 # 
 world_gen(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
-  worldfile = "CWWS32",
+  worldfile = "CWWS32dsm",
   map_dir = "grassexport/cwt_ws32",
   overwrite = TRUE,
   header = TRUE)
 
 create_flownet(template = "templates/RHESSYSinR_Coweeta_WS32_dsm.template",
-  flownet_name = "CWWS32",
+  flownet_name = "CWWS32dsm",
   map_dir = "grassexport/cwt_ws32",
   streams = "streams.tif",
   overwrite = TRUE,
@@ -2958,7 +2958,7 @@ roads = "roads.tif"
 
 RHESSysPreprocess(
   template = "templates/RHESSYSinR_Coweeta_WS7_dsm.template",
-  name = "CWWS7",
+  name = "CWWS7dsm",
   map_dir = "grassexport/cwt_ws7",
   streams = "streams.tif",
   overwrite = TRUE,

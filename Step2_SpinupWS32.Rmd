@@ -197,7 +197,7 @@ Read Spinup and confirm that Soil C and Soil N have stabilized
 
 ```{r Read RHESSys Spinup for static}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
+spinupoutput<- readin_rhessys_output("out/cwws32_runspinup")
 
 #spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
 #spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")
@@ -318,7 +318,7 @@ Read Spinup and confirm that Soil C and Soil N have stabilized
 
 ```{r Read RHESSys Spinup for ssurgo}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
+spinupoutput<- readin_rhessys_output("out/cwws32_runspinup")
 
 #spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
 #spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")
@@ -442,7 +442,7 @@ Read Spinup and confirm that Soil C and Soil N have stabilized
 
 ```{r Read RHESSys Spinup for dsm}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
-spinupoutput<- readin_rhessys_output("out/CWWS32_runspinup")
+spinupoutput<- readin_rhessys_output("out/cwws32_runspinup")
 
 #spinupoutput<- readin_rhessys_output("out/cwws32dsm_rundsmspinup")
 #spinupoutput<- readin_rhessys_output("out/cwws32ssurgo_runssurgospinup")

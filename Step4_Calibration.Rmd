@@ -111,7 +111,7 @@ patchfilterpatch1 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "ws32patch1",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:112:136557:136557",
+                                   spatial_ID = "1:69:144625:144625",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 patchfilterpatch2 = build_output_filter(timestep = "daily",
@@ -119,7 +119,7 @@ patchfilterpatch2 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "ws32patch2",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:110:141942:141942",
+                                   spatial_ID = "1:69:149472:149472",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 patchfilterpatch3 = build_output_filter(timestep = "daily",
@@ -127,7 +127,7 @@ patchfilterpatch3 = build_output_filter(timestep = "daily",
                                    output_path = "outputfilter",
                                    output_filename = "ws32patch3",
                                    spatial_level = "patch",
-                                   spatial_ID = "1:110:149478:149478",
+                                   spatial_ID = "1:69:157007:157007",
                                    variables = c("rootzone.S","rootzone.potential_sat","rootzone.field_capacity", "rz_storage"))
 
 
@@ -209,13 +209,13 @@ fs <- 10000
 n <- 100
 # create data frame
 d <- data.frame(
-  m = runif(fs, min=0.5, max=5),
-  k = runif(fs, min=0.5, max=60),
-  soil_dep = runif(fs, min=0.1, max=0.5),
+  m = runif(fs, min=0.1, max=10),
+  k = runif(fs, min=0.5, max=100),
+  soil_dep = runif(fs, min=0.1, max=2),
   m_v = runif(fs, min=0.5, max=15),
   k_v = runif(fs, min=0.5, max=15),
-  gw1 = runif(fs, min=0.1, max=0.3),
-  gw2 = runif(fs, min=0.1, max=0.6),
+  gw1 = runif(fs, min=0.01, max=0.3),
+  gw2 = runif(fs, min=0.01, max=0.6),
   pa = runif(fs, min=0.1, max=1.0),
   po = runif(fs, min=1.0, max=2.0),
   vgseng1 = runif(fs, min=0.1, max=2.0),
