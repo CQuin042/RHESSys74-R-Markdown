@@ -243,7 +243,7 @@ stdpars<- IOin_cmd_pars(
 
 Run RHESSys once for validation
 
-```{r Run Rhessys Once for Validation, eval=FALSE, include=FALSE}
+```{r Run Rhessys Once for Validation}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 start_time = Sys.time()
@@ -751,7 +751,7 @@ input_hdr = IOin_hdr(
 ```
 RSS - Run RHESSYs
 
-```{r Run RHESSYS in Parallel using foreach RSS 1, echo=TRUE}
+```{r Run RHESSYS in Parallel using foreach RSS 1}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 n.cores <- parallel::detectCores() - 4  
@@ -1158,7 +1158,7 @@ input_hdr = IOin_hdr(
 ```
 run static
 
-```{r Run RHESSYS in Parallel using foreach STATIC 1, echo=TRUE}
+```{r Run RHESSYS in Parallel using foreach STATIC 1}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 n.cores <- parallel::detectCores() - 4  
@@ -1390,7 +1390,7 @@ input_hdr = IOin_hdr(
 ```
 run SSURGO
 
-```{r Run RHESSYS in Parallel using foreach SSURGO 1, echo=TRUE}
+```{r Run RHESSYS in Parallel using foreach SSURGO 1}
 setwd(system.file("extdata/", package = "RHESSysIOinR"))
 
 n.cores <- parallel::detectCores() - 4  
