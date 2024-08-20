@@ -206,21 +206,21 @@ setwd(system.file("extdata/", package = "RHESSysIOinR"))
 # number of samples for full data space
 fs <- 10000
 # number of samples to calibrate over, 100 samples take approx 40 mins in base R and 1 hour in rmarkdown
-n <- 100
+n <- 1000
 # create data frame
 d <- data.frame(
-  m = runif(fs, min=0.1, max=10),
-  k = runif(fs, min=0.5, max=100),
-  soil_dep = runif(fs, min=0.1, max=2),
-  m_v = runif(fs, min=0.5, max=15),
-  k_v = runif(fs, min=0.5, max=15),
+  m = runif(fs, min=0.1, max=20),
+  k = runif(fs, min=0.5, max=200),
+  soil_dep = runif(fs, min=0.1, max=5),
+  m_v = runif(fs, min=0.1, max=20),
+  k_v = runif(fs, min=0.1, max=20),
   gw1 = runif(fs, min=0.01, max=0.3),
-  gw2 = runif(fs, min=0.01, max=0.6),
-  pa = runif(fs, min=0.1, max=1.0),
-  po = runif(fs, min=1.0, max=2.0),
-  vgseng1 = runif(fs, min=0.1, max=2.0),
-  vgseng2 = runif(fs, min=0.1, max=2.0),
-  vgseng3 = runif(fs, min=0.1, max=2.0))
+  gw2 = runif(fs, min=0.01, max=0.7),
+  pa = runif(fs, min=0.1, max=3.0),
+  po = runif(fs, min=0.1, max=3.0),
+  vgseng1 = runif(fs, min=0.1, max=3.0),
+  vgseng2 = runif(fs, min=0.1, max=3.0),
+  vgseng3 = runif(fs, min=0.1, max=3.0))
 # marginal distributions, for analysis
 m <- melt(d)
 bwplot(variable ~ value, data = m, par.settings = tactile.theme(), main = "distribution of calibration parameters before clhs subsetting")
