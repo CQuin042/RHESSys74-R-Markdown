@@ -1625,11 +1625,21 @@ combinedvalidationlong
 validationnona<- subset(combinedvalidationlong,!is.na(combinedvalidationlong$KGE))
 
 
-threesitevalidationplot <- ggplot(validationnona, aes(group, y = KGE, fill = site))+ geom_boxplot()+ ylab("Soil Moisture KGE - Validation") +xlab("Soil Map Input")+ ggtitle("Patch Specific Soil Moisture KGE For ALL Calibration Runs, NA Excluded")+geom_hline(yintercept=-0.41,linetype=2, col = 'RED')+ scale_y_continuous(breaks=seq(-6,1,1))+ theme_minimal()
+validationnona
+
+threesitevalidationplot <- ggplot(validationnona, aes(group, y = KGE, fill = site)) + 
+  geom_boxplot() + 
+  ylab("Soil Moisture KGE - Validation") +
+  xlab("Soil Map Input") +
+  ggtitle("Patch Specific Soil Moisture KGE For ALL Calibration Runs, NA Excluded") +
+  geom_hline(yintercept = -0.41, linetype = 2, col = 'RED') + 
+  scale_y_continuous(breaks = seq(-6, 1, 1)) + 
+  scale_fill_manual(values = c('#e41a1c', '#377eb8', '#4daf4a', '#984ea3')) + 
+  theme_minimal()
 
 threesitevalidationplot
 
-validationnona
+
 ```
 
 
