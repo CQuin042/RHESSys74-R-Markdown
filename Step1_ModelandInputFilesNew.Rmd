@@ -75,6 +75,8 @@ rh_ver = dir(path = "modelfiles/rhessys/", pattern = "^rhessys\\d+",recursive = 
 rh_path = file.path("modelfiles/rhessys", rh_ver)
 
 ## Load in necessary files
+#filedir must be changed to local GitHub Directory
+
 filedir <- ("C:/Users/Carlos/Documents/GitHub/RHESSys74-R-Markdown/")
 
 watershedshapefile <- paste0(filedir, "input_files/shapefiles/watersheds/Coweeta_Hydrologic_Laboratory.shp")
